@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/fonts"/>
+    <qresource prefix="/">
+        <file>fonts/lcd.14.otf</file>
+        <file>fonts/lcd.14condensed.otf</file>
+        <file>fonts/lcd.14italic.otf</file>
+        <file>fonts/lcd.14italiccondensed.otf</file>
+        <file>images/leds/led_black.png</file>
+        <file>images/leds/led_blue.png</file>
+        <file>images/leds/led_cyan.png</file>
+        <file>images/leds/led_green.png</file>
+        <file>images/leds/led_orange.png</file>
+        <file>images/leds/led_red.png</file>
+        <file>images/leds/led_violet.png</file>
+        <file>images/leds/led_white.png</file>
+        <file>images/leds/led_yellow.png</file>
+    </qresource>
+</RCC>
