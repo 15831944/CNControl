@@ -1,10 +1,9 @@
 #include "machine.h"
-#include "logger.h"
-
 #include <QtDebug>
+
 Machine::Machine(Port *port)
 {
-    infos = switches = actioners = 0;
+    features = infos = switches = actioners = 0;
 
     state = StateType::stateUnknown;
 
@@ -26,18 +25,41 @@ Machine::Machine(Port *port)
 
 };
 
+QString Machine::getMachineVersion()
+{
+    QString version;
+
+    if (hasFeature(FeatureFlags::flagName))
+        version += machineName;
+
+    if (hasFeature(FeatureFlags::flagVersion))
+    {
+        if (!version.isEmpty()) version += " ";
+        version += machineVersion;
+    }
+    if (hasFeature(FeatureFlags::flagBuild))
+    {
+        if (!version.isEmpty()) version += ".";
+        version += machineBuild;
+    }
+
+    return version;
+}
 bool Machine::isState( int type ) { return state == type; };
 int Machine::getState() { return state; };
-const QString &Machine::getStateString() { return status.at(state); };
+const QString &Machine::getStateString() { return states.at(state); };
+
+quint64 Machine::getFeatures() { return features; };
+bool Machine::hasFeature( int flag ) { return bitIsSet(features, flag); };
 
 quint64 Machine::getInfos() { return infos; };
-bool Machine::hasInfo( int flag ) { return (infos & bit(flag)); };
+bool Machine::hasInfo( int flag ) { return bitIsSet(infos, flag); };
 
 quint64 Machine::getSwitches() { return switches; };
-bool Machine::hasSwitch(int type) { return bitIsSet(switches, type); };
+bool Machine::hasSwitch(int flag) { return bitIsSet(switches, flag); };
 
 quint64 Machine::getActions() { return actioners; };
-bool Machine::hasAction(int type) { return bitIsSet(actioners, type); };
+bool Machine::hasAction(int flag) { return bitIsSet(actioners, flag); };
 
 Machine::CoordinatesType Machine::getMachineCoordinates() { return machineCoordinates; };
 Machine::CoordinatesType Machine::getWorkingCoordinates() { return workingCoordinates; };
@@ -67,20 +89,19 @@ const QString &Machine::getErrorString(int errorCode) { return errors.at(errorCo
 
 const QString &Machine::getLastLine() { return lastLine; };
 
-bool Machine::sendGCode(QString gcode, bool withNewline, bool noLog)
+bool Machine::sendCommand(QString gcode, bool withNewline, bool noLog)
 {
     if (!port) return false;
-
 
     if ((gcode == '!') || (gcode == '~') || (gcode == '?'))
         withNewline = false;
 
-//    QByteArray cmd = gcode.toLocal8Bit();
     if (withNewline) gcode += "\n";
 
-    if (!noLog)
-        qDebug() << "Machine : Sending command " << gcode;
+    //if (!noLog)
+        qDebug() << "Machine::sendCommand(" << gcode << ")";
 
+    emit commandSent(gcode);
     return port->write(gcode.toLocal8Bit()) == gcode.size();
 }
 

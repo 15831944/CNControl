@@ -152,7 +152,7 @@ bool SerialPort::open()
     if (serial.open(QIODevice::ReadWrite))
     {
         serial.flush();
-        connect(&serial, &QIODevice::readyRead, this, &SerialPort::readLine);
+        connect(&serial, &QIODevice::readyRead, this, &SerialPort::readyReadSlot);
         qDebug() << "SerialPort : Port opened.";
 
         return true;
@@ -175,7 +175,9 @@ bool SerialPort::flush()
 
 qint64 SerialPort::write(const QByteArray &byteArray)
 {
-    return serial.write(byteArray);
+    qint64 res = serial.write(byteArray);
+    serial.flush();
+    return res;
 }
 
 QString SerialPort::errorString()
@@ -183,14 +185,17 @@ QString SerialPort::errorString()
     return serial.errorString();
 }
 
-void SerialPort::readLine()
+void SerialPort::readyReadSlot()
 {
-    QByteArray data = serial.readLine();
-    buffer.append(data.trimmed());
+    while (!serial.atEnd()) {
+        QByteArray data = serial.readLine();
+        buffer.append(data.trimmed());
 
-    if (data.contains('\n'))
-    {
-        emit lineAvailable(  buffer );
-        buffer.clear();
+        if (data.contains('\n'))
+        {
+            qDebug() << "SerialPort::readLine: End of line (" << buffer << ")";
+            emit lineAvailable(  buffer );
+            buffer.clear();
+        }
     }
 }

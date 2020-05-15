@@ -1,11 +1,20 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QTranslator>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    w.show();
+    QApplication app(argc, argv);
 
-    return a.exec();
+    QTranslator translator;
+    if (!translator.load("app_fr"))
+        qDebug() << "Can't load translation";
+    if (!app.installTranslator(&translator))
+        qDebug() << "Can't install translation";
+
+    MainWindow win;
+    win.show();
+
+    return app.exec();
 }

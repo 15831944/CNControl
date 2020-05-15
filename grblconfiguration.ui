@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>391</width>
-    <height>382</height>
+    <width>488</width>
+    <height>362</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -17,61 +17,36 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Grbl configuration</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>4</number>
      </property>
-     <widget class="QWidget" name="tab_3">
+     <widget class="QWidget" name="generalTab">
       <attribute name="title">
        <string>General</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_5">
-       <item row="3" column="0">
-        <spacer name="verticalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="label_4">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>TextLabel</string>
+       <item row="8" column="2">
+        <widget class="QLineEdit" name="arcToleranceLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="2">
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
-          <widget class="QComboBox" name="comboBox_4">
+          <widget class="QComboBox" name="statusReportComboBox">
            <item>
             <property name="text">
              <string>Working coordinates</string>
@@ -79,18 +54,18 @@
            </item>
            <item>
             <property name="text">
-             <string>Working and buffer</string>
+             <string>Machine coordinates</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Machine coordinates</string>
+             <string>Working coordinates and buffer</string>
             </property>
            </item>
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBox_3">
+          <widget class="QComboBox" name="reportInchesComboBox">
            <item>
             <property name="text">
              <string>Milimeters</string>
@@ -105,39 +80,54 @@
          </item>
         </layout>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+       <item row="6" column="3">
+        <widget class="QLabel" name="stepIdleDelayUnit">
+         <property name="minimumSize">
+          <size>
+           <width>62</width>
+           <height>0</height>
+          </size>
          </property>
+         <property name="text">
+          <string>ms</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="3">
+        <widget class="QLabel" name="junctionDeviationUnit">
+         <property name="minimumSize">
+          <size>
+           <width>62</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>mm</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="arcToleranceLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
            <height>26</height>
           </size>
          </property>
-         <property name="maximumSize">
-          <size>
-           <width>121</width>
-           <height>16777215</height>
-          </size>
-         </property>
          <property name="text">
-          <string>Version</string>
+          <string>Arc tolerance</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+       <item row="5" column="2">
+        <widget class="QLineEdit" name="stepPulseLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="stepPulseLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -151,18 +141,44 @@
           </size>
          </property>
          <property name="text">
-          <string>Status Report</string>
+          <string>Step pulse</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_11">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
+       <item row="9" column="2">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QLabel" name="spindleSpeedMinLabel">
+           <property name="text">
+            <string>Min :</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="spindleSpeedMinLineEdit">
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="spindleSpeedMaxLabel">
+           <property name="text">
+            <string>Max :</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="spindleSpeedMaxLineEdit">
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="junctionDeviationLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -170,26 +186,64 @@
           </size>
          </property>
          <property name="text">
-          <string>Laser Mode</string>
+          <string>Junction deviation</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QCheckBox" name="checkBox_11">
+       <item row="2" column="0">
+        <widget class="QLabel" name="statusReportLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
-          <string/>
+          <string>Status Report</string>
          </property>
         </widget>
        </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="generalTab">
-      <attribute name="title">
-       <string>Pins</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="14" column="0">
-        <spacer name="verticalSpacer">
+       <item row="6" column="2">
+        <widget class="QLineEdit" name="stepIdleDelayLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="2">
+        <widget class="QCheckBox" name="laserModeCheckBox">
+         <property name="text">
+          <string>Laser mode</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="stepIdelDelayLabel">
+         <property name="minimumSize">
+          <size>
+           <width>121</width>
+           <height>26</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Step idle delay</string>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0">
+        <spacer name="verticalSpacer_4">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -201,16 +255,76 @@
          </property>
         </spacer>
        </item>
-       <item row="0" column="1">
+       <item row="8" column="3">
+        <widget class="QLabel" name="arcToleranceUnit">
+         <property name="minimumSize">
+          <size>
+           <width>62</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>mm</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="2">
+        <widget class="QLineEdit" name="junctionDeviationLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="3">
+        <widget class="QLabel" name="stepPulseUnit">
+         <property name="minimumSize">
+          <size>
+           <width>62</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>ms</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="spindleSpeedLabel">
+         <property name="text">
+          <string>Spindle Speed</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="signalsTab">
+      <attribute name="title">
+       <string>Signals</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="probePinInvertCheckBox">
+         <property name="text">
+          <string>Probe pin invert</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <property name="topMargin">
           <number>0</number>
          </property>
          <item>
-          <widget class="QLabel" name="label_21">
+          <widget class="QLabel" name="xLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>14</width>
+             <width>30</width>
              <height>0</height>
             </size>
            </property>
@@ -223,10 +337,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_20">
+          <widget class="QLabel" name="yLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>14</width>
+             <width>30</width>
              <height>0</height>
             </size>
            </property>
@@ -239,10 +359,16 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_22">
+          <widget class="QLabel" name="zLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="minimumSize">
             <size>
-             <width>14</width>
+             <width>30</width>
              <height>0</height>
             </size>
            </property>
@@ -269,46 +395,8 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <widget class="QCheckBox" name="checkBox_18">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="checkBox_17">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="checkBox_16">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label">
+       <item row="8" column="0">
+        <widget class="QLabel" name="homingDirInvertLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -320,15 +408,8 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
-        <widget class="QCheckBox" name="checkBox_8">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_6">
+       <item row="7" column="0">
+        <widget class="QLabel" name="dirPortInvertLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -340,24 +421,70 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="hardLimitsCheckBox">
+         <property name="text">
+          <string>Hard limits</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="leftMargin">
+          <number>9</number>
+         </property>
          <item>
-          <widget class="QCheckBox" name="checkBox_7">
+          <widget class="QCheckBox" name="xDirPortInvertCheckBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox_6">
+          <widget class="QCheckBox" name="yDirPortInvertCheckBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox_5">
+          <widget class="QCheckBox" name="zDirPortInvertCheckBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string/>
            </property>
@@ -378,64 +505,96 @@
          </item>
         </layout>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>121</width>
-           <height>16777215</height>
-          </size>
-         </property>
+       <item row="0" column="1">
+        <widget class="QCheckBox" name="stepEnableInvertCheckBox">
          <property name="text">
-          <string>Step port invert</string>
+          <string>Step enable invert</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
-        <widget class="QCheckBox" name="checkBox_15">
+       <item row="2" column="1">
+        <widget class="QCheckBox" name="limitPinsInvertCheckBox">
          <property name="text">
-          <string/>
+          <string>Limit pins invert</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
-        <widget class="QCheckBox" name="checkBox_9">
+       <item row="3" column="1">
+        <widget class="QCheckBox" name="softLimitsCheckBox">
          <property name="text">
-          <string/>
+          <string>Soft limits</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
-        <widget class="QCheckBox" name="checkBox_14">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
+       <item row="6" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="leftMargin">
+          <number>9</number>
+         </property>
          <item>
-          <widget class="QCheckBox" name="checkBox_4">
+          <widget class="QCheckBox" name="xStepPortInvertCheckBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox_3">
+          <widget class="QCheckBox" name="yStepPortInvertCheckBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>20</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string/>
+           </property>
+           <property name="tristate">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox_2">
+          <widget class="QCheckBox" name="zStepPortInvertCheckBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string/>
            </property>
@@ -456,97 +615,8 @@
          </item>
         </layout>
        </item>
-       <item row="10" column="0">
-        <widget class="QLabel" name="label_42">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Soft limits</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_37">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Probe pin invert</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Step enable invert</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QCheckBox" name="checkBox_10">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0">
-        <widget class="QLabel" name="label_43">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Hard limits</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_36">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Limit pins invert</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>Page</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_3">
-       <item row="2" column="2">
-        <widget class="QLabel" name="label_39">
-         <property name="text">
-          <string>mm</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEdit_19"/>
-       </item>
-       <item row="4" column="0">
-        <spacer name="verticalSpacer_4">
+       <item row="14" column="0">
+        <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -558,24 +628,92 @@
          </property>
         </spacer>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_40">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
+       <item row="8" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="leftMargin">
+          <number>9</number>
          </property>
+         <item>
+          <widget class="QCheckBox" name="xHomingDirInvertCheckBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="yHomingDirInvertCheckBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="zHomingDirInvertCheckBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>30</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="emptyLabel_2">
          <property name="text">
-          <string>Arc tolerance</string>
+          <string/>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="lineEdit_20"/>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_44">
+       <item row="6" column="0">
+        <widget class="QLabel" name="stepPortInvertLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -584,83 +722,24 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>121</width>
+           <width>16777215</width>
            <height>16777215</height>
           </size>
          </property>
          <property name="text">
-          <string>Step pulse :</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="2">
-        <widget class="QLabel" name="label_41">
-         <property name="text">
-          <string>mm</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Junction deviation</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_45">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Step idle delay :</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEdit_21"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEdit_22"/>
-       </item>
-       <item row="0" column="2">
-        <widget class="QLabel" name="label_46">
-         <property name="minimumSize">
-          <size>
-           <width>62</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>ms</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QLabel" name="label_47">
-         <property name="text">
-          <string>ms</string>
+          <string>Step port invert</string>
          </property>
         </widget>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="homingTab">
       <attribute name="title">
        <string>Homing</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="1" column="2">
-        <widget class="QLabel" name="label_19">
+        <widget class="QLabel" name="homingFeedUnit">
          <property name="minimumSize">
           <size>
            <width>62</width>
@@ -673,10 +752,14 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="lineEdit_4"/>
+        <widget class="QLineEdit" name="homingDebounceLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_13">
+        <widget class="QLabel" name="homingSeekLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -689,14 +772,14 @@
         </widget>
        </item>
        <item row="4" column="2">
-        <widget class="QLabel" name="label_16">
+        <widget class="QLabel" name="homingPullOffUnit">
          <property name="text">
           <string>mm</string>
          </property>
         </widget>
        </item>
        <item row="3" column="2">
-        <widget class="QLabel" name="label_17">
+        <widget class="QLabel" name="homingDebounceUnit">
          <property name="text">
           <string>ms</string>
          </property>
@@ -716,7 +799,7 @@
         </spacer>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="label_15">
+        <widget class="QLabel" name="homingPullOffLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -729,20 +812,28 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QLineEdit" name="lineEdit_3"/>
+        <widget class="QLineEdit" name="homingPullofflineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEdit_6"/>
+        <widget class="QLineEdit" name="homingFeedLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QCheckBox" name="checkBox">
+        <widget class="QCheckBox" name="homingCycleCheckBox">
          <property name="text">
-          <string/>
+          <string>Enable homing</string>
          </property>
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_12">
+        <widget class="QLabel" name="homingFeedLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -755,10 +846,14 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEdit_5"/>
+        <widget class="QLineEdit" name="homingSeekLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="0" column="0">
-        <widget class="QLabel" name="label_10">
+        <widget class="QLabel" name="emptyLabel_3">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -767,17 +862,17 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>121</width>
+           <width>16777215</width>
            <height>16777215</height>
           </size>
          </property>
          <property name="text">
-          <string>Homing cycle</string>
+          <string/>
          </property>
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="label_14">
+        <widget class="QLabel" name="homingDebounceLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -790,7 +885,7 @@
         </widget>
        </item>
        <item row="2" column="2">
-        <widget class="QLabel" name="label_18">
+        <widget class="QLabel" name="homingSeekUnit">
          <property name="text">
           <string>mm/min</string>
          </property>
@@ -798,25 +893,41 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="axesTab">
       <attribute name="title">
        <string>Axes</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="2" column="2">
-        <widget class="QLineEdit" name="lineEdit_11"/>
+        <widget class="QLineEdit" name="yMaxRateLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEdit_7"/>
+        <widget class="QLineEdit" name="xStepsLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="2" column="3">
-        <widget class="QLineEdit" name="lineEdit_12"/>
+        <widget class="QLineEdit" name="zMaxRateLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QLineEdit" name="lineEdit_16"/>
+        <widget class="QLineEdit" name="xMaxTravelLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="label_27">
+        <widget class="QLabel" name="accelerationLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -829,10 +940,14 @@
         </widget>
        </item>
        <item row="1" column="3">
-        <widget class="QLineEdit" name="lineEdit_9"/>
+        <widget class="QLineEdit" name="zStepsLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_8">
+        <widget class="QLabel" name="stepsLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -841,7 +956,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>121</width>
+           <width>16777215</width>
            <height>16777215</height>
           </size>
          </property>
@@ -851,36 +966,56 @@
         </widget>
        </item>
        <item row="2" column="4">
-        <widget class="QLabel" name="label_30">
+        <widget class="QLabel" name="maxRateUnit">
          <property name="text">
           <string>mm/min</string>
          </property>
         </widget>
        </item>
        <item row="4" column="3">
-        <widget class="QLineEdit" name="lineEdit_18"/>
+        <widget class="QLineEdit" name="zMaxTravelLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="lineEdit_13"/>
+        <widget class="QLineEdit" name="xAccelerationLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="3" column="3">
-        <widget class="QLineEdit" name="lineEdit_15"/>
+        <widget class="QLineEdit" name="zAccelerationLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="4" column="4">
-        <widget class="QLabel" name="label_32">
+        <widget class="QLabel" name="maxTravelUnit">
          <property name="text">
           <string>mm</string>
          </property>
         </widget>
        </item>
        <item row="4" column="2">
-        <widget class="QLineEdit" name="lineEdit_17"/>
+        <widget class="QLineEdit" name="yMaxTravelLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="1" column="2">
-        <widget class="QLineEdit" name="lineEdit_8"/>
+        <widget class="QLineEdit" name="yStepsLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLabel" name="label_33">
+        <widget class="QLabel" name="xAxeLabel">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -896,10 +1031,14 @@
         </widget>
        </item>
        <item row="3" column="2">
-        <widget class="QLineEdit" name="lineEdit_14"/>
+        <widget class="QLineEdit" name="yAccelerationLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="1" column="4">
-        <widget class="QLabel" name="label_29">
+        <widget class="QLabel" name="stepsUnit">
          <property name="minimumSize">
           <size>
            <width>62</width>
@@ -912,7 +1051,7 @@
         </widget>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="label_28">
+        <widget class="QLabel" name="maxTravelLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -925,7 +1064,7 @@
         </widget>
        </item>
        <item row="0" column="3">
-        <widget class="QLabel" name="label_35">
+        <widget class="QLabel" name="zAxeLabel">
          <property name="text">
           <string>Z</string>
          </property>
@@ -935,14 +1074,14 @@
         </widget>
        </item>
        <item row="3" column="4">
-        <widget class="QLabel" name="label_31">
+        <widget class="QLabel" name="accelerationUnit">
          <property name="text">
           <string>mm/sec^2</string>
          </property>
         </widget>
        </item>
        <item row="0" column="2">
-        <widget class="QLabel" name="label_34">
+        <widget class="QLabel" name="yAxeLabel">
          <property name="text">
           <string>Y</string>
          </property>
@@ -952,7 +1091,7 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_25">
+        <widget class="QLabel" name="maxRateLabel">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -965,7 +1104,11 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEdit_10"/>
+        <widget class="QLineEdit" name="xMaxRateLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </item>
        <item row="5" column="0">
         <spacer name="verticalSpacer_2">
@@ -981,7 +1124,7 @@
         </spacer>
        </item>
        <item row="0" column="0">
-        <widget class="QLabel" name="label_23">
+        <widget class="QLabel" name="emptyLabel_4">
          <property name="minimumSize">
           <size>
            <width>121</width>
@@ -989,7 +1132,53 @@
           </size>
          </property>
          <property name="text">
-          <string>TextLabel</string>
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Starting blocks</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_6">
+       <item row="1" column="1">
+        <widget class="QLabel" name="startingBlockLabel">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;IMPORTANT: Be very careful when storing any motion (G0/1,G2/3,G28/30) commands in the startup blocks. These motion commands will run everytime you reset or power up Grbl, so if you have an emergency situation and have to e-stop and reset, a startup block move can and will likely make things worse quickly. Also, do not place any commands that save data to EEPROM, such as G10/G28.1/G30.1. This will cause Grbl to constantly re-write this data upon every startup and reset, which will eventually wear out your Arduino's EEPROM.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="startingBlock0LineEdit"/>
+       </item>
+       <item row="4" column="1">
+        <spacer name="verticalSpacer_5">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="startingBlock1LineEdit"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Grbl allows two starting blocks which are executed on each reset when not in Alarm mode.</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -997,7 +1186,7 @@
      </widget>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>

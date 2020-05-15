@@ -26,11 +26,10 @@ CONFIG += c++11
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp \
-    logger.cpp \
     glineedit.cpp \
     highlighter.cpp \
     machine.cpp \
+    mainwindow.cpp \
     port_serial.cpp \
     port.cpp \
     codeeditor.cpp \
@@ -39,7 +38,6 @@ SOURCES += \
 
 HEADERS += \
     mainwindow.h \
-    logger.h \
     singleton.h \
     glineedit.h \
     highlighter.h \
@@ -52,8 +50,8 @@ HEADERS += \
     grblconfiguration.h
 
 FORMS += \
-        mainwindow.ui \
-    grblconfiguration.ui
+    grblconfiguration.ui \
+    mainwindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -62,3 +60,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     resources.qrc
+
+TRANSLATIONS = app_en.ts app_fr.ts

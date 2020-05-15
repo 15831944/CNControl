@@ -54,7 +54,8 @@ public:
     virtual QString errorString();
 
 private slots:
-    void readLine();
+//    void readLine();
+    void readyReadSlot();
 
 signals:
     void lineAvailable(QString &line);

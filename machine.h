@@ -13,6 +13,7 @@ class Machine : public QObject
     Q_OBJECT
 
 public:
+
     class StateType
     {
     public:
@@ -31,11 +32,21 @@ public:
         };
     };
 
+    class FeatureFlags
+    {
+    public:
+        enum {
+            flagName,
+            flagVersion,
+            flagBuild,
+            Last
+        };
+    };
+
     class InfoFlags
     {
     public:
         enum {
-            flagWaitForReset,
             flagHasMachineCoords,
             flagHasWorkingCoords,
             flagHasBuffer,
@@ -99,17 +110,38 @@ public:
         };
     };
 
-    typedef struct
+    class ConfigType
+    {
+    public:
+        enum {
+            Last
+        };
+    };
+
+    typedef struct CoordinatesType
     {
         double x;
         double y;
         double z;
+        bool operator==(CoordinatesType coords)
+        {
+            return (coords.x == x) && (coords.y == y) && (coords.z == z);
+        }
+        bool operator!=(CoordinatesType coords)
+        {
+            return !(*this == coords);
+        }
     } CoordinatesType;
 
 protected:
 
+    QString machineName;
+    QString machineVersion;
+    QString machineBuild;
+
     int state;
 
+    quint64 features;
     quint64 infos;
     quint64 switches;
     quint64 actioners;
@@ -128,33 +160,38 @@ protected:
     int lineNumber;
     int fOverride, rOverride, spindleSpeedOverride;
 
-    QStringList errors, status;
+    QStringList errors, states;
     QString lastLine;
 
-    QMap<uint, double> config;
+    QMap<uint, QString> config;
 
     Port *port;
 public:
     Machine(Port *port);
     virtual ~Machine() {}
 
-    virtual void OpenConfiguration(QWidget *parent)=0;
+    virtual void openConfiguration(QWidget *parent)=0;
 
-    virtual bool sendGCode(QString gcode, bool withNewline = true, bool noLog = false);
+    virtual bool sendCommand(QString gcode, bool withNewline = true, bool noLog = false);
     virtual bool ask(int commandCode, int commandArg = 0, bool noLog = false) = 0;
 
     virtual bool isState( int type );
     virtual int getState();
     virtual const QString &getStateString();
 
+    virtual QString getMachineVersion();
+
+    virtual quint64 getFeatures();
+    virtual bool hasFeature( int flag );
+
     virtual quint64 getInfos();
-    virtual bool hasInfo( int type );
+    virtual bool hasInfo( int flag );
 
     virtual quint64 getSwitches();
-    virtual bool hasSwitch( int type );
+    virtual bool hasSwitch( int flag );
 
     virtual quint64 getActions();
-    virtual bool hasAction( int type );
+    virtual bool hasAction( int flag );
 
     virtual CoordinatesType getMachineCoordinates();
     virtual CoordinatesType getWorkingCoordinates();
@@ -182,18 +219,32 @@ public:
 
     virtual const QString &getLastLine();
 
+    virtual void setXWorkingZero()=0;
+    virtual void setYWorkingZero()=0;
+    virtual void setZWorkingZero()=0;
+
 public slots:
     virtual void parse(QString &line)=0;
 
 signals:
-    void stateChanged();
-    void titleUpdated();
-    void statusUpdated();
-    void configUpdated();
-    void infoUpdated();
-    void error(int errorCode);
-    void commandExecuted();
-    void command(int commandCode);
+    void versionUpdated(); // When name or version has been found or changed
+
+    void statusUpdated(); // When status of machine has been received (changed or not)
+
+    void stateUpdated();
+    void resetDone();
+    void lineNumberUpdated();
+    void coordinatesUpdated();
+    void switchesUpdated();
+    void actionsUpdated();
+    void ratesUpdated();
+    void buffersUpdated();
+
+    void configUpdated(); // When configuration has been received
+    void infoUpdated();   // When information has been received
+    void error(int errorCode); // When error has been received
+    void commandExecuted();    // When command has been accepted (not necesserally executed !!!)
+    void commandSent(QString &gcode); // When a command is send to machine
 
 };
 
