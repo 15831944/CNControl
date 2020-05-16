@@ -112,13 +112,13 @@ bool GrblConfiguration::getConfiguration(Grbl *grbl)
     grbl->config[ Grbl::ConfigType::configStepPulse         ] = ui->stepPulseLineEdit->text();
     grbl->config[ Grbl::ConfigType::configStepIdleDelay     ] = ui->stepIdleDelayLineEdit->text();
     grbl->config[ Grbl::ConfigType::configStepPortInvert    ] = QString("%1").arg(
-                                                                ui->xStepPortInvertCheckBox->isChecked()?xFlagMask:noFlagMask |
-                                                                ui->yStepPortInvertCheckBox->isChecked()?yFlagMask:noFlagMask |
-                                                                ui->zStepPortInvertCheckBox->isChecked()?zFlagMask:noFlagMask );
+                                                                (ui->xStepPortInvertCheckBox->isChecked()?xFlagMask:noFlagMask) |
+                                                                (ui->yStepPortInvertCheckBox->isChecked()?yFlagMask:noFlagMask) |
+                                                                (ui->zStepPortInvertCheckBox->isChecked()?zFlagMask:noFlagMask) );
     grbl->config[ Grbl::ConfigType::configDirPortInvert     ] = QString("%1").arg(
-                                                                ui->xDirPortInvertCheckBox->isChecked()?xFlagMask:noFlagMask |
-                                                                ui->yDirPortInvertCheckBox->isChecked()?yFlagMask:noFlagMask |
-                                                                ui->zDirPortInvertCheckBox->isChecked()?zFlagMask:noFlagMask );
+                                                                (ui->xDirPortInvertCheckBox->isChecked()?xFlagMask:noFlagMask) |
+                                                                (ui->yDirPortInvertCheckBox->isChecked()?yFlagMask:noFlagMask) |
+                                                                (ui->zDirPortInvertCheckBox->isChecked()?zFlagMask:noFlagMask) );
     grbl->config[ Grbl::ConfigType::configStepEnableInvert  ] = ui->stepEnableInvertCheckBox->isChecked()?'1':'0';
     grbl->config[ Grbl::ConfigType::configLimitPinInvert    ] = ui->limitPinsInvertCheckBox->isChecked()?'1':'0';
     grbl->config[ Grbl::ConfigType::configProbePinInvert    ] = ui->probePinInvertCheckBox->isChecked()?'1':'0';
@@ -130,9 +130,9 @@ bool GrblConfiguration::getConfiguration(Grbl *grbl)
     grbl->config[ Grbl::ConfigType::configHardLimits        ] = ui->hardLimitsCheckBox->isChecked()?'1':'0';
     grbl->config[ Grbl::ConfigType::configHomingCycle       ] = ui->homingCycleCheckBox->isChecked()?'1':'0';
     grbl->config[ Grbl::ConfigType::configHomingDirInvert   ] = QString("%1").arg(
-                                                                ui->xHomingDirInvertCheckBox->isChecked()?xFlagMask:noFlagMask |
-                                                                ui->yHomingDirInvertCheckBox->isChecked()?yFlagMask:noFlagMask |
-                                                                ui->zHomingDirInvertCheckBox->isChecked()?zFlagMask:noFlagMask );
+                                                                (ui->xHomingDirInvertCheckBox->isChecked()?xFlagMask:noFlagMask) |
+                                                                (ui->yHomingDirInvertCheckBox->isChecked()?yFlagMask:noFlagMask) |
+                                                                (ui->zHomingDirInvertCheckBox->isChecked()?zFlagMask:noFlagMask) );
     grbl->config[ Grbl::ConfigType::configHomingFeed        ] = ui->homingFeedLineEdit->text();
     grbl->config[ Grbl::ConfigType::configHomingSeek        ] = ui->homingSeekLineEdit->text();
     grbl->config[ Grbl::ConfigType::configHomingDebounce    ] = ui->homingDebounceLineEdit->text();

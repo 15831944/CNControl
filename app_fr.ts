@@ -19,7 +19,7 @@
         <location filename="grbl.cpp" line="14"/>
         <source>Run</source>
         <comment>Grbl state</comment>
-        <translation>Mouvement</translation>
+        <translation>Travail</translation>
     </message>
     <message>
         <location filename="grbl.cpp" line="15"/>
@@ -31,7 +31,7 @@
         <location filename="grbl.cpp" line="16"/>
         <source>Jog</source>
         <comment>Grbl state</comment>
-        <translation>Manuel</translation>
+        <translation>Déplacement</translation>
     </message>
     <message>
         <location filename="grbl.cpp" line="17"/>
@@ -361,17 +361,17 @@
     <message>
         <location filename="grblconfiguration.ui" line="407"/>
         <source>Homing dir invert</source>
-        <translation type="unfinished">Inversion direction Homing</translation>
+        <translation>Inversion signal direction Homing</translation>
     </message>
     <message>
         <location filename="grblconfiguration.ui" line="420"/>
         <source>Direction port invert</source>
-        <translation type="unfinished">Inversion direction</translation>
+        <translation>Inversion signal direction</translation>
     </message>
     <message>
         <location filename="grblconfiguration.ui" line="730"/>
         <source>Step port invert</source>
-        <translation type="unfinished">Inversion pas</translation>
+        <translation>Inversion signal pas</translation>
     </message>
     <message>
         <location filename="grblconfiguration.ui" line="525"/>
@@ -381,12 +381,12 @@
     <message>
         <location filename="grblconfiguration.ui" line="308"/>
         <source>Probe pin invert</source>
-        <translation type="unfinished">Inversion probe</translation>
+        <translation>Inversion signal (probe)</translation>
     </message>
     <message>
         <location filename="grblconfiguration.ui" line="511"/>
         <source>Step enable invert</source>
-        <translation type="unfinished">invertion activation</translation>
+        <translation>invertion signal activation</translation>
     </message>
     <message>
         <location filename="grblconfiguration.ui" line="427"/>
@@ -396,7 +396,7 @@
     <message>
         <location filename="grblconfiguration.ui" line="518"/>
         <source>Limit pins invert</source>
-        <translation type="unfinished">Inversion limites</translation>
+        <translation>Inversion signal limites</translation>
     </message>
     <message>
         <location filename="grblconfiguration.ui" line="105"/>
@@ -461,7 +461,7 @@
     <message>
         <location filename="grblconfiguration.ui" line="738"/>
         <source>Homing</source>
-        <translation type="unfinished">Homing</translation>
+        <translation>Homing</translation>
     </message>
     <message>
         <location filename="grblconfiguration.ui" line="750"/>
@@ -483,7 +483,7 @@
     <message>
         <location filename="grblconfiguration.ui" line="831"/>
         <source>Enable homing</source>
-        <translation type="unfinished">Activer Homing</translation>
+        <translation>Activer Homing</translation>
     </message>
     <message>
         <location filename="grblconfiguration.ui" line="844"/>
@@ -514,12 +514,12 @@
     <message>
         <location filename="grblconfiguration.ui" line="898"/>
         <source>Axes</source>
-        <translation></translation>
+        <translation>Axes</translation>
     </message>
     <message>
         <location filename="grblconfiguration.ui" line="938"/>
         <source>Acceleration</source>
-        <translation></translation>
+        <translation>Accélération</translation>
     </message>
     <message>
         <location filename="grblconfiguration.ui" line="964"/>
@@ -550,364 +550,390 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="mainwindow.ui" line="20"/>
+        <location filename="mainwindow.ui" line="23"/>
         <source>MainWindow</source>
         <translation>GcodeSender</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="143"/>
+        <location filename="mainwindow.ui" line="1024"/>
         <source>&lt;Choose port&gt;</source>
         <translation>&lt;Choisir le port&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="151"/>
+        <location filename="mainwindow.ui" line="1045"/>
         <source>Connect</source>
         <translation>Connecter</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="194"/>
+        <location filename="mainwindow.ui" line="712"/>
         <source>Coordinates</source>
         <translation>Coordonnées</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="122"/>
+        <location filename="mainwindow.ui" line="1064"/>
         <source>Unknown</source>
         <translation>Inconnu</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="226"/>
+        <location filename="mainwindow.ui" line="943"/>
         <source>Working</source>
         <translation>Travail</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="292"/>
+        <location filename="mainwindow.ui" line="761"/>
         <source>Y</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="377"/>
-        <location filename="mainwindow.ui" line="1204"/>
+        <location filename="mainwindow.ui" line="959"/>
+        <location filename="mainwindow.ui" line="1107"/>
         <source>Machine</source>
         <translation>Machine</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="436"/>
+        <location filename="mainwindow.ui" line="775"/>
         <source>X</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="464"/>
+        <location filename="mainwindow.ui" line="768"/>
         <source>Z</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="788"/>
+        <location filename="mainwindow.ui" line="278"/>
         <source>Cycle Start</source>
         <translation>Démarrage</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="707"/>
+        <location filename="mainwindow.ui" line="116"/>
         <source>Y Limit</source>
         <translation>Limite Y</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="839"/>
+        <location filename="mainwindow.ui" line="421"/>
         <source>Spindle</source>
         <translation>Broche</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="570"/>
+        <location filename="mainwindow.ui" line="493"/>
         <source>Homing</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="905"/>
+        <location filename="mainwindow.ui" line="391"/>
         <source>Mist</source>
         <oldsource>Mist   </oldsource>
         <translation>Brouillard</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="761"/>
+        <location filename="mainwindow.ui" line="251"/>
         <source>Feed Hold</source>
         <translation>Pause</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="815"/>
-        <location filename="mainwindow.ui" line="1348"/>
+        <location filename="mainwindow.ui" line="305"/>
+        <location filename="mainwindow.ui" line="1251"/>
         <source>Reset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="734"/>
+        <location filename="mainwindow.ui" line="224"/>
         <source>Door</source>
         <translation>Porte</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="872"/>
+        <location filename="mainwindow.ui" line="460"/>
         <source>Flood</source>
         <oldsource>Flood </oldsource>
         <translation>Inondation</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="653"/>
+        <location filename="mainwindow.ui" line="197"/>
         <source>Z Limit</source>
         <translation>Limite Z</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="597"/>
+        <location filename="mainwindow.ui" line="143"/>
         <source>X Limit</source>
         <translation>Limite X</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="680"/>
+        <location filename="mainwindow.ui" line="170"/>
         <source>Probe</source>
         <translation>Sonde</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="995"/>
+        <location filename="mainwindow.ui" line="571"/>
         <source>Feed Rate :</source>
         <translation>Vitesse :</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1005"/>
+        <location filename="mainwindow.ui" line="658"/>
         <source>Blocks :</source>
         <translation>Blocs :</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1031"/>
+        <location filename="mainwindow.ui" line="678"/>
         <source>Spindle speed :</source>
         <translation>Vitesse de rotation :</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1041"/>
+        <location filename="mainwindow.ui" line="668"/>
         <source>Receive :</source>
         <translation>Reception :</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1095"/>
+        <location filename="mainwindow.ui" line="548"/>
         <source>%p%</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1161"/>
+        <location filename="mainwindow.ui" line="993"/>
         <source>Command :</source>
         <translation>Commande :</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1193"/>
+        <location filename="mainwindow.ui" line="1096"/>
         <source>File</source>
         <translation>Fichier</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1294"/>
+        <location filename="mainwindow.ui" line="1197"/>
         <source>&amp;Quit</source>
         <translation>&amp;Quitter</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1306"/>
+        <location filename="mainwindow.ui" line="1209"/>
         <source>Machine Config</source>
         <translation>Confguration machine</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1377"/>
+        <location filename="mainwindow.ui" line="1280"/>
         <source>Parameters</source>
         <translation>Parametres</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1224"/>
+        <location filename="mainwindow.ui" line="1127"/>
         <source>?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="621"/>
-        <location filename="mainwindow.ui" line="637"/>
+        <location filename="mainwindow.ui" line="75"/>
+        <source>GCode editor</source>
+        <translation>Éditeur GCode</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="95"/>
+        <source>Control</source>
+        <translation>Contrôle</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="101"/>
+        <source>Switches</source>
+        <translation>Contacts</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="326"/>
+        <source>Actions</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="344"/>
+        <location filename="mainwindow.ui" line="366"/>
         <source>To Zero</source>
         <translation>Vers Zéro</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1234"/>
+        <location filename="mainwindow.ui" line="514"/>
+        <location filename="mainwindow.ui" line="973"/>
+        <source>Informations</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="1137"/>
         <source>File Tool Bar</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1255"/>
+        <location filename="mainwindow.ui" line="1158"/>
         <source>Machine Tool Bar</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1282"/>
+        <location filename="mainwindow.ui" line="1185"/>
         <source>&amp;Open</source>
         <translation>&amp;Ouvrir</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1285"/>
+        <location filename="mainwindow.ui" line="1188"/>
         <source>Alt+O</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1297"/>
+        <location filename="mainwindow.ui" line="1200"/>
         <source>Alt+Q</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1309"/>
+        <location filename="mainwindow.ui" line="1212"/>
         <source>Alt+C</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1319"/>
+        <location filename="mainwindow.ui" line="1222"/>
         <source>Pause</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1329"/>
+        <location filename="mainwindow.ui" line="1232"/>
         <source>Stop</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1339"/>
+        <location filename="mainwindow.ui" line="1242"/>
         <source>Run</source>
         <translation>Démarrage</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1357"/>
+        <location filename="mainwindow.ui" line="1260"/>
         <source>&amp;New</source>
         <translation>&amp;Nouveau</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1362"/>
+        <location filename="mainwindow.ui" line="1265"/>
         <source>About</source>
         <translation>À propos</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1372"/>
+        <location filename="mainwindow.ui" line="1275"/>
         <source>Step</source>
         <translation>Pas à pas</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="79"/>
+        <location filename="mainwindow.cpp" line="80"/>
         <source>Machine Error</source>
         <translation>Erreur machine</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="79"/>
+        <location filename="mainwindow.cpp" line="80"/>
         <source>No machine connected.</source>
         <translation>Aucune machine connectée.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="89"/>
+        <location filename="mainwindow.cpp" line="90"/>
         <source>Port Error</source>
         <translation>Erreur port</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="89"/>
+        <location filename="mainwindow.cpp" line="90"/>
         <source>No port available.</source>
         <translation>Aucun port disponible.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="99"/>
+        <location filename="mainwindow.cpp" line="100"/>
         <source>Connect</source>
         <comment>Connect button</comment>
         <translation>Connecter</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="128"/>
+        <location filename="mainwindow.cpp" line="139"/>
         <source>Disconnect</source>
         <comment>Disconnect button</comment>
         <translation>Déconnecter</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="173"/>
+        <location filename="mainwindow.cpp" line="222"/>
         <source>Open Gcode File</source>
         <translation>Ouvrir un fichier Gcode</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="174"/>
+        <location filename="mainwindow.cpp" line="223"/>
         <source>gcode files (*.tap;*.nc;*.gcode);;All Files (*)</source>
         <translation>Fichiers Gcode (*.tap;*.nc;*.gcode);Tous les fichiers (*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="189"/>
+        <location filename="mainwindow.cpp" line="238"/>
         <source>Save Gcode file</source>
         <comment>Save dialog caption</comment>
         <translation>Enregistrement du Gcode</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="189"/>
+        <location filename="mainwindow.cpp" line="238"/>
         <source>Do you want to save current file ?</source>
         <translation>Voulez-vous enregistrer le fichier GCode ?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="230"/>
+        <location filename="mainwindow.cpp" line="279"/>
         <source>Port %1 added</source>
         <translation>Port %1 ajouté</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="244"/>
+        <location filename="mainwindow.cpp" line="293"/>
         <source>Port %1 removed</source>
         <translation>Port %1 retiré</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="250"/>
+        <location filename="mainwindow.cpp" line="299"/>
         <source>Port %1 inserted</source>
         <translation>Port %1 inséré</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="281"/>
+        <location filename="mainwindow.cpp" line="330"/>
         <source>Starting machine.</source>
         <comment>StatusBar message</comment>
         <translation>Démarrage machine.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="305"/>
+        <location filename="mainwindow.cpp" line="354"/>
         <source>Connection Error</source>
         <comment>Error dialog caption</comment>
         <translation>Erreur de connexion</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="306"/>
+        <location filename="mainwindow.cpp" line="355"/>
         <source>Unable to connect to %1
 %2</source>
         <translation>Impossible de se connecter à %1\n%2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="318"/>
+        <location filename="mainwindow.cpp" line="367"/>
         <source>Critical Error</source>
         <comment>Port error dialog caption</comment>
         <translation>Erreur critique</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="323"/>
+        <location filename="mainwindow.cpp" line="372"/>
         <source>Critical Error</source>
         <comment>Port warning dialog caption</comment>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="342"/>
+        <location filename="mainwindow.cpp" line="391"/>
         <source>Error %1: %2</source>
         <comment>Machine error message</comment>
         <translation>Erreur %1 : %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="343"/>
+        <location filename="mainwindow.cpp" line="392"/>
         <source>Machine Error</source>
         <comment>Machine error dialog caption</comment>
         <translation>Erreur Machine</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="542"/>
+        <location filename="mainwindow.cpp" line="591"/>
         <source>%1 / %2</source>
         <comment>blockBuffer format</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="550"/>
+        <location filename="mainwindow.cpp" line="599"/>
         <source>%1 / %2</source>
         <comment>rxBuffer format</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="886"/>
+        <location filename="mainwindow.cpp" line="935"/>
         <source>Resetting machine.</source>
         <comment>StatusBar message</comment>
         <translation>Réinitialisation machine.</translation>

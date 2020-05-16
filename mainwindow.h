@@ -40,7 +40,10 @@ public:
     bool gcodeSend(QString gcode);
     void sendNextGCode();
 
-//    const QString lastError();
+    void resetMachine();
+    void uncheckJogButtons();
+    void zeroWorking();
+    void zeroMachine();
 
 public slots:
     void about();
@@ -65,7 +68,7 @@ private slots:
     void onStatusUpdated();
     void gcodeChanged();    
 
-    void updatePorts();
+    void portsUpdate();
     void infoUpdated();
 
     void onPortError(Port::PortError error);
@@ -107,20 +110,36 @@ private slots:
     void on_yZeroToolButton_clicked();
     void on_zZeroToolButton_clicked();
 
+    void on_actionConfig_triggered();
+    void on_ZeroPushButton_clicked();
+    void on_pushButton_clicked();
+
+    void on_xMinusToolButton_clicked();
+    void on_xPlusToolButton_clicked();
+    void on_yMinusToolButton_clicked();
+    void on_yPlusToolButton_clicked();
+    void on_zPlusToolButton_clicked();
+    void on_zMinusToolButton_clicked();
+    void on_zSafeToolButton_clicked();
+
+    void on_resetToolButton_clicked();
+    void on_cancelJogToolButton_clicked();
+
+    void on_interval1mmToolButton_clicked();
+    void on_interval10mmToolButton_clicked();
+    void on_interval100mmToolButton_clicked();
+
+    void on_runToolButton_clicked();
+    void on_stepToolButton_clicked();
+    void on_pauseToolButton_clicked();
+
+    void on_stopToolButton_clicked();
     void on_actionNew_triggered();
 
-    void on_actionRun_triggered();
-    void on_actionStep_triggered();
-    void on_actionPause_triggered();
-    void on_actionStop_triggered();
-
-    void on_homePushButton_clicked();
-
-    void on_actionConfig_triggered();
-
-    void on_ZeroPushButton_clicked();
-
-    void on_pushButton_clicked();
+    void on_zeroWorkingPushButton_clicked();
+    void on_zeroMachinePushButton_clicked();
+    void on_homeWorkingToolButton_clicked();
+    void on_homeMachineToolButton_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -131,6 +150,7 @@ private:
     QStringList devicesList;
     Machine *machine;
     Port *port;
+    int jogInterval;
 
     QStringList gcode;
     int gcodeIndex;

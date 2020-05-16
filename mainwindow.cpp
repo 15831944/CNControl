@@ -13,6 +13,7 @@
 #include <QDebug>
 
 #include "grbl.h"
+#include "glineedit.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -35,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->spindleRateProgressBar->setMaximum(255);
 
-    connect( ui->gcodeComboBox->lineEdit(), &QLineEdit::editingFinished, this, &MainWindow::gcodeChanged);
+    connect( ui->gcodeComboBox->lineEdit(), &GLineEdit::editingFinished, this, &MainWindow::gcodeChanged);
 
 //    connect( ui->xWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(xWorkingLineEdit_focusOut(QFocusEvent *)));
 //    connect( ui->yWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(yWorkingLineEdit_focusOut(QFocusEvent *)));
@@ -50,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
     port = serial;
 
     machine = nullptr;
+    jogInterval = 10;
 
     QFont font;
     font.setFamily("Courier");
@@ -58,8 +60,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gcodeCodeEditor->setFont(font);
     highlighter = new Highlighter(ui->gcodeCodeEditor->document());
 
-    this->updatePorts();
-    connect( &portsTimer, SIGNAL(timeout()), this, SLOT(updatePorts()) );
+    this->portsUpdate();
+    connect( &portsTimer, SIGNAL(timeout()), this, SLOT(portsUpdate()) );
     portsTimer.start(5000);
 
     setUIDisconnected();
@@ -92,60 +94,108 @@ bool MainWindow::portOk()
     return true;
 }
 
-void MainWindow::setUIDisconnected()
-{
-    ui->statePushButton->setEnabled(false);
-
-    ui->connectPushButton->setText(tr("Connect", "Connect button"));
-    ui->connectPushButton->setEnabled(true);
-
-    ui->devicesComboBox->setEnabled(true);
-    ui->gcodeComboBox->setEnabled(false);
-
-    ui->actionGridLayout->setEnabled(false);
-    ui->coordsGroupBox->setEnabled(false);
-
-    ui->xMachineLineEdit->setText("-");
-    ui->yMachineLineEdit->setText("-");
-    ui->zMachineLineEdit->setText("-");
-
-    ui->xWorkingLineEdit->setText("-");
-    ui->yWorkingLineEdit->setText("-");
-    ui->zWorkingLineEdit->setText("-");
-
-    ui->blockBufferValue->setText("-");
-    ui->rxBufferValue->setText("-");
-
-    ui->toolBar->setEnabled(false);
-
-    moveMachine = moveWorking = false;
-}
-
 void MainWindow::setUIConnected()
 {
     ui->statePushButton->setEnabled(true);
+    ui->resetToolButton->setEnabled(true);
 
     ui->connectPushButton->setText(tr("Disconnect","Disconnect button"));
     ui->connectPushButton->setEnabled(true);
 
     ui->devicesComboBox->setEnabled(false);
+    ui->switchesGroupBox->setEnabled(true);
     ui->gcodeComboBox->setEnabled(true);
 
-    ui->actionGridLayout->setEnabled(true);
-    ui->coordsGroupBox->setEnabled(true);
+    ui->actionRun->setEnabled(true);
+    ui->actionStep->setEnabled(true);
+    ui->actionPause->setEnabled(true);
+    ui->actionStop->setEnabled(true);
 
-    ui->toolBar->setEnabled(true);
+    ui->xZeroToolButton->setEnabled(true);
+    ui->xMachineLineEdit->setEnabled(true);
+    ui->xWorkingLineEdit->setEnabled(true);
+
+    ui->yZeroToolButton->setEnabled(true);
+    ui->yMachineLineEdit->setEnabled(true);
+    ui->yWorkingLineEdit->setEnabled(true);
+
+    ui->zZeroToolButton->setEnabled(true);
+    ui->zMachineLineEdit->setEnabled(true);
+    ui->zWorkingLineEdit->setEnabled(true);
 
     moveMachine = moveWorking = false;
     onCoordinatesUpdated();
 }
 
+void MainWindow::setUIDisconnected()
+{
+    ui->statePushButton->setEnabled(false);
+    ui->statePushButton->setIcon(QIcon(":/images/leds/led_white.png"));
+    ui->statePushButton->setText(tr("Unknown"));
+    ui->resetToolButton->setEnabled(false);
+
+    ui->connectPushButton->setText(tr("Connect", "Connect button"));
+    ui->connectPushButton->setEnabled(true);
+
+    ui->devicesComboBox->setEnabled(true);
+    ui->coordsGroupBox->setEnabled(false);
+    ui->jogGroupBox->setEnabled(false);
+    ui->actionGroupBox->setEnabled(false);
+    ui->switchesGroupBox->setEnabled(false);
+    ui->commandsWidget->setEnabled(false);
+    ui->gcodeComboBox->setEnabled(false);
+
+    ui->actionRun->setEnabled(false);
+    ui->actionStep->setEnabled(false);
+    ui->actionPause->setEnabled(false);
+    ui->actionStop->setEnabled(false);
+
+    ui->xZeroToolButton->setEnabled(false);
+    ui->xMachineLineEdit->setEnabled(false);
+    ui->xWorkingLineEdit->setEnabled(false);
+    ui->xMachineLineEdit->setText("-");
+    ui->xWorkingLineEdit->setText("-");
+
+    ui->yZeroToolButton->setEnabled(false);
+    ui->yMachineLineEdit->setEnabled(false);
+    ui->yWorkingLineEdit->setEnabled(false);
+    ui->yMachineLineEdit->setText("-");
+    ui->yWorkingLineEdit->setText("-");
+
+    ui->zZeroToolButton->setEnabled(false);
+    ui->zMachineLineEdit->setEnabled(false);
+    ui->zWorkingLineEdit->setEnabled(false);
+    ui->zMachineLineEdit->setText("-");
+    ui->zWorkingLineEdit->setText("-");
+
+    ui->blockBufferValue->setText("-");
+    ui->rxBufferValue->setText("-");
+
+    moveMachine = moveWorking = false;
+}
+
 void MainWindow::setUISleeping()
 {
-    ui->actionGridLayout->setEnabled(false);
+    ui->commandsWidget->setEnabled(false);
     ui->gcodeComboBox->setEnabled(false);
-    ui->coordsGroupBox->setEnabled(false);
-    ui->toolBar->setEnabled(false);
+
+    ui->actionRun->setEnabled(true);
+    ui->actionStep->setEnabled(true);
+    ui->actionPause->setEnabled(true);
+    ui->actionStop->setEnabled(true);
+
+    ui->xZeroToolButton->setEnabled(true);
+    ui->xMachineLineEdit->setEnabled(true);
+    ui->xWorkingLineEdit->setEnabled(true);
+
+    ui->yZeroToolButton->setEnabled(true);
+    ui->yMachineLineEdit->setEnabled(true);
+    ui->yWorkingLineEdit->setEnabled(true);
+
+    ui->zZeroToolButton->setEnabled(true);
+    ui->zMachineLineEdit->setEnabled(true);
+    ui->zWorkingLineEdit->setEnabled(true);
+
 }
 
 void MainWindow::about()
@@ -211,7 +261,7 @@ void MainWindow::on_actionOpen_triggered()
 
 
 //----------------------------------------------------------------------------------------------------
-void MainWindow::updatePorts(void)
+void MainWindow::portsUpdate(void)
 {
     if (!port) return; // security
     QStringList devicesList = port->getDevices();
@@ -219,6 +269,7 @@ void MainWindow::updatePorts(void)
 
     // Prevoir de mettre j à 0 si la liste ne contient pas <Select port>
     int i=0, j=1; // ignore first item in list : <Select port>
+    int lastAddedIndex = 0;
 
 #define L1Finished() (i >= devicesList.size())
 #define L2Finished() (j >= ui->devicesComboBox->count())
@@ -227,8 +278,9 @@ void MainWindow::updatePorts(void)
         if (L2Finished())
         {
             ui->devicesComboBox->addItem( devicesList.at(i) );
-            ui->statusBar->showMessage(QString(tr("Port %1 added")).arg(devicesList.at(i)), 2000);
+            ui->statusbar->showMessage(QString(tr("Port %1 added")).arg(devicesList.at(i)), 2000);
             qDebug() << "Port" << devicesList.at(i).toUtf8().data() << "added.";
+            lastAddedIndex = j;
             i++; j++;
         }
         else if (L1Finished() || (ui->devicesComboBox->itemText(j) > devicesList.at(i)))
@@ -241,14 +293,15 @@ void MainWindow::updatePorts(void)
                     closePort();
             }
             ui->devicesComboBox->removeItem(j);
-            ui->statusBar->showMessage(QString(tr("Port %1 removed")).arg(device), 2000);
+            ui->statusbar->showMessage(QString(tr("Port %1 removed")).arg(device), 2000);
             qDebug() << "Port" << device.toUtf8().data() << "removed.";
         }
         else if (ui->devicesComboBox->itemText(j) < devicesList.at(i))
         {
             ui->devicesComboBox->insertItem(j, devicesList.at(i) );
-            ui->statusBar->showMessage(QString(tr("Port %1 inserted")).arg(devicesList.at(i)), 2000);
+            ui->statusbar->showMessage(QString(tr("Port %1 inserted")).arg(devicesList.at(i)), 2000);
             qDebug() << "Port" << devicesList.at(i).toUtf8().data() << "inserted.";
+            lastAddedIndex = j;
             i++;
         }
         else
@@ -256,7 +309,8 @@ void MainWindow::updatePorts(void)
             i++; j++;
         }
     }
-
+    if (lastAddedIndex && (ui->devicesComboBox->currentIndex() == 0))
+        ui->devicesComboBox->setCurrentIndex(lastAddedIndex);
 }
 
 void MainWindow::openPort()
@@ -278,7 +332,7 @@ void MainWindow::openPort()
                 delete machine;
 
             qDebug() << "Connected to" << portName.toUtf8().data();
-            ui->statusBar->showMessage(tr("Starting machine.", "StatusBar message"));
+            ui->statusbar->showMessage(tr("Starting machine.", "StatusBar message"));
             machine = new Grbl(port);
 
             connect( port, SIGNAL(error(Port::PortError)), this, SLOT(onPortError(Port::PortError)));
@@ -302,7 +356,7 @@ void MainWindow::openPort()
         else
         {
             qDebug() << "Error connecting to " << portName.toUtf8();
-            QMessageBox::critical(this,tr("Connection Error","Error dialog caption"),
+            QMessageBox::critical(this,tr("Connection Error", "Error dialog caption"),
                 QString(tr("Unable to connect to %1\n%2")).arg(portName).arg(port->errorString()));
             closePort();
         }
@@ -360,42 +414,81 @@ void MainWindow::onStateUpdated()
     switch(machine->getState())
     {
     case Machine::StateType::stateUnknown:
-//        QPixmap pixmap("~/Images/icones/leds/led_white.png");
-//        QIcon ButtonIcon(pixmap);
-//        ui->statusPushButton->setIcon(ButtonIcon);
-//        ui->statusPushButton->setIconSize(pixmap.rect().size());
+        ui->statePushButton->setIcon(QIcon(":/images/leds/led_white.png"));
+        ui->coordsGroupBox->setEnabled(false);
+        ui->jogGroupBox->setEnabled(false);
+        ui->actionGroupBox->setEnabled(false);
+        ui->commandsWidget->setEnabled(false);
         break;
     case Machine::StateType::stateIdle:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_green.png"));
+        ui->coordsGroupBox->setEnabled(true);
+        ui->jogGroupBox->setEnabled(true);
+        ui->actionGroupBox->setEnabled(true);
+        ui->commandsWidget->setEnabled(true);
+
+        uncheckJogButtons();
         moveMachine = moveWorking = false;
         break;
     case Machine::StateType::stateHold:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_orange.png"));
+        ui->coordsGroupBox->setEnabled(false);
+        ui->jogGroupBox->setEnabled(false);
+        ui->actionGroupBox->setEnabled(false);
+        ui->commandsWidget->setEnabled(false);
         if (!ui->statePushButton->isChecked())
             ui->statePushButton->setChecked(true);
         break;
     case Machine::StateType::stateJog:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_yellow.png"));
+        ui->coordsGroupBox->setEnabled(false);
+        ui->jogGroupBox->setEnabled(true);
+        ui->actionGroupBox->setEnabled(true);
+        ui->commandsWidget->setEnabled(false);
         break;
     case Machine::StateType::stateRun:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_green.png"));
+        ui->coordsGroupBox->setEnabled(true);
+        ui->jogGroupBox->setEnabled(false);
+        ui->actionGroupBox->setEnabled(true);
+        ui->commandsWidget->setEnabled(true);
         break;
     case Machine::StateType::stateDoor:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_orange.png"));
+        ui->coordsGroupBox->setEnabled(false);
+        ui->jogGroupBox->setEnabled(false);
+        ui->actionGroupBox->setEnabled(false);
+        ui->commandsWidget->setEnabled(false);
         break;
     case Machine::StateType::stateHome:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_violet.png"));
+        ui->coordsGroupBox->setEnabled(false);
+        ui->jogGroupBox->setEnabled(false);
+        ui->actionGroupBox->setEnabled(false);
+        ui->commandsWidget->setEnabled(false);
         break;
     case Machine::StateType::stateAlarm:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_red.png"));
+        ui->coordsGroupBox->setEnabled(false);
+        ui->jogGroupBox->setEnabled(false);
+        ui->actionGroupBox->setEnabled(false);
+        ui->commandsWidget->setEnabled(false);
         if (!ui->statePushButton->isChecked())
             ui->statePushButton->setChecked(true);
         break;
     case Machine::StateType::stateCheck:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_blue.png"));
+        ui->coordsGroupBox->setEnabled(false);
+        ui->jogGroupBox->setEnabled(false);
+        ui->actionGroupBox->setEnabled(false);
+        ui->commandsWidget->setEnabled(false);
         break;
     case Machine::StateType::stateSleep:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_black.png"));
+        ui->coordsGroupBox->setEnabled(false);
+        ui->jogGroupBox->setEnabled(false);
+        ui->actionGroupBox->setEnabled(false);
+        ui->commandsWidget->setEnabled(false);
         setUISleeping();
         break;
     }
@@ -563,7 +656,7 @@ void MainWindow::onStatusUpdated()
     if (!machineOk()) return; // security
 
     // Display status in statusBar for debug ???
-    ui->statusBar->showMessage( machine->getLastLine(), 250);
+    ui->statusbar->showMessage( machine->getLastLine(), 250);
 }
 
 void MainWindow::gcodeChanged()
@@ -624,8 +717,8 @@ void MainWindow::runGcode(bool step)
             machine->ask(Grbl::CommandType::commandOverrideSpindle, Grbl::SubCommandType::commandReset);
             machine->ask(Grbl::CommandType::commandOverrideFeed, Grbl::SubCommandType::commandReset);
             machine->ask(Grbl::CommandType::commandOverrideRapid, Grbl::SubCommandType::commandReset);
-            machine->ask(Grbl::CommandType::commandOverrideCoolantMistToggle);
-            machine->ask(Grbl::CommandType::commandOverrideCoolantMistToggle);
+            // machine->ask(Grbl::CommandType::commandOverrideCoolantMistToggle);
+            // machine->ask(Grbl::CommandType::commandOverrideCoolantMistToggle);
 
         }
     }
@@ -686,6 +779,29 @@ void MainWindow::sendNextGCode()
         stopGcode();
     }
 };
+
+void MainWindow::resetMachine()
+{
+    if (!machineOk()) return; // security
+    ui->statusbar->showMessage(tr("Resetting machine.", "StatusBar message"));
+    machine->ask(Machine::CommandType::commandReset);
+}
+
+void MainWindow::uncheckJogButtons()
+{
+    ui->xMinusToolButton->setChecked(false);
+    ui->xPlusToolButton->setChecked(false);
+    ui->yMinusToolButton->setChecked(false);
+    ui->yPlusToolButton->setChecked(false);
+    ui->zMinusToolButton->setChecked(false);
+    ui->zPlusToolButton->setChecked(false);
+
+    ui->homeMachineToolButton->setChecked(false);
+    ui->homeWorkingToolButton->setChecked(false);
+
+    ui->zSafeToolButton->setChecked(false);
+    ui->cancelJogToolButton->setChecked(false);
+}
 
 //----------------------------------------------------------------------------------------------------
 void MainWindow::on_xWorkingLineEdit_focusOut(QFocusEvent*)
@@ -820,7 +936,14 @@ void MainWindow::on_spindlePushButton_clicked(bool checked)
         }
     }
     else
-        machine->ask(Grbl::CommandType::commandOverrideSpindle, Grbl::SubCommandType::commandStop);
+    {
+        qDebug() << "Sending spindle override";
+        if (machine->ask(Grbl::CommandType::commandOverrideSpindle, Grbl::SubCommandType::commandStop))
+        {
+            ui->spindlePushButton->setChecked(false);
+        }
+
+    }
 }
 
 void MainWindow::on_coolantFloodPushButton_clicked(bool checked)
@@ -839,7 +962,10 @@ void MainWindow::on_coolantFloodPushButton_clicked(bool checked)
         }
     }
     else
+    {
+        qDebug() << "Sending flood coolant override";
         machine->ask(Grbl::CommandType::commandOverrideCoolantFloodToggle);
+    }
 }
 
 void MainWindow::on_coolantMistPushButton_clicked(bool checked)
@@ -860,7 +986,10 @@ void MainWindow::on_coolantMistPushButton_clicked(bool checked)
         }
     }
     else
+    {
+        qDebug() << "Sending mist coolant override";
         machine->ask(Grbl::CommandType::commandOverrideCoolantMistToggle);
+    }
 }
 
 void MainWindow::on_statePushButton_clicked(bool checked)
@@ -882,9 +1011,7 @@ void MainWindow::on_statePushButton_clicked(bool checked)
 
 void MainWindow::on_actionReset_triggered()
 {
-    if (!machineOk()) return; // security
-    ui->statusBar->showMessage(tr("Resetting machine.", "StatusBar message"));
-    machine->ask(Machine::CommandType::commandReset);
+    resetMachine();
 }
 
 void MainWindow::on_xZeroToolButton_clicked()
@@ -905,35 +1032,6 @@ void MainWindow::on_zZeroToolButton_clicked()
     machine->setZWorkingZero();
 }
 
-void MainWindow::on_actionRun_triggered()
-{
-    runGcode();
-}
-
-void MainWindow::on_actionStep_triggered()
-{
-    runGcode(true);
-}
-
-void MainWindow::on_actionPause_triggered()
-{
-    pauseGcode();
-}
-
-void MainWindow::on_actionStop_triggered()
-{
-    stopGcode();
-    if (!machineOk()) return; // security
-    machine->ask(Machine::CommandType::commandReset);
-}
-
-void MainWindow::on_homePushButton_clicked()
-{
-    if (!machineOk()) return; // security
-    if (machine->ask(Machine::CommandType::commandHome))
-        ui->homePushButton->setChecked(false);
-}
-
 void MainWindow::on_actionConfig_triggered()
 {
     if (!machineOk()) return; // security
@@ -952,3 +1050,191 @@ void MainWindow::on_pushButton_clicked()
     if (!machineOk()) return; // security
     machine->sendCommand("G30");
 }
+
+
+void MainWindow::on_resetToolButton_clicked()
+{
+    resetMachine();
+}
+
+void MainWindow::on_cancelJogToolButton_clicked()
+{
+    if (!machineOk()) return; // security
+    machine->ask(Grbl::CommandType::commandJogCancel);
+}
+
+//-----------------------------------------------------------------------------------------
+void MainWindow::on_xMinusToolButton_clicked()
+{
+    if (!machineOk()) return; // security
+    QString cmd = QString("$J=G91X%1F1000").arg(-jogInterval);
+    qDebug() << "Jog : " << cmd;
+    if (machine->sendCommand( cmd ))
+        ui->xMinusToolButton->setChecked(true);
+}
+
+void MainWindow::on_xPlusToolButton_clicked()
+{
+    if (!machineOk()) return; // security
+    QString cmd = QString("$J=G91X%1F1000").arg(jogInterval);
+    qDebug() << "Jog : " << cmd;
+    if (machine->sendCommand( cmd ))
+        ui->zPlusToolButton->setChecked(true);
+}
+
+void MainWindow::on_yMinusToolButton_clicked()
+{
+    if (!machineOk()) return; // security
+    QString cmd = QString("$J=G91Y%1F1000").arg(-jogInterval);
+    qDebug() << "Jog : " << cmd;
+    if (machine->sendCommand( cmd ))
+        ui->zMinusToolButton->setChecked(true);
+}
+
+void MainWindow::on_yPlusToolButton_clicked()
+{
+    if (!machineOk()) return; // security
+    QString cmd = QString("$J=G91Y+%1F1000").arg(jogInterval);
+    qDebug() << "Jog : " << cmd;
+    if (machine->sendCommand( cmd ))
+        ui->zPlusToolButton->setChecked(true);
+}
+
+void MainWindow::on_zMinusToolButton_clicked()
+{
+    if (!machineOk()) return; // security
+    QString cmd = QString("$J=G91Z%1F1000").arg(-jogInterval);
+    qDebug() << "Jog : " << cmd;
+    if (machine->sendCommand( cmd ))
+        ui->zMinusToolButton->setChecked(true);
+}
+
+void MainWindow::on_zPlusToolButton_clicked()
+{
+    if (!machineOk()) return; // security
+    QString cmd = QString("$J=G91Z%1F1000").arg(jogInterval);
+    qDebug() << "Jog : " << cmd;
+    if (machine->sendCommand( cmd ))
+        ui->zPlusToolButton->setChecked(true);
+}
+
+void MainWindow::on_zSafeToolButton_clicked()
+{
+    if (!machineOk()) return; // security
+    QString cmd = QString("$J=G91G53Z0F1000");
+    qDebug() << "Jog : " << cmd;
+    if (machine->sendCommand( cmd ))
+        ui->zSafeToolButton->setChecked(true);
+}
+
+//-----------------------------------------------------------------------------------------
+void MainWindow::on_interval1mmToolButton_clicked()
+{
+    ui->interval1mmToolButton->setChecked(true);
+    ui->interval10mmToolButton->setChecked(false);
+    ui->interval100mmToolButton->setChecked(false);
+    jogInterval = 1;
+}
+
+void MainWindow::on_interval10mmToolButton_clicked()
+{
+    ui->interval1mmToolButton->setChecked(false);
+    ui->interval10mmToolButton->setChecked(true);
+    ui->interval100mmToolButton->setChecked(false);
+    jogInterval = 10;
+}
+
+void MainWindow::on_interval100mmToolButton_clicked()
+{
+    ui->interval1mmToolButton->setChecked(false);
+    ui->interval10mmToolButton->setChecked(false);
+    ui->interval100mmToolButton->setChecked(true);
+    jogInterval = 100;
+}
+
+void MainWindow::on_runToolButton_clicked()
+{
+    runGcode();
+}
+
+void MainWindow::on_stepToolButton_clicked()
+{
+    runGcode(true);
+}
+
+void MainWindow::on_pauseToolButton_clicked()
+{
+    pauseGcode();
+}
+
+void MainWindow::on_stopToolButton_clicked()
+{
+    stopGcode();
+    if (!machineOk()) return; // security
+    resetMachine();
+}
+
+void MainWindow::zeroWorking()
+{
+    if (!machineOk()) return; // security
+    Machine::CoordinatesType coords = machine->getWorkingCoordinates();
+    if ( (coords.x != 0) || (coords.y != 0) || (coords.z != 0) )
+    {
+        if (machine->sendCommand("$J=G90G53Z0F1000"))
+        {
+            ui->statusbar->showMessage("ZSafe");
+            if (machine->sendCommand("$J=G90X0Y0F1000"))
+            {
+                if (machine->sendCommand("$J=G90Z0F1000"))
+                {
+                    ui->zeroWorkingPushButton->setEnabled(true);
+                }
+                else qDebug() << "Can't execute zero Z coordinates.";
+            }
+            else qDebug() << "Can't execute zSafe command";
+        }
+        else qDebug() << "Can't execute zeroWorking";
+    }
+    else
+    {
+        ui->zeroWorkingPushButton->setChecked(false);
+        ui->homeWorkingToolButton->setChecked(false);
+    }
+}
+void MainWindow::on_zeroWorkingPushButton_clicked()
+{
+    zeroWorking();
+}
+
+void MainWindow::on_homeWorkingToolButton_clicked()
+{
+    zeroWorking();
+}
+
+void MainWindow::zeroMachine()
+{
+    if (!machineOk()) return; // security
+    if (machine->sendCommand("$J=G90G53Z0F1000"))
+    {
+        qDebug() << "zSafe sent.";
+        ui->statusbar->showMessage("ZSafe");
+        if (machine->sendCommand("$J=G90G53X0Y0F1000"))
+        {
+            ui->zeroMachinePushButton->setChecked(true);
+            qDebug() << "xyHomeWorking sent.";
+        }
+        else qDebug() << "Can't execute zSafe command";
+    }
+    else qDebug() << "Can't execute zeroWorking";
+}
+
+void MainWindow::on_zeroMachinePushButton_clicked()
+{
+    zeroMachine();
+}
+
+void MainWindow::on_homeMachineToolButton_clicked()
+{
+    zeroMachine();
+}
+

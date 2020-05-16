@@ -14,5 +14,9 @@
         <file>images/leds/led_violet.png</file>
         <file>images/leds/led_white.png</file>
         <file>images/leds/led_yellow.png</file>
+        <file>images/actions/pause.png</file>
+        <file>images/actions/play.png</file>
+        <file>images/actions/step.png</file>
+        <file>images/actions/stop.png</file>
     </qresource>
 </RCC>

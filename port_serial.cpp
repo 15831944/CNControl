@@ -193,7 +193,7 @@ void SerialPort::readyReadSlot()
 
         if (data.contains('\n'))
         {
-            qDebug() << "SerialPort::readLine: End of line (" << buffer << ")";
+            //qDebug() << "SerialPort::readLine: End of line (" << buffer << ")";
             emit lineAvailable(  buffer );
             buffer.clear();
         }

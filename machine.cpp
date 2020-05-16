@@ -89,7 +89,7 @@ const QString &Machine::getErrorString(int errorCode) { return errors.at(errorCo
 
 const QString &Machine::getLastLine() { return lastLine; };
 
-bool Machine::sendCommand(QString gcode, bool withNewline, bool noLog)
+bool Machine::sendCommand(QString gcode, bool withNewline, bool )
 {
     if (!port) return false;
 
@@ -99,7 +99,7 @@ bool Machine::sendCommand(QString gcode, bool withNewline, bool noLog)
     if (withNewline) gcode += "\n";
 
     //if (!noLog)
-        qDebug() << "Machine::sendCommand(" << gcode << ")";
+        //qDebug() << "Machine::sendCommand(" << gcode << ")";
 
     emit commandSent(gcode);
     return port->write(gcode.toLocal8Bit()) == gcode.size();

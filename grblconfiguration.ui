@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>488</width>
+    <width>553</width>
     <height>362</height>
    </rect>
   </property>
@@ -29,7 +29,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>4</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="generalTab">
       <attribute name="title">
@@ -328,8 +328,13 @@
              <height>0</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>14</pointsize>
+            </font>
+           </property>
            <property name="text">
-            <string>X</string>
+            <string>𝕏</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -350,8 +355,13 @@
              <height>0</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>14</pointsize>
+            </font>
+           </property>
            <property name="text">
-            <string>Y</string>
+            <string>𝕐</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -372,8 +382,13 @@
              <height>0</height>
             </size>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>14</pointsize>
+            </font>
+           </property>
            <property name="text">
-            <string>Z</string>
+            <string>ℤ</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -1022,8 +1037,13 @@
            <height>24</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
          <property name="text">
-          <string>X</string>
+          <string>𝕏</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -1065,8 +1085,13 @@
        </item>
        <item row="0" column="3">
         <widget class="QLabel" name="zAxeLabel">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
          <property name="text">
-          <string>Z</string>
+          <string>ℤ</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -1076,14 +1101,19 @@
        <item row="3" column="4">
         <widget class="QLabel" name="accelerationUnit">
          <property name="text">
-          <string>mm/sec^2</string>
+          <string>mm/sec²</string>
          </property>
         </widget>
        </item>
        <item row="0" column="2">
         <widget class="QLabel" name="yAxeLabel">
+         <property name="font">
+          <font>
+           <pointsize>14</pointsize>
+          </font>
+         </property>
          <property name="text">
-          <string>Y</string>
+          <string>𝕐</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -1146,7 +1176,7 @@
        <item row="1" column="1">
         <widget class="QLabel" name="startingBlockLabel">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;IMPORTANT: Be very careful when storing any motion (G0/1,G2/3,G28/30) commands in the startup blocks. These motion commands will run everytime you reset or power up Grbl, so if you have an emergency situation and have to e-stop and reset, a startup block move can and will likely make things worse quickly. Also, do not place any commands that save data to EEPROM, such as G10/G28.1/G30.1. This will cause Grbl to constantly re-write this data upon every startup and reset, which will eventually wear out your Arduino's EEPROM.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; text-decoration: underline;&quot;&gt;IMPORTANT:&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt; Be very careful when storing any motion (G0/1,G2/3,G28/30) commands in the startup blocks. These motion commands will run everytime you reset or power up Grbl, so if you have an emergency situation and have to e-stop and reset, a startup block move can and will likely make things worse quickly. Also, do not place any commands that save data to EEPROM, such as G10/G28.1/G30.1. This will cause Grbl to constantly re-write this data upon every startup and reset, which will eventually wear out your Arduino's EEPROM.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>

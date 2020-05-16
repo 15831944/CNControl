@@ -639,7 +639,7 @@ void Grbl::parseStatus(QString &line)
                 coords.y = vals.at(1).toDouble();
                 coords.z = vals.at(2).toDouble();
 
-                if (workingCoordinates != coords) changed = true;
+                if ((workingCoordinates != coords) || first) changed = true;
 
                 workingCoordinates = coords;
                 bitSet(infos, InfoFlags::flagHasWorkingCoords);
@@ -651,7 +651,7 @@ void Grbl::parseStatus(QString &line)
                     coords.x = workingCoordinates.x + workingOffset.x;
                     coords.y = workingCoordinates.y + workingOffset.y;
                     coords.z = workingCoordinates.z + workingOffset.z;
-                    if (machineCoordinates != coords) changed = true;
+                    if ((machineCoordinates != coords) || first) changed = true;
                     machineCoordinates = coords;
                     bitSet(infos, InfoFlags::flagHasMachineCoords);
                 }
@@ -684,7 +684,7 @@ void Grbl::parseStatus(QString &line)
                     coords.z = machineCoordinates.x - workingOffset.x;
                     coords.y = machineCoordinates.y - workingOffset.y;
                     coords.z = machineCoordinates.z - workingOffset.z;
-                    if (workingCoordinates != coords) changed = true;
+                    if ((workingCoordinates != coords) || first) changed = true;
                     workingCoordinates = coords;
                     bitSet(infos, InfoFlags::flagHasWorkingCoords);
                 }
@@ -796,6 +796,27 @@ void Grbl::parseStatus(QString &line)
                 coords.z = vals.at(2).toDouble();
                 if (workingOffset != coords) changed = true;
                 workingOffset = coords;
+
+                if (bitIsClear(infos, InfoFlags::flagHasMachineCoords))
+                {
+                    coords.x = workingCoordinates.x + workingOffset.x;
+                    coords.y = workingCoordinates.y + workingOffset.y;
+                    coords.z = workingCoordinates.z + workingOffset.z;
+                    changed = true;
+                    machineCoordinates = coords;
+                    bitSet(infos, InfoFlags::flagHasMachineCoords);
+                }
+
+                if (bitIsClear(infos, InfoFlags::flagHasWorkingCoords))
+                {
+                    coords.z = machineCoordinates.x - workingOffset.x;
+                    coords.y = machineCoordinates.y - workingOffset.y;
+                    coords.z = machineCoordinates.z - workingOffset.z;
+                    changed = true;
+                    workingCoordinates = coords;
+                    bitSet(infos, InfoFlags::flagHasWorkingCoords);
+                }
+
                 if (changed)
                     emit coordinatesUpdated();
 
@@ -911,17 +932,23 @@ void Grbl::parseConfig(QString &line)
 void Grbl::setXWorkingZero()
 {
     if (sendCommand( "G92X0" ))
-        workingOffset.x = machineCoordinates.x;
+        ;
+//    {
+//        workingOffset.x = machineCoordinates.x;
+//        workingCoordinates.x = 0;
+        bitClear(infos, Machine::InfoFlags::flagHasWorkingCoords);
+        bitClear(infos, Machine::InfoFlags::flagHasMachineCoords);
+//    }
 };
 
 void Grbl::setYWorkingZero()
 {
-    if (sendCommand( "G92Y0" ))
-        workingOffset.y = machineCoordinates.y;
+    if (sendCommand( "G92Y0" ));
+//        workingOffset.y = machineCoordinates.y;
 };
 
 void Grbl::setZWorkingZero()
 {
-    if (sendCommand( "G92Z0" ))
-        workingOffset.z = machineCoordinates.z;
+    if (sendCommand( "G92Z0" ));
+//        workingOffset.z = machineCoordinates.z;
 };
