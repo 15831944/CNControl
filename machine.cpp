@@ -99,7 +99,10 @@ bool Machine::sendCommand(QString gcode, bool withNewline, bool )
     if (withNewline) gcode += "\n";
 
     //if (!noLog)
-        //qDebug() << "Machine::sendCommand(" << gcode << ")";
+//    if (gcode[0] <= 127)
+//        qDebug() << "Machine::sendCommand(" << gcode << ")";
+//    else
+//        qDebug() << "Machine::sendCommand(" << QString().setNum( static_cast<char>(gcode[0].toLatin1()), 16) << ")";
 
     emit commandSent(gcode);
     return port->write(gcode.toLocal8Bit()) == gcode.size();

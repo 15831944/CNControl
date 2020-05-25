@@ -9,7 +9,6 @@
 #include <QWidget>
 #include <QMessageBox>
 #include <QFileDialog>
-//#include <QLineEdit>
 #include <QDebug>
 
 #include "grbl.h"
@@ -20,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    QWidget::setWindowTitle(QString("%1 %2").arg(PROGRAM_NAME).arg(PROGRAM_VERSION));
     //setLogWidget( ui->logListWidget );
 
     // CoolantMist may not be enabled, we'll see later in infos ($I)
@@ -36,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->spindleRateProgressBar->setMaximum(255);
 
-    connect( ui->gcodeComboBox->lineEdit(), &GLineEdit::editingFinished, this, &MainWindow::gcodeChanged);
+    connect( ui->gcodeComboBox->lineEdit(), &GLineEdit::editingFinished, this, &MainWindow::onGcodeChanged);
 
 //    connect( ui->xWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(xWorkingLineEdit_focusOut(QFocusEvent *)));
 //    connect( ui->yWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(yWorkingLineEdit_focusOut(QFocusEvent *)));
@@ -52,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     machine = nullptr;
     jogInterval = 10;
+    gcodeIndex = 0;
 
     QFont font;
     font.setFamily("Courier");
@@ -60,8 +62,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gcodeCodeEditor->setFont(font);
     highlighter = new Highlighter(ui->gcodeCodeEditor->document());
 
-    this->portsUpdate();
-    connect( &portsTimer, SIGNAL(timeout()), this, SLOT(portsUpdate()) );
+    this->onPortsUpdate();
+    connect( &portsTimer, SIGNAL(timeout()), this, SLOT(onPortsUpdate()) );
     portsTimer.start(5000);
 
     setUIDisconnected();
@@ -198,9 +200,11 @@ void MainWindow::setUISleeping()
 
 }
 
-void MainWindow::about()
+void MainWindow::homing()
 {
-    QMessageBox::about(this, PROGRAM_NAME, PROGRAM_VERSION);
+    if (!machineOk()) return; // security
+    if (!machine->ask(Machine::CommandType::commandHoming))
+        qDebug() << "MainWindow::homing: Can't ask for homing.";
 }
 
 bool MainWindow::newFile()
@@ -230,6 +234,8 @@ void MainWindow::openFile(QString fileName)
     {
         ui->gcodeCodeEditor->setPlainText(file.readAll());
         ui->gcodeCodeEditor->setCurrentLine( 10);
+        checkGcode();
+        gcodeIndex = 0;
     }
     else QMessageBox::critical(this,"Error",QString("Can't read file %1").arg( fileName ));
 }
@@ -261,7 +267,7 @@ void MainWindow::on_actionOpen_triggered()
 
 
 //----------------------------------------------------------------------------------------------------
-void MainWindow::portsUpdate(void)
+void MainWindow::onPortsUpdate(void)
 {
     if (!port) return; // security
     QStringList devicesList = port->getDevices();
@@ -345,11 +351,11 @@ void MainWindow::openPort()
             connect( machine, SIGNAL(lineNumberUpdated()), this, SLOT(onLineNumberUpdated()) );
             connect( machine, SIGNAL(coordinatesUpdated()), this, SLOT(onCoordinatesUpdated()) );
             connect( machine, SIGNAL(switchesUpdated()), this, SLOT(onSwitchesUpdated()) );
-            connect( machine, SIGNAL(actionsUpdated()), this, SLOT(onActionsUpdated()) );
+            connect( machine, SIGNAL(actionersUpdated()), this, SLOT(onActionersUpdated()) );
             connect( machine, SIGNAL(ratesUpdated()), this, SLOT(onRatesUpdated()) );
             connect( machine, SIGNAL(buffersUpdated()), this, SLOT(onBuffersUpdated()) );
 
-            connect( machine, SIGNAL(infoUpdated()), this, SLOT(infoUpdated()) );
+            connect( machine, SIGNAL(infoUpdated()), this, SLOT(onInfoUpdated()) );
 
             setUIConnected();
         }
@@ -401,6 +407,8 @@ void MainWindow::onMachineError(int error)
 
 void MainWindow::onStateUpdated()
 {
+    static Qt::FocusPolicy focusPolicy;
+
     if (!machineOk()) return; // security
 
     // Display status in coordinatesBox
@@ -423,6 +431,8 @@ void MainWindow::onStateUpdated()
     case Machine::StateType::stateIdle:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_green.png"));
         ui->coordsGroupBox->setEnabled(true);
+        ui->coordsGroupBox->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+        ui->coordsGroupBox->setFocusPolicy(focusPolicy);
         ui->jogGroupBox->setEnabled(true);
         ui->actionGroupBox->setEnabled(true);
         ui->commandsWidget->setEnabled(true);
@@ -432,23 +442,45 @@ void MainWindow::onStateUpdated()
         break;
     case Machine::StateType::stateHold:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_orange.png"));
-        ui->coordsGroupBox->setEnabled(false);
+        //ui->coordsGroupBox->setEnabled(false);
         ui->jogGroupBox->setEnabled(false);
-        ui->actionGroupBox->setEnabled(false);
+        ui->actionGroupBox->setEnabled(true);
         ui->commandsWidget->setEnabled(false);
-        if (!ui->statePushButton->isChecked())
-            ui->statePushButton->setChecked(true);
+
+        ui->statePushButton->setChecked(true);
         break;
     case Machine::StateType::stateJog:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_yellow.png"));
-        ui->coordsGroupBox->setEnabled(false);
+//        ui->coordsGroupBox->setEnabled(false);
+        focusPolicy = ui->coordsGroupBox->focusPolicy();
+        ui->coordsGroupBox->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        ui->coordsGroupBox->setFocusPolicy(Qt::NoFocus);
+
+        ui->xWorkingLineEdit->clearFocus();
+        ui->yWorkingLineEdit->clearFocus();
+        ui->zWorkingLineEdit->clearFocus();
+        ui->xMachineLineEdit->clearFocus();
+        ui->yMachineLineEdit->clearFocus();
+        ui->zMachineLineEdit->clearFocus();
+
         ui->jogGroupBox->setEnabled(true);
         ui->actionGroupBox->setEnabled(true);
         ui->commandsWidget->setEnabled(false);
         break;
     case Machine::StateType::stateRun:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_green.png"));
-        ui->coordsGroupBox->setEnabled(true);
+//        ui->coordsGroupBox->setEnabled(true);
+        focusPolicy = ui->coordsGroupBox->focusPolicy();
+        ui->coordsGroupBox->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        ui->coordsGroupBox->setFocusPolicy(Qt::NoFocus);
+
+        ui->xWorkingLineEdit->clearFocus();
+        ui->yWorkingLineEdit->clearFocus();
+        ui->zWorkingLineEdit->clearFocus();
+        ui->xMachineLineEdit->clearFocus();
+        ui->yMachineLineEdit->clearFocus();
+        ui->zMachineLineEdit->clearFocus();
+
         ui->jogGroupBox->setEnabled(false);
         ui->actionGroupBox->setEnabled(true);
         ui->commandsWidget->setEnabled(true);
@@ -475,6 +507,7 @@ void MainWindow::onStateUpdated()
         ui->commandsWidget->setEnabled(false);
         if (!ui->statePushButton->isChecked())
             ui->statePushButton->setChecked(true);
+        stopGcode();
         break;
     case Machine::StateType::stateCheck:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_blue.png"));
@@ -519,22 +552,22 @@ void MainWindow::onCoordinatesUpdated()
         if (!ui->xWorkingLineEdit->isModified() )
         {
             ui->xWorkingLineEdit->setText( QString().sprintf("%+03.3f", coords.x ));
-            if (ui->xWorkingLineEdit == focusWidget())
-                ui->xWorkingLineEdit->selectAll();
+//            if (ui->xWorkingLineEdit == focusWidget())
+//                ui->xWorkingLineEdit->selectAll();
         }
 
         if (!ui->yWorkingLineEdit->isModified())
         {
             ui->yWorkingLineEdit->setText( QString().sprintf("%+03.3f", coords.y ));
-            if (ui->yWorkingLineEdit == focusWidget())
-                ui->yWorkingLineEdit->selectAll();
+//            if (ui->yWorkingLineEdit == focusWidget())
+//                ui->yWorkingLineEdit->selectAll();
         }
 
         if (!ui->zWorkingLineEdit->isModified())
         {
             ui->zWorkingLineEdit->setText( QString().sprintf("%+03.3f", coords.z ));
-            if (ui->zWorkingLineEdit == focusWidget())
-                ui->zWorkingLineEdit->selectAll();
+//            if (ui->zWorkingLineEdit == focusWidget())
+//                ui->zWorkingLineEdit->selectAll();
         }
     }
 
@@ -545,22 +578,22 @@ void MainWindow::onCoordinatesUpdated()
         if (!ui->xMachineLineEdit->isModified())
         {
             ui->xMachineLineEdit->setText( QString().sprintf("%+03.3f", coords.x ));
-            if (ui->xMachineLineEdit == focusWidget())
-                ui->xMachineLineEdit->selectAll();
+//            if (ui->xMachineLineEdit == focusWidget())
+//                ui->xMachineLineEdit->selectAll();
         }
 
         if (!ui->yMachineLineEdit->isModified())
         {
             ui->yMachineLineEdit->setText( QString().sprintf("%+03.3f", coords.y ));
-            if (ui->yMachineLineEdit == focusWidget())
-                ui->yMachineLineEdit->selectAll();
+//            if (ui->yMachineLineEdit == focusWidget())
+//                ui->yMachineLineEdit->selectAll();
         }
 
         if (!ui->zMachineLineEdit->isModified())
         {
             ui->zMachineLineEdit->setText( QString().sprintf("%+03.3f", coords.z ));
-            if (ui->zMachineLineEdit == focusWidget())
-                ui->zMachineLineEdit->selectAll();
+//            if (ui->zMachineLineEdit == focusWidget())
+//                ui->zMachineLineEdit->selectAll();
         }
     }
 }
@@ -581,10 +614,10 @@ void MainWindow::onSwitchesUpdated()
     }
 }
 
-void MainWindow::onActionsUpdated()
+void MainWindow::onActionersUpdated()
 {
     if (!machineOk()) return; // security
-    if (machine->hasInfo( Machine::InfoFlags::flagHasActions ))
+    if (machine->hasInfo( Machine::InfoFlags::flagHasActioners ))
     {
         ui->spindlePushButton->setChecked( machine->hasAction( Machine::ActionerFlags::actionSpindle ) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked );
         ui->coolantFloodPushButton->setChecked( machine->hasAction( Grbl::ActionerFlags::actionCoolantFlood ) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked );
@@ -659,7 +692,7 @@ void MainWindow::onStatusUpdated()
     ui->statusbar->showMessage( machine->getLastLine(), 250);
 }
 
-void MainWindow::gcodeChanged()
+void MainWindow::onGcodeChanged()
 {
     if (!machineOk()) return; // security
     QByteArray gcode = ui->gcodeComboBox->currentText().toUtf8();
@@ -675,11 +708,11 @@ void MainWindow::gcodeChanged()
 
 void MainWindow::onVersionUpdated()
 {
-    setWindowTitle( QString("GCodeSender (%1)").arg(machine->getMachineVersion()));
+    setWindowTitle( QString("%1 %2 (Machine %3)").arg(PROGRAM_NAME).arg(PROGRAM_VERSION).arg(machine->getMachineVersion()));
     qDebug() << "MainWindow::onVersionUpdated()";
 }
 
-void MainWindow::infoUpdated()
+void MainWindow::onInfoUpdated()
 {
     if (machine)
         // Check if CoolantMist is enabled in machine, and enable it in the UI
@@ -688,6 +721,32 @@ void MainWindow::infoUpdated()
 }
 
 //----------------------------------------------------------------------------------------------------
+void MainWindow::checkGcode()
+{
+    if (machine)
+    {
+        ui->actionRun->setEnabled(false);
+        ui->actionStep->setEnabled(false);
+        ui->actionStop->setEnabled(false);
+        ui->actionPause->setEnabled(false);
+
+        gcodeIndex = 0;
+        gcode = ui->gcodeCodeEditor->toPlainText().split("\n", QString::KeepEmptyParts, Qt::CaseInsensitive);
+        ui->gcodeSentProgressBar->setValue(0);
+        ui->gcodeSentProgressBar->setMaximum( gcode.size() );
+
+        ui->gcodeExecutedProgressBar->setValue(0);
+        ui->gcodeExecutedProgressBar->setMaximum( gcode.size() );
+
+        if (machine->isState( Grbl::StateType::stateIdle))
+        {
+            machine->ask(Grbl::CommandType::commandCheck);
+            connect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
+            sendNextGCode();
+        }
+    }
+}
+
 void MainWindow::runGcode(bool step)
 {
     if (!machineOk()) return; // security
@@ -708,9 +767,7 @@ void MainWindow::runGcode(bool step)
         ui->gcodeExecutedProgressBar->setValue(0);
         ui->gcodeExecutedProgressBar->setMaximum( gcode.size() );
 
-        if (machine)
-            connect(machine, SIGNAL(commandExecuted()), this, SLOT(commandExecuted()));
-        gcodeIndex = 0;
+        connect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
 
         if (!step)
         {
@@ -730,7 +787,7 @@ void MainWindow::runGcode(bool step)
 void MainWindow::pauseGcode()
 {
     if (machine)
-        disconnect(machine, SIGNAL(commandExecuted()), this, SLOT(commandExecuted()));
+        disconnect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
     //ui->gcodeCodeEditor->setReadOnly(false);
     ui->actionRun->setEnabled(true);
     ui->actionStep->setEnabled(true);
@@ -741,19 +798,25 @@ void MainWindow::pauseGcode()
 void MainWindow::stopGcode()
 {
     if (machine)
-        disconnect(machine, SIGNAL(commandExecuted()), this, SLOT(commandExecuted()));
-    //ui->gcodeCodeEditor->setReadOnly(false);
+    {
+        disconnect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
+        if (machine->isState(Machine::StateType::stateCheck))
+            machine->ask(Grbl::CommandType::commandCheck);
+    }
+
     ui->actionRun->setEnabled(true);
     ui->actionStep->setEnabled(true);
     ui->actionStop->setEnabled(false);
     ui->actionPause->setEnabled(false);
+
     gcodeIndex = 0;
+    ui->gcodeExecutedProgressBar->setValue(0);
     ui->gcodeSentProgressBar->setValue(0);
 }
 
-void MainWindow::commandExecuted()
+void MainWindow::onCommandExecuted()
 {
-    qDebug() << "MainWindow::commandExecuted()";
+    //qDebug() << "MainWindow::onCommandExecuted()";
     if (stepCommand)
     {
         ui->actionRun->setEnabled(true);
@@ -804,6 +867,11 @@ void MainWindow::uncheckJogButtons()
 }
 
 //----------------------------------------------------------------------------------------------------
+void MainWindow::on_xWorkingLineEdit_focusIn()
+{
+    ui->xWorkingLineEdit->selectAll();
+}
+
 void MainWindow::on_xWorkingLineEdit_focusOut(QFocusEvent*)
 {
     // When leaving LineEdit without validating, cancel modification
@@ -820,6 +888,11 @@ void MainWindow::on_xWorkingLineEdit_returnPressed()
             moveWorking = true;
     }
     ui->xWorkingLineEdit->setModified(false);
+}
+
+void MainWindow::on_yWorkingLineEdit_focusIn()
+{
+    ui->yWorkingLineEdit->selectAll();
 }
 
 void MainWindow::on_yWorkingLineEdit_focusOut(QFocusEvent*)
@@ -840,6 +913,11 @@ void MainWindow::on_yWorkingLineEdit_returnPressed()
     ui->yWorkingLineEdit->setModified(false);
 }
 
+void MainWindow::on_zWorkingLineEdit_focusIn()
+{
+    ui->zWorkingLineEdit->selectAll();
+}
+
 void MainWindow::on_zWorkingLineEdit_focusOut(QFocusEvent*)
 {
     // When leaving LineEdit without validating, cancel modification
@@ -856,6 +934,11 @@ void MainWindow::on_zWorkingLineEdit_returnPressed()
             moveWorking = true;
     }
     ui->zWorkingLineEdit->setModified(false);
+}
+
+void MainWindow::on_xMachineLineEdit_focusIn()
+{
+    ui->xMachineLineEdit->selectAll();
 }
 
 void MainWindow::on_xMachineLineEdit_focusOut(QFocusEvent*)
@@ -876,6 +959,11 @@ void MainWindow::on_xMachineLineEdit_returnPressed()
     ui->xMachineLineEdit->setModified(false);
 }
 
+void MainWindow::on_yMachineLineEdit_focusIn()
+{
+    ui->yMachineLineEdit->selectAll();
+}
+
 void MainWindow::on_yMachineLineEdit_focusOut(QFocusEvent*)
 {
     // When leaving LineEdit without validating, cancel modification
@@ -892,6 +980,11 @@ void MainWindow::on_yMachineLineEdit_returnPressed()
             moveMachine = true;
     }
     ui->yMachineLineEdit->setModified(false);
+}
+
+void MainWindow::on_zMachineLineEdit_focusIn()
+{
+    ui->zMachineLineEdit->selectAll();
 }
 
 void MainWindow::on_zMachineLineEdit_focusOut(QFocusEvent*)
@@ -937,12 +1030,13 @@ void MainWindow::on_spindlePushButton_clicked(bool checked)
     }
     else
     {
-        qDebug() << "Sending spindle override";
-        if (machine->ask(Grbl::CommandType::commandOverrideSpindle, Grbl::SubCommandType::commandStop))
+        if (machine->isState(Machine::StateType::stateHold))
         {
+            qDebug() << "MainWindow::on_spindlePushButton_clicked: Sending spindle override";
+            machine->ask(Grbl::CommandType::commandOverrideSpindle, Grbl::SubCommandType::commandStop);
             ui->spindlePushButton->setChecked(false);
         }
-
+        ui->spindlePushButton->setChecked(false);
     }
 }
 
@@ -963,7 +1057,7 @@ void MainWindow::on_coolantFloodPushButton_clicked(bool checked)
     }
     else
     {
-        qDebug() << "Sending flood coolant override";
+        qDebug() << "MainWindow::on_coolantFloodPushButton_clicked: Sending flood coolant override";
         machine->ask(Grbl::CommandType::commandOverrideCoolantFloodToggle);
     }
 }
@@ -987,7 +1081,7 @@ void MainWindow::on_coolantMistPushButton_clicked(bool checked)
     }
     else
     {
-        qDebug() << "Sending mist coolant override";
+        qDebug() << "MainWindow::on_coolantMistPushButton_clicked: Sending mist coolant override";
         machine->ask(Grbl::CommandType::commandOverrideCoolantMistToggle);
     }
 }
@@ -996,6 +1090,8 @@ void MainWindow::on_statePushButton_clicked(bool checked)
 {
     if (!machineOk()) return; // security
     if (machine->getState() == Machine::StateType::stateIdle)
+        machine->ask(Machine::CommandType::commandPause, checked);
+    if (machine->getState() == Machine::StateType::stateRun)
         machine->ask(Machine::CommandType::commandPause, checked);
     else if (machine->getState() == Machine::StateType::stateHold)
         machine->ask(Machine::CommandType::commandPause, checked);
@@ -1038,20 +1134,6 @@ void MainWindow::on_actionConfig_triggered()
     machine->openConfiguration(this);
 }
 
-
-void MainWindow::on_ZeroPushButton_clicked()
-{
-    if (!machineOk()) return; // security
-    machine->sendCommand("G28");
-}
-
-void MainWindow::on_pushButton_clicked()
-{
-    if (!machineOk()) return; // security
-    machine->sendCommand("G30");
-}
-
-
 void MainWindow::on_resetToolButton_clicked()
 {
     resetMachine();
@@ -1060,7 +1142,9 @@ void MainWindow::on_resetToolButton_clicked()
 void MainWindow::on_cancelJogToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    machine->ask(Grbl::CommandType::commandJogCancel);
+    if (machine->getState() == Machine::StateType::stateJog)
+        machine->ask(Grbl::CommandType::commandJogCancel);
+    else ui->cancelJogToolButton->setChecked(false);
 }
 
 //-----------------------------------------------------------------------------------------
@@ -1079,7 +1163,7 @@ void MainWindow::on_xPlusToolButton_clicked()
     QString cmd = QString("$J=G91X%1F1000").arg(jogInterval);
     qDebug() << "Jog : " << cmd;
     if (machine->sendCommand( cmd ))
-        ui->zPlusToolButton->setChecked(true);
+        ui->xPlusToolButton->setChecked(true);
 }
 
 void MainWindow::on_yMinusToolButton_clicked()
@@ -1088,7 +1172,7 @@ void MainWindow::on_yMinusToolButton_clicked()
     QString cmd = QString("$J=G91Y%1F1000").arg(-jogInterval);
     qDebug() << "Jog : " << cmd;
     if (machine->sendCommand( cmd ))
-        ui->zMinusToolButton->setChecked(true);
+        ui->yMinusToolButton->setChecked(true);
 }
 
 void MainWindow::on_yPlusToolButton_clicked()
@@ -1097,7 +1181,7 @@ void MainWindow::on_yPlusToolButton_clicked()
     QString cmd = QString("$J=G91Y+%1F1000").arg(jogInterval);
     qDebug() << "Jog : " << cmd;
     if (machine->sendCommand( cmd ))
-        ui->zPlusToolButton->setChecked(true);
+        ui->yPlusToolButton->setChecked(true);
 }
 
 void MainWindow::on_zMinusToolButton_clicked()
@@ -1121,10 +1205,16 @@ void MainWindow::on_zPlusToolButton_clicked()
 void MainWindow::on_zSafeToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    QString cmd = QString("$J=G91G53Z0F1000");
-    qDebug() << "Jog : " << cmd;
-    if (machine->sendCommand( cmd ))
-        ui->zSafeToolButton->setChecked(true);
+    Machine::CoordinatesType coords = machine->getMachineCoordinates();
+    if (coords.z < 0)
+    {
+        QString cmd = QString("$J=G91G53Z0F1000");
+        qDebug() << "Jog : " << cmd;
+        if (machine->sendCommand( cmd ))
+            ui->zSafeToolButton->setChecked(true);
+    }
+    else ui->zSafeToolButton->setChecked(false);
+
 }
 
 //-----------------------------------------------------------------------------------------
@@ -1171,29 +1261,43 @@ void MainWindow::on_stopToolButton_clicked()
 {
     stopGcode();
     if (!machineOk()) return; // security
-    resetMachine();
+    // resetMachine();
 }
 
 void MainWindow::zeroWorking()
 {
     if (!machineOk()) return; // security
-    Machine::CoordinatesType coords = machine->getWorkingCoordinates();
-    if ( (coords.x != 0) || (coords.y != 0) || (coords.z != 0) )
+    Machine::CoordinatesType coords = machine->getMachineCoordinates();
+    if (coords.z < 0)
     {
         if (machine->sendCommand("$J=G90G53Z0F1000"))
         {
             ui->statusbar->showMessage("ZSafe");
-            if (machine->sendCommand("$J=G90X0Y0F1000"))
-            {
-                if (machine->sendCommand("$J=G90Z0F1000"))
-                {
-                    ui->zeroWorkingPushButton->setEnabled(true);
-                }
-                else qDebug() << "Can't execute zero Z coordinates.";
-            }
-            else qDebug() << "Can't execute zSafe command";
+            qDebug() << "MainWindow::zeroWorking: zSafe sent.";
         }
-        else qDebug() << "Can't execute zeroWorking";
+        else
+        {
+            qDebug() << "MainWindow::zeroWorking: Can't execute zeroWorking";
+            ui->zeroMachinePushButton->setChecked(false);
+            ui->homeMachineToolButton->setChecked(false);
+            return;
+        }
+
+    }
+    else qDebug() << "MainWindow::zeroWorking: Can't execute zSafe command.";
+
+    coords = machine->getWorkingCoordinates();
+    if ((coords.x != 0) || (coords.y != 0) || (coords.z != 0))
+    {
+        if (machine->sendCommand("$J=G90X0Y0F1000"))
+        {
+            if (machine->sendCommand("$J=G90Z0F1000"))
+            {
+                ui->zeroWorkingPushButton->setEnabled(true);
+            }
+            else qDebug() << "MainWindow::zeroWorking: Can't execute zZero command.";
+        }
+        else qDebug() << "MainWindow::zeroWorking: Can't execute xyZero command.";
     }
     else
     {
@@ -1214,18 +1318,42 @@ void MainWindow::on_homeWorkingToolButton_clicked()
 void MainWindow::zeroMachine()
 {
     if (!machineOk()) return; // security
-    if (machine->sendCommand("$J=G90G53Z0F1000"))
+    Machine::CoordinatesType coords = machine->getMachineCoordinates();
+    if (coords.z < 0)
     {
-        qDebug() << "zSafe sent.";
-        ui->statusbar->showMessage("ZSafe");
+        if (machine->sendCommand("$J=G90G53Z0F1000"))
+        {
+            ui->statusbar->showMessage("ZSafe");
+            qDebug() << "MainWindow::zeroWorking: zSafe sent.";
+        }
+        else
+        {
+            qDebug() << "MainWindow::zeroWorking: Can't execute zeroWorking";
+            ui->zeroMachinePushButton->setChecked(false);
+            ui->homeMachineToolButton->setChecked(false);
+            return;
+        }
+    }
+
+    if ((coords.x != 0) || (coords.y != 0))
+    {
         if (machine->sendCommand("$J=G90G53X0Y0F1000"))
         {
-            ui->zeroMachinePushButton->setChecked(true);
-            qDebug() << "xyHomeWorking sent.";
+            //ui->zeroMachinePushButton->setChecked(true);
+            qDebug() << "MainWindow::zeroWorking: xyHomeWorking sent.";
+            if (machine->sendCommand("$J=G90G53Z0F1000"))
+            {
+                qDebug() << "MainWindow::zeroWorking: zHomeWorking sent.";
+            }
+
         }
-        else qDebug() << "Can't execute zSafe command";
+        else qDebug() << "MainWindow::zeroWorking: Can't execute zSafe command";
     }
-    else qDebug() << "Can't execute zeroWorking";
+    else
+    {
+        ui->zeroMachinePushButton->setChecked(false);
+        ui->homeMachineToolButton->setChecked(false);
+    }
 }
 
 void MainWindow::on_zeroMachinePushButton_clicked()
@@ -1238,3 +1366,14 @@ void MainWindow::on_homeMachineToolButton_clicked()
     zeroMachine();
 }
 
+
+void MainWindow::on_homingToolButton_clicked()
+{
+    homing();
+}
+
+
+void MainWindow::on_actionAbout_triggered()
+{
+    QMessageBox::about(this, PROGRAM_NAME, QString("%1 %2").arg(PROGRAM_NAME).arg(PROGRAM_VERSION));
+}

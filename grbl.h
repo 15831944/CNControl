@@ -51,6 +51,7 @@
 #define CMD_UNLOCK "$X"
 #define CMD_HOME "$H"
 #define CMD_STARTBLOCK "$N"
+#define CMD_CHECK "$c"
 
 #include <QMap>
 
@@ -139,6 +140,7 @@ public:
             commandDebugReport,
             commandJogCancel,
             commandSaftyDoor,
+            commandCheck,
 
             commandOverrideFeed,
             commandOverrideRapid,

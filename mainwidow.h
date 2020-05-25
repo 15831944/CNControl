@@ -10,8 +10,8 @@
 #include "machine.h"
 #include "highlighter.h"
 
-#define PROGRAM_NAME "CNControl"
-#define PROGRAM_VERSION "v1.0"
+#define PROGRAM_NAME "ControlNCenter"
+#define PROGRAM_VERSION "ControlNCenter v1.0"
 
 namespace Ui {
 class MainWindow;
@@ -40,24 +40,15 @@ public:
     bool gcodeSend(QString gcode);
     void sendNextGCode();
 
-    void resetMachine();
-    void uncheckJogButtons();
-    void zeroWorking();
-    void zeroMachine();
+//    const QString lastError();
 
 public slots:
+    void about();
     bool newFile();
     //void openFile();
     void openFile(QString filename = QString());
     bool saveFile();
     void closeFile();
-
-    void homing();
-
-    void checkGcode();
-    void runGcode(bool step = false);
-    void pauseGcode();
-    void stopGcode();
 
 private slots:
     void onVersionUpdated();
@@ -66,25 +57,27 @@ private slots:
     void onLineNumberUpdated();
     void onCoordinatesUpdated();
     void onSwitchesUpdated();
-    void onActionersUpdated();
+    void onActionsUpdated();
     void onRatesUpdated();
     void onBuffersUpdated();
-    void onInfoUpdated();
+
+
     void onStatusUpdated();
-    void onGcodeChanged();
-    void onPortsUpdate();
+    void gcodeChanged();    
+
+    void updatePorts();
+    void infoUpdated();
 
     void onPortError(Port::PortError error);
     void onMachineError(int error);
 
-    void onCommandExecuted();
+    void runGcode(bool step = false);
+    void pauseGcode();
+    void stopGcode();
+    void commandExecuted();
 
     // Automatically connected :
     void on_connectPushButton_clicked();
-
-    void on_xWorkingLineEdit_focusIn();
-    void on_yWorkingLineEdit_focusIn();
-    void on_zWorkingLineEdit_focusIn();
 
     void on_xWorkingLineEdit_focusOut(QFocusEvent*);
     void on_yWorkingLineEdit_focusOut(QFocusEvent*);
@@ -93,10 +86,6 @@ private slots:
     void on_xWorkingLineEdit_returnPressed();
     void on_yWorkingLineEdit_returnPressed();
     void on_zWorkingLineEdit_returnPressed();
-
-    void on_xMachineLineEdit_focusIn();
-    void on_yMachineLineEdit_focusIn();
-    void on_zMachineLineEdit_focusIn();
 
     void on_xMachineLineEdit_focusOut(QFocusEvent*);
     void on_yMachineLineEdit_focusOut(QFocusEvent*);
@@ -118,38 +107,20 @@ private slots:
     void on_yZeroToolButton_clicked();
     void on_zZeroToolButton_clicked();
 
-    void on_actionConfig_triggered();
-
-    void on_xMinusToolButton_clicked();
-    void on_xPlusToolButton_clicked();
-    void on_yMinusToolButton_clicked();
-    void on_yPlusToolButton_clicked();
-    void on_zPlusToolButton_clicked();
-    void on_zMinusToolButton_clicked();
-    void on_zSafeToolButton_clicked();
-
-    void on_resetToolButton_clicked();
-    void on_cancelJogToolButton_clicked();
-
-    void on_interval1mmToolButton_clicked();
-    void on_interval10mmToolButton_clicked();
-    void on_interval100mmToolButton_clicked();
-
-    void on_runToolButton_clicked();
-    void on_stepToolButton_clicked();
-    void on_pauseToolButton_clicked();
-
-    void on_stopToolButton_clicked();
     void on_actionNew_triggered();
 
-    void on_zeroWorkingPushButton_clicked();
-    void on_zeroMachinePushButton_clicked();
-    void on_homeWorkingToolButton_clicked();
-    void on_homeMachineToolButton_clicked();
+    void on_actionRun_triggered();
+    void on_actionStep_triggered();
+    void on_actionPause_triggered();
+    void on_actionStop_triggered();
 
-    void on_homingToolButton_clicked();
+    void on_homePushButton_clicked();
 
-    void on_actionAbout_triggered();
+    void on_actionConfig_triggered();
+
+    void on_ZeroPushButton_clicked();
+
+    void on_pushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -160,7 +131,6 @@ private:
     QStringList devicesList;
     Machine *machine;
     Port *port;
-    int jogInterval;
 
     QStringList gcode;
     int gcodeIndex;

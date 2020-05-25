@@ -56,7 +56,7 @@ public:
             flagHasLineNumber,
             flagHasSwitches,
             flagHasOverride,
-            flagHasActions,
+            flagHasActioners,
             flagHasError,
             flagHasAlarm,
 
@@ -83,13 +83,15 @@ public:
         enum {
             commandReset,
             commandUnlock,
-            commandHome,
+            commandHoming,
             commandStatus,
             commandConfig,
             commandInfos,
             commandPause,
             commandFeedHold,
             commandCycleStart,
+            commandHomeMachine,
+            commandHomeWorking,
             Last
         };
     };
@@ -236,13 +238,14 @@ signals:
     void lineNumberUpdated();
     void coordinatesUpdated();
     void switchesUpdated();
-    void actionsUpdated();
+    void actionersUpdated();
     void ratesUpdated();
     void buffersUpdated();
 
     void configUpdated(); // When configuration has been received
     void infoUpdated();   // When information has been received
     void error(int errorCode); // When error has been received
+    void alarm(int alarmCode); // When alarm has been received
     void commandExecuted();    // When command has been accepted (not necesserally executed !!!)
     void commandSent(QString &gcode); // When a command is send to machine
 

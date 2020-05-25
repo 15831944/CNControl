@@ -3,8 +3,8 @@
 
 #include <QDebug>
 
-Grbl::Grbl(Port *port) :
-    Machine(port)
+Grbl::Grbl(Port *device) :
+    Machine(device)
 {
     machineName = "GRBL";
 
@@ -224,6 +224,8 @@ bool Grbl::ask(int commandCode, int commandArg, bool noLog)
         switches = 0;
         actioners = 0;
         newLine = false;
+        // Grbl resets working offset on reset
+        bitClear(infos, InfoFlags::flagHasWorkingOffset);
         break;
 
     case CommandType::commandStatus:
@@ -235,7 +237,7 @@ bool Grbl::ask(int commandCode, int commandArg, bool noLog)
         cmd = CMD_UNLOCK;
         break;
 
-    case CommandType::commandHome:
+    case CommandType::commandHoming:
         cmd = CMD_HOME;
         break;
 
@@ -282,6 +284,10 @@ bool Grbl::ask(int commandCode, int commandArg, bool noLog)
     case CommandType::commandSaftyDoor:
         cmd = static_cast<char>(CMD_SAFETY_DOOR);
         newLine = false;
+        break;
+
+    case CommandType::commandCheck:
+        cmd = CMD_CHECK;
         break;
 
     case CommandType::commandOverrideFeed:
@@ -383,18 +389,18 @@ void Grbl::parse(QString &line)
 {
     lastLine = line;
 
+    //qDebug() << "line=" << line;
     // Parse message
     if (line.startsWith("Grbl"))
     {
         QStringList blocks = line.split(" ", QString::KeepEmptyParts, Qt::CaseInsensitive);
-        qDebug() << blocks.at(0).toUtf8() << " " << blocks.at(1).toUtf8();
 
         machineName = blocks.at(0);
-        qDebug() << "Grbl::parse: Get machine name " << machineName;
+        qDebug() << "Grbl::parse: Machine name " << machineName;
         bitSet(features, FeatureFlags::flagName);
 
         machineVersion = blocks.at(1);
-        qDebug() << "Grbl::parse: Get partial version " << machineVersion;
+        qDebug() << "Grbl::parse: Partial version " << machineVersion;
         bitSet(features, FeatureFlags::flagVersion);
         emit versionUpdated();
 
@@ -408,15 +414,22 @@ void Grbl::parse(QString &line)
     else if (line.startsWith("ok"))
     {
         bitClear(infos, InfoFlags::flagHasError);
-        qDebug() << "Grbl::parse: Command executed.";
+        //qDebug() << "Grbl::parse: Command executed.";
         emit commandExecuted();
     }
     else if (line.startsWith("error:"))
     {
-        QString reste = line.right( line.size() - 6 );
-        errorCode = reste.toInt();
+        QString block = line.right( line.size() - 6 );
+        errorCode = block.toInt();
         qDebug() << QString("Grbl::parse: Error %1 : %2 ").arg( errorCode ).arg( errors[ errorCode ] ).toUtf8().data();
         emit error(errorCode);
+    }
+    else if (line.startsWith("ALARM:"))
+    {
+        QString block = line.right( line.size() - 6 );
+        alarmCode = block.toInt();
+        //state = StateType::stateAlarm;
+        emit alarm(alarmCode);
     }
     else if (line.startsWith('[')) // This is an information
     {
@@ -428,7 +441,11 @@ void Grbl::parse(QString &line)
         parseStatus(line);
         emit statusUpdated();
     }
-    else if (line.startsWith('$') ) // This is config
+    else if (line.startsWith('>') ) // This is status
+    {
+        // This is a line execution, probably starting blocks.
+        // Do nothing about that.
+    }    else if (line.startsWith('$') ) // This is config
     {
         parseConfig(line);
         emit configUpdated();
@@ -478,7 +495,7 @@ void Grbl::parseInfo(QString &line)
             if (command == "G90") bitClear(infos, InfoFlags::flagIsAbsolute);
             if (command == "G91") bitSet(infos, InfoFlags::flagIsAbsolute );
 
-            // The rest is not really relevant
+            // The rest is not really relevant for now.
         }
         //qDebug() << "Grbl GC found.";
         bitSet(infos, InfoFlags::flagGC);
@@ -491,12 +508,10 @@ void Grbl::parseInfo(QString &line)
         if ( vals.size() == 2 )
         {
             machineVersion = vals.at(0);
-            qDebug() << "Grbl::parse: Get version";
+            qDebug() << "Grbl::parse: Complete version" << machineVersion;
             bitSet(features, FeatureFlags::flagVersion);
             emit versionUpdated();
         }
-        // What to do with that ?
-        //qDebug() << "Grbl VER found.";
     }
     else if (block.startsWith("OPT:"))
     {
@@ -505,18 +520,17 @@ void Grbl::parseInfo(QString &line)
         vals = block.split(",", QString::KeepEmptyParts, Qt::CaseInsensitive);
         if ( vals.size() == 3 )
         {
-            // These values are possible, but we don't care about them for now.
             if (vals.at(0).contains('V')) // variable spindle
             {
                 bitSet(features, FeatureFlags::flagHasVariableSpindle);
                 bitSet(features, FeatureFlags::flagHasLaserMode);
             }
-//            if (vals.at(0).contains('N')); // line numbers
 
             if (vals.at(0).contains('M')) // Mist coolant
                 bitSet(features, FeatureFlags::flagHasCoolantMist);
 
             // These values are possible, but we don't care about them for now.
+//            if (vals.at(0).contains('N')); // line numbers
 //            if (vals.at(0).contains('C')); // coreXY
 //            if (vals.at(0).contains('P')); // Parking
 //            if (vals.at(0).contains('Z')); // Home force set origin
@@ -540,7 +554,6 @@ void Grbl::parseInfo(QString &line)
             blockBufferMax = vals.at(1).toInt();
             rxBufferMax = vals.at(2).toInt();
 
-            //qDebug() << "Grbl OPT found.";
         }
         else qDebug() << "Grbl OPT: incorrect format: " << block;
     }
@@ -580,6 +593,7 @@ void Grbl::parseStatus(QString &line)
     bool changed = false;
     infos &= bit(InfoFlags::flagHasWorkingOffset)|bit(InfoFlags::flagHasMachineCoords); // WorkingOffset must be kept accross calls
 
+    quint64 newActioners = 0;
     quint64 newSwitches = 0;
     bitSet(infos, InfoFlags::flagHasSwitches); // Switches are considered always presents, absence means released.
 
@@ -602,9 +616,14 @@ void Grbl::parseStatus(QString &line)
         holdCode = block.toInt();
         newstate = StateType::stateHold;
     }
-    if ( block == "Jog" ) newstate = StateType::stateJog;
-    if ( block == "Home" ) newstate = StateType::stateHome;
-    if ( block == "Alarm") newstate = StateType::stateAlarm;
+    if ( block == "Jog" )
+        newstate = StateType::stateJog;
+    if ( block == "Home" )
+        newstate = StateType::stateHome;
+    if ( block == "Alarm")
+    {
+        newstate = StateType::stateAlarm;
+    }
     if ( block == "Check" ) newstate = StateType::stateCheck;
     if ( block.startsWith("Door:"))
     {
@@ -834,15 +853,14 @@ void Grbl::parseStatus(QString &line)
                 spindleSpeedOverride = vals.at(2).toInt();
 
                 // When Ov: is present, actions are following if any.
-                bitSet(infos, InfoFlags::flagHasActions);
+                bitSet(infos, InfoFlags::flagHasActioners);
                 actioners = 0;
              } else qDebug() << "Grbl statusError : " << block;
 
         } else if ( block.startsWith("A:") ) // Action states
         {
-            bitSet(infos, InfoFlags::flagHasActions); // just in case
+            bitSet(infos, InfoFlags::flagHasActioners); // just in case
 
-            quint64 newActioners = 0;
             block = block.right( block.size() - 2 );
             if (block.contains("SS", Qt::CaseInsensitive))
             {
@@ -879,12 +897,6 @@ void Grbl::parseStatus(QString &line)
                 bitSet(newActioners, ActionerFlags::actionCoolantMist);
             }
 
-            if (actioners != newActioners)
-            {
-                actioners = newActioners;
-                emit actionsUpdated();
-            }
-
         } else qDebug() << "Grbl statusError : " << block;
     }
 
@@ -894,6 +906,13 @@ void Grbl::parseStatus(QString &line)
         switches = newSwitches;
         emit switchesUpdated();
     }
+
+    if (bitIsSet(infos, Machine::InfoFlags::flagHasActioners) && (actioners != newActioners))
+    {
+        actioners = newActioners;
+        emit actionersUpdated();
+    }
+
     first = false;
 }
 
@@ -932,23 +951,26 @@ void Grbl::parseConfig(QString &line)
 void Grbl::setXWorkingZero()
 {
     if (sendCommand( "G92X0" ))
-        ;
-//    {
-//        workingOffset.x = machineCoordinates.x;
-//        workingCoordinates.x = 0;
-        bitClear(infos, Machine::InfoFlags::flagHasWorkingCoords);
-        bitClear(infos, Machine::InfoFlags::flagHasMachineCoords);
-//    }
+    {
+        workingCoordinates.x = 0;
+        bitClear(infos, Machine::InfoFlags::flagHasWorkingOffset);
+    }
 };
 
 void Grbl::setYWorkingZero()
 {
-    if (sendCommand( "G92Y0" ));
-//        workingOffset.y = machineCoordinates.y;
+    if (sendCommand( "G92Y0" ))
+    {
+        workingCoordinates.y = 0;
+        bitClear(infos, Machine::InfoFlags::flagHasWorkingOffset);
+    }
 };
 
 void Grbl::setZWorkingZero()
 {
-    if (sendCommand( "G92Z0" ));
-//        workingOffset.z = machineCoordinates.z;
+    if (sendCommand( "G92Z0" ))
+    {
+        workingCoordinates.z = 0;
+        bitClear(infos, Machine::InfoFlags::flagHasWorkingOffset);
+    }
 };
