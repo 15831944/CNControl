@@ -28,7 +28,7 @@ SOURCES += \
     QCSVFile.cpp \
     aaaa_idees.cpp \
     configurationdialog.cpp \
-    gcodeparser.cpp \
+    gcode.cpp \
     grblconfigurationdialog.cpp \
     main.cpp \
     glineedit.cpp \
@@ -44,7 +44,7 @@ SOURCES += \
 HEADERS += \
     QCSVFile \
     configurationdialog.h \
-    gcodeparser.h \
+    gcode.h \
     grblconfigurationdialog.h \
     mainwindow.h \
     singleton.h \

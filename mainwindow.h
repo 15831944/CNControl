@@ -7,7 +7,7 @@
 #include <QTimer>
 
 #include "port_serial.h"
-#include "gcodeparser.h"
+#include "gcode.h"
 #include "machine.h"
 #include "highlighter.h"
 
@@ -148,6 +148,8 @@ private slots:
 
     void on_jogIntervalSlider_valueChanged(int value);
 
+    void on_gCodeExecutionSlider_valueChanged(int value);
+
 private:
     Ui::MainWindow *ui;
     QTimer  portsTimer;
@@ -159,7 +161,7 @@ private:
     Port *port;
     double jogInterval;
 
-    GCodeParser *gcodeParser;
+    GCode *gcodeParser;
 
     QStringList gcode;
     int gcodeIndex;

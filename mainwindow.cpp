@@ -47,7 +47,8 @@ MainWindow::MainWindow(QWidget *parent) :
 //    connect( ui->yMachineLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(yMachineLineEdit_focusOut(QFocusEvent *)));
 //    connect( ui->zMachineLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(zMachineLineEdit_focusOut(QFocusEvent *)));
 
-    gcodeParser = new GCodeParser();
+    gcodeParser = new GCode();
+
     SerialPort *serial = new SerialPort();
     serial->setSpeed( 38400 );
     port = serial;
@@ -239,6 +240,8 @@ void MainWindow::openFile(QString fileName)
         {
             QStringList lines = ui->gcodeCodeEditor->toPlainText().split("\n");
             gcodeParser->parse( lines );
+
+            ui->visualizer->setGCode( gcodeParser );
 
             ui->gCodeSizeInfo->setText( QString("%1 / %2 mm")
                         .arg( QString().sprintf("%4.2lf", gcodeParser->getMaxX() - gcodeParser->getMinX()) )
@@ -1384,3 +1387,8 @@ void MainWindow::on_actionAbout_triggered()
     QMessageBox::about(this, PROGRAM_NAME, QString("%1 %2").arg(PROGRAM_NAME).arg(PROGRAM_VERSION));
 }
 
+
+void MainWindow::on_gCodeExecutionSlider_valueChanged(int value)
+{
+    ui->visualizer->setExecution(value);
+}

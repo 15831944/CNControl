@@ -1,30 +1,29 @@
-#include "gcodeparser.h"
+#include "gcode.h"
 
 #include <QDebug>
 
-GCodeParser::GCodeParser()
+GCode::GCode()
 {
     qDebug() << "GCodeParser::GCodeParser()";
 }
 
 #define MAX_INT_DIGITS 8
-bool GCodeParser::parse(QStringList &gcode)
+bool GCode::parse(QStringList &gcode)
 {
     int unit = UnitType::millimeters;
     int mode = ModeType::absolute;
-    features = 0;
 
     // We start at zero for each coordinates
-    double x=0, y=0, z=0;
+    float x=0, y=0, z=0;
     points.clear();
 
     for (int nRow = 0; nRow < gcode.size(); ++nRow)
     {
+        features = 0;
         QString row =  gcode.at(nRow).trimmed();
         bool inComment = false;
 
-        bool motionCommand = false;
-        bool jogCommand = false;
+        int motion = -1;
 
         // qDebug() << "Line:" << nRow;
 
@@ -72,10 +71,10 @@ bool GCodeParser::parse(QStringList &gcode)
                     switch (intValue)
                     {
                     case 0:
-                        jogCommand = true;
+                        motion = MotionType::jog;
                         break;
                     case 1:
-                        motionCommand = true;
+                        motion = MotionType::run;
                         break;
                     case 20:
                         unit = UnitType::millimeters;
@@ -105,7 +104,7 @@ bool GCodeParser::parse(QStringList &gcode)
                     }
                     break;
                 default:
-                    if (motionCommand || jogCommand)
+                    if (motion>=0)
                     {
                         switch (letter.toLatin1())
                         {
@@ -162,10 +161,17 @@ bool GCodeParser::parse(QStringList &gcode)
             }
         } // End of row parsing
 
-        CoordinatesType point = { x, y, z };
-        points.append( point );
-        //qDebug() << "Point: " << x << "," << y << "," << z;
-
+        if (motion>=0)
+        {
+            QVector3D point = { x, y, z };
+            points.append( point );
+            if (motion == MotionType::run &&
+                bitIsClear(features, WordFlags::flagHasX) &&
+                bitIsClear(features, WordFlags::flagHasY))
+                motion = MotionType::move;
+            motions.append( motion );
+            //qDebug() << "Point("<< x << "," << y << "," << z << "), motion " << motion;
+        }
     } // End of gCode
 
 //    qDebug() << "End of gCode";

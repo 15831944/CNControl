@@ -1,10 +1,11 @@
-#ifndef GCODEPARSER_H
-#define GCODEPARSER_H
+#ifndef GCODE_H
+#define GCODE_H
 
 #include <QStringList>
+#include <QVector3D>
 #include "bits.h"
 
-class GCodeParser
+class GCode
 {
     class FeatureFlags
     {
@@ -50,56 +51,45 @@ class GCodeParser
             Last
         };
     };
-
-    class TypeType
+public:
+    class MotionType
     {
     public:
         enum {
-            run,
             jog,
+            run,
+            move,
             Last
         };
     };
 
-    typedef struct CoordinatesType
-    {
-        double x;
-        double y;
-        double z;
-
-        int type;
-
-        bool operator==(CoordinatesType coords)
-        {
-            return (coords.x == x) && (coords.y == y) && (coords.z == z);
-        }
-        bool operator!=(CoordinatesType coords)
-        {
-            return !(*this == coords);
-        }
-    } CoordinatesType;
-
 public:
-    GCodeParser();
+    GCode();
 
     bool parse(QStringList &gcode);
 
-    double getMinX() { return minX; }
-    double getMinY() { return minY; }
-    double getMinZ() { return minZ; }
+    float getMinX() { return minX; }
+    float getMinY() { return minY; }
+    float getMinZ() { return minZ; }
 
-    double getMaxX() { return maxX; }
-    double getMaxY() { return maxY; }
-    double getMaxZ() { return maxZ; }
+    float getMaxX() { return maxX; }
+    float getMaxY() { return maxY; }
+    float getMaxZ() { return maxZ; }
 
+    float getSizeX() { return maxX - minX; }
+    float getSizeY() { return maxY - minY; }
+    float getSizeZ() { return maxZ - minZ; }
+
+    QList<QVector3D> &getPoints()  { return points; }
+    QList<int>       &getMotions() { return motions; }
 protected:
     quint64 features;
-    double minX, maxX;
-    double minY, maxY;
-    double minZ, maxZ;
+    float minX, maxX;
+    float minY, maxY;
+    float minZ, maxZ;
 
-    QList<CoordinatesType> points;
-
+    QList<QVector3D> points;
+    QList<int>       motions;
 };
 
-#endif // GCODEPARSER_H
+#endif // GCODE_H
