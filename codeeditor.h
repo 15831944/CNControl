@@ -59,5 +59,16 @@ private:
     CodeEditor *codeEditor;
 };
 
+//class PreviewArea : public QWidget
+//{
+//public:
+//    PreviewArea(CodeEditor *editor) : QWidget(editor) {
+//        codeEditor = editor;
+//    }
+
+//private:
+//    CodeEditor *codeEditor;
+//};
+
 
 #endif // CODEEDITOR_H

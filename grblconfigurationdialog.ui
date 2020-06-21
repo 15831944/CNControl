@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GrblConfiguration</class>
- <widget class="QDialog" name="GrblConfiguration">
+ <class>GrblConfigurationDialog</class>
+ <widget class="QDialog" name="GrblConfigurationDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>553</width>
-    <height>362</height>
+    <width>559</width>
+    <height>365</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -36,13 +36,6 @@
        <string>General</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_5">
-       <item row="8" column="2">
-        <widget class="QLineEdit" name="arcToleranceLineEdit">
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
        <item row="2" column="2">
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
@@ -80,29 +73,16 @@
          </item>
         </layout>
        </item>
-       <item row="6" column="3">
-        <widget class="QLabel" name="stepIdleDelayUnit">
+       <item row="6" column="0">
+        <widget class="QLabel" name="stepIdelDelayLabel">
          <property name="minimumSize">
           <size>
-           <width>62</width>
-           <height>0</height>
+           <width>121</width>
+           <height>26</height>
           </size>
          </property>
          <property name="text">
-          <string>ms</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="3">
-        <widget class="QLabel" name="junctionDeviationUnit">
-         <property name="minimumSize">
-          <size>
-           <width>62</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>mm</string>
+          <string>Step idle delay</string>
          </property>
         </widget>
        </item>
@@ -116,32 +96,6 @@
          </property>
          <property name="text">
           <string>Arc tolerance</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
-        <widget class="QLineEdit" name="stepPulseLineEdit">
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="stepPulseLabel">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Step pulse</string>
          </property>
         </widget>
        </item>
@@ -177,16 +131,23 @@
          </item>
         </layout>
        </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="junctionDeviationLabel">
+       <item row="9" column="0">
+        <widget class="QLabel" name="spindleSpeedLabel">
+         <property name="text">
+          <string>Spindle Speed</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="3">
+        <widget class="QLabel" name="stepIdleDelayUnit">
          <property name="minimumSize">
           <size>
-           <width>121</width>
-           <height>26</height>
+           <width>62</width>
+           <height>0</height>
           </size>
          </property>
          <property name="text">
-          <string>Junction deviation</string>
+          <string>ms</string>
          </property>
         </widget>
        </item>
@@ -215,45 +176,12 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="2">
-        <widget class="QLineEdit" name="stepIdleDelayLineEdit">
+       <item row="7" column="2">
+        <widget class="QLineEdit" name="junctionDeviationLineEdit">
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
-       </item>
-       <item row="10" column="2">
-        <widget class="QCheckBox" name="laserModeCheckBox">
-         <property name="text">
-          <string>Laser mode</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="stepIdelDelayLabel">
-         <property name="minimumSize">
-          <size>
-           <width>121</width>
-           <height>26</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>Step idle delay</string>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0">
-        <spacer name="verticalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
        <item row="8" column="3">
         <widget class="QLabel" name="arcToleranceUnit">
@@ -268,8 +196,54 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="2">
-        <widget class="QLineEdit" name="junctionDeviationLineEdit">
+       <item row="6" column="2">
+        <widget class="QLineEdit" name="stepIdleDelayLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="3">
+        <widget class="QLabel" name="junctionDeviationUnit">
+         <property name="minimumSize">
+          <size>
+           <width>62</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>mm</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="stepPulseLabel">
+         <property name="minimumSize">
+          <size>
+           <width>121</width>
+           <height>26</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Step pulse</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="2">
+        <widget class="QCheckBox" name="laserModeCheckBox">
+         <property name="text">
+          <string>Laser mode</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="2">
+        <widget class="QLineEdit" name="stepPulseLineEdit">
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
@@ -288,12 +262,79 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
-        <widget class="QLabel" name="spindleSpeedLabel">
+       <item row="7" column="0">
+        <widget class="QLabel" name="junctionDeviationLabel">
+         <property name="minimumSize">
+          <size>
+           <width>121</width>
+           <height>26</height>
+          </size>
+         </property>
          <property name="text">
-          <string>Spindle Speed</string>
+          <string>Junction deviation</string>
          </property>
         </widget>
+       </item>
+       <item row="8" column="2">
+        <widget class="QLineEdit" name="arcToleranceLineEdit">
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0">
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="12" column="0" colspan="4">
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <property name="topMargin">
+          <number>10</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="pushButton_3">
+           <property name="text">
+            <string>Reset</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton">
+           <property name="text">
+            <string>Open</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButton_2">
+           <property name="text">
+            <string>Save</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -1233,7 +1274,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>GrblConfiguration</receiver>
+   <receiver>GrblConfigurationDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -1249,7 +1290,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>GrblConfiguration</receiver>
+   <receiver>GrblConfigurationDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

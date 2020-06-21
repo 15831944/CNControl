@@ -18,5 +18,6 @@
         <file>images/actions/play.png</file>
         <file>images/actions/step.png</file>
         <file>images/actions/stop.png</file>
+        <file>images/Logo.png</file>
     </qresource>
 </RCC>

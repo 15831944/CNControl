@@ -64,6 +64,7 @@ class Grbl : public Machine
     QMap<uint, CoordinatesType> GxxConfig;
     CoordinatesType prbCoords;
     double TLOValue;
+
 public:
     class StateType : public Machine::StateType
     {
@@ -222,6 +223,11 @@ public:
 
     virtual bool ask(int command, int arg = 0, bool noLog = false);
 
+    void readErrorsMessages();
+    void readAlarmsMessages();
+    void readBuildOptionsMessages();
+    void readSettingsMessages();
+
     virtual void setXWorkingZero();
     virtual void setYWorkingZero();
     virtual void setZWorkingZero();
@@ -241,7 +247,7 @@ private slots:
 
 signals:
 
-    friend class GrblConfiguration;
+    friend class GrblConfigurationDialog;
 };
 
 #endif // GRBL_H

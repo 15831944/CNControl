@@ -25,6 +25,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+    QCSVFile.cpp \
+    aaaa_idees.cpp \
+    configurationdialog.cpp \
+    gcodeparser.cpp \
+    grblconfigurationdialog.cpp \
     main.cpp \
     glineedit.cpp \
     highlighter.cpp \
@@ -34,9 +39,13 @@ SOURCES += \
     port.cpp \
     codeeditor.cpp \
     grbl.cpp \
-    grblconfiguration.cpp
+    visualizer.cpp
 
 HEADERS += \
+    QCSVFile \
+    configurationdialog.h \
+    gcodeparser.h \
+    grblconfigurationdialog.h \
     mainwindow.h \
     singleton.h \
     glineedit.h \
@@ -47,10 +56,11 @@ HEADERS += \
     port.h \
     codeeditor.h \
     grbl.h \
-    grblconfiguration.h
+    visualizer.h
 
 FORMS += \
-    grblconfiguration.ui \
+    configurationdialog.ui \
+    grblconfigurationdialog.ui \
     mainwindow.ui
 
 # Default rules for deployment.

@@ -1,18 +1,18 @@
-#include "grblconfiguration.h"
-#include "ui_grblconfiguration.h"
+#include "grblconfigurationdialog.h"
+#include "ui_grblconfigurationdialog.h"
 
 #include <QMap>
 #include <QDebug>
 
-GrblConfiguration::GrblConfiguration(QWidget *parent) :
+GrblConfigurationDialog::GrblConfigurationDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::GrblConfiguration)
+    ui(new Ui::GrblConfigurationDialog)
 {
     ui->setupUi(this);
     ui->tabWidget->setCurrentIndex(0);
 }
 
-GrblConfiguration::~GrblConfiguration()
+GrblConfigurationDialog::~GrblConfigurationDialog()
 {
     delete ui;
 }
@@ -23,7 +23,7 @@ GrblConfiguration::~GrblConfiguration()
 #define noFlagMask 0
 
 //void GrblConfiguration::setConfiguration(QMap<uint, double> config, quint64 infos)
-void GrblConfiguration::setConfiguration(Grbl *grbl)
+void GrblConfigurationDialog::setConfiguration(Grbl *grbl)
 {
     for( auto key : grbl->config.keys() )
     {
@@ -107,7 +107,7 @@ void GrblConfiguration::setConfiguration(Grbl *grbl)
     }
 }
 
-bool GrblConfiguration::getConfiguration(Grbl *grbl)
+bool GrblConfigurationDialog::getConfiguration(Grbl *grbl)
 {
     grbl->config[ Grbl::ConfigType::configStepPulse         ] = ui->stepPulseLineEdit->text();
     grbl->config[ Grbl::ConfigType::configStepIdleDelay     ] = ui->stepIdleDelayLineEdit->text();

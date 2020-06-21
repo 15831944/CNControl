@@ -2,64 +2,74 @@
 #include "grbl.h"
 
 #include <QDebug>
+#include <QIcon>
+#include <QMessageBox>
+#include <QFile>
+#include <QCSVFile>
+
+#include "grblconfigurationdialog.h"
 
 Grbl::Grbl(Port *device) :
     Machine(device)
 {
     machineName = "GRBL";
 
-    // Initialize status list
-    states << tr("Unknown","Grbl state") <<
-              tr("Idle","Grbl state")    <<
-              tr("Run","Grbl state")     <<
-              tr("Hold","Grbl state")    <<
-              tr("Jog","Grbl state")     <<
-              tr("Home","Grbl state")    <<
-              tr("Alarm","Grbl state")   <<
-              tr("Check","Grbl state")   <<
-              tr("Door","Grbl state")    <<
-              tr("Sleep","Grbl state");
+    readErrorsMessages();
+    readAlarmsMessages();
+    readBuildOptionsMessages();
+    readSettingsMessages();
 
-    // Initialize error list
-    errors << tr("Ok","Grbl Error Message")                               <<    // 0
-              tr("Command letter missing","Grbl Error Message")           <<    // 1
-              tr("Bad number format","Grbl Error Message")                <<    // 2
-              tr("Invalid statement","Grbl Error Message")                <<    // 3
-              tr("Negative value","Grbl Error Message")                   <<    // 4
-              tr("Setting disabled","Grbl Error Message")                 <<    // 5
-              tr("Setting step pulse min","Grbl Error Message")           <<    // 6
-              tr("Setting read fail","Grbl Error Message")                <<    // 7
-              tr("Idle error","Grbl Error Message")                       <<    // 8
-              tr("System GC lock","Grbl Error Message")                   <<    // 9
-              tr("Soft limit error","Grbl Error Message")                 <<    // 10
-              tr("Overflow","Grbl Error Message")                         <<    // 11
-              tr("Max step rate exceeded","Grbl Error Message")           <<    // 12
-              tr("Check door","Grbl Error Message")                       <<    // 13
-              tr("Line length exceeded","Grbl Error Message")             <<    // 14
-              tr("Travel exceeded","Grbl Error Message")                  <<    // 15
-              tr("Invalid Jog command","Grbl Error Message")              <<    // 16
-              tr("Setting disabled (laser)","Grbl Error Message")         <<    // 17
-              tr("Error 18","Grbl Error Message")                         <<    // 18
-              tr("Error 19","Grbl Error Message")                         <<    // 19
-              tr("Gcode: Unsupported command","Grbl Error Message")       <<    // 20
-              tr("Gcode: Modal group violation","Grbl Error Message")     <<    // 21
-              tr("Gcode: Undefined feed rate","Grbl Error Message")       <<    // 22
-              tr("Gcode: Command value not integer","Grbl Error Message") <<    // 23
-              tr("Gcode: Axis command conflict","Grbl Error Message")     <<    // 24
-              tr("Gcode: Word repeated","Grbl Error Message")             <<    // 25
-              tr("Gcode: No axis words","Grbl Error Message")             <<    // 26
-              tr("Gcode: Invalid line number","Grbl Error Message")       <<    // 27
-              tr("Gcode: Value word missing","Grbl Error Message")        <<    // 28
-              tr("Gcode: Unsupported coords system","Grbl Error Message") <<    // 29
-              tr("Gcode: G53 invalid motion mode","Grbl Error Message")   <<    // 30
-              tr("Gcode: Axis word exists","Grbl Error Message")          <<    // 31
-              tr("Gcode: No axis word in plane","Grbl Error Message")     <<    // 32
-              tr("Gcode: Invalid target","Grbl Error Message")            <<    // 33
-              tr("Gcode: Arc radius error","Grbl Error Message")          <<    // 34
-              tr("Gcode: No offsets in plane","Grbl Error Message")       <<    // 35
-              tr("Gcode: Unused words","Grbl Error Message")              <<    // 36
-              tr("Gcode: G43 dynamic axis error","Grbl Error Message")    <<    // 37
-              tr("Gcode: Max value exceeded","Grbl Error Message");             // 38
+    stateMessages.insert( StateType::stateUnknown, tr("Unknown","Grbl state"));
+    stateMessages.insert( StateType::stateIdle,    tr("Idle","Grbl state"));
+    stateMessages.insert( StateType::stateRun,     tr("Run","Grbl state"));
+    stateMessages.insert( StateType::stateHold,    tr("Hold","Grbl state"));
+    stateMessages.insert( StateType::stateJog,     tr("Jog","Grbl state"));
+    stateMessages.insert( StateType::stateHome,    tr("Home","Grbl state"));
+    stateMessages.insert( StateType::stateAlarm,   tr("Alarm","Grbl state"));
+    stateMessages.insert( StateType::stateCheck,   tr("Check","Grbl state"));
+    stateMessages.insert( StateType::stateDoor,    tr("Door","Grbl state"));
+    stateMessages.insert( StateType::stateSleep,   tr("Sleep","Grbl state"));
+
+//    // Initialize error list
+//    errors << tr("Ok","Grbl Error Message")                               <<    // 0
+//              tr("Command letter missing","Grbl Error Message")           <<    // 1
+//              tr("Bad number format","Grbl Error Message")                <<    // 2
+//              tr("Invalid statement","Grbl Error Message")                <<    // 3
+//              tr("Negative value","Grbl Error Message")                   <<    // 4
+//              tr("Setting disabled","Grbl Error Message")                 <<    // 5
+//              tr("Setting step pulse min","Grbl Error Message")           <<    // 6
+//              tr("Setting read fail","Grbl Error Message")                <<    // 7
+//              tr("Idle error","Grbl Error Message")                       <<    // 8
+//              tr("System GC lock","Grbl Error Message")                   <<    // 9
+//              tr("Soft limit error","Grbl Error Message")                 <<    // 10
+//              tr("Overflow","Grbl Error Message")                         <<    // 11
+//              tr("Max step rate exceeded","Grbl Error Message")           <<    // 12
+//              tr("Check door","Grbl Error Message")                       <<    // 13
+//              tr("Line length exceeded","Grbl Error Message")             <<    // 14
+//              tr("Travel exceeded","Grbl Error Message")                  <<    // 15
+//              tr("Invalid Jog command","Grbl Error Message")              <<    // 16
+//              tr("Setting disabled (laser)","Grbl Error Message")         <<    // 17
+//              tr("Error 18","Grbl Error Message")                         <<    // 18
+//              tr("Error 19","Grbl Error Message")                         <<    // 19
+//              tr("Gcode: Unsupported command","Grbl Error Message")       <<    // 20
+//              tr("Gcode: Modal group violation","Grbl Error Message")     <<    // 21
+//              tr("Gcode: Undefined feed rate","Grbl Error Message")       <<    // 22
+//              tr("Gcode: Command value not integer","Grbl Error Message") <<    // 23
+//              tr("Gcode: Axis command conflict","Grbl Error Message")     <<    // 24
+//              tr("Gcode: Word repeated","Grbl Error Message")             <<    // 25
+//              tr("Gcode: No axis words","Grbl Error Message")             <<    // 26
+//              tr("Gcode: Invalid line number","Grbl Error Message")       <<    // 27
+//              tr("Gcode: Value word missing","Grbl Error Message")        <<    // 28
+//              tr("Gcode: Unsupported coords system","Grbl Error Message") <<    // 29
+//              tr("Gcode: G53 invalid motion mode","Grbl Error Message")   <<    // 30
+//              tr("Gcode: Axis word exists","Grbl Error Message")          <<    // 31
+//              tr("Gcode: No axis word in plane","Grbl Error Message")     <<    // 32
+//              tr("Gcode: Invalid target","Grbl Error Message")            <<    // 33
+//              tr("Gcode: Arc radius error","Grbl Error Message")          <<    // 34
+//              tr("Gcode: No offsets in plane","Grbl Error Message")       <<    // 35
+//              tr("Gcode: Unused words","Grbl Error Message")              <<    // 36
+//              tr("Gcode: G43 dynamic axis error","Grbl Error Message")    <<    // 37
+//              tr("Gcode: Max value exceeded","Grbl Error Message");             // 38
 
     features = bit(FeatureFlags::flagAskStatus) |
                bit(FeatureFlags::flagName);
@@ -77,20 +87,112 @@ Grbl::Grbl(Port *device) :
     connect( &statusTimer, &QTimer::timeout, this, &Grbl::timeout);
     statusTimer.start(200);
 
-    qDebug() << "Grbl : machine initialized.";
+    qDebug() << "Grbl::Grbl: machine initialized.";
 }
 
 Grbl::~Grbl()
 {
     statusTimer.stop();
-    qDebug() << "Grbl : machine deleted.";
+    qDebug() << "Grbl::~Grbl: machine deleted.";
 }
 
-#include <QIcon>
-#include <QMessageBox>
-#include "grblconfiguration.h"
-//#define hasConfig (config.size() >= Grbl::ConfigType::configEnd)
-//#define hasStartingBlocks (config.size() >= Grbl::ConfigType::configStartingBlockEnd)
+
+void Grbl::readErrorsMessages()
+{
+    QCSVFile file("./csv/error_codes_en_US.csv");
+    if(!file.open(QFile::ReadOnly |
+                  QFile::Text))
+    {
+        qDebug() << "Grbl::readErrorsMessages: Could not open file.";
+        return;
+    }
+
+    QStringList row;
+    while (file.readLine(&row))
+    {
+        ErrorMessageType message;
+        message.errorCode = row.at(0).toInt();
+        message.shortMessage = row.at(1);
+        message.longMessage = row.at(2);
+
+        if (message.errorCode)
+            errorMessages[ message.errorCode ] = message;
+    }
+    qDebug() << "Grbl::readErrorsMessages: Messages read " << errorMessages.size();
+};
+
+void Grbl::readAlarmsMessages()
+{
+    QCSVFile file("./csv/alarm_codes_en_US.csv");
+    if(!file.open(QFile::ReadOnly |
+                  QFile::Text))
+    {
+        qDebug() << "Grbl::readAlarmsMessages: Could not open file.";
+        return;
+    }
+
+    QStringList row;
+    while (file.readLine(&row))
+    {
+        AlarmMessageType message;
+        message.alarmCode = row.at(0).toInt();
+        message.shortMessage = row.at(1);
+        message.longMessage = row.at(2);
+
+        if (message.alarmCode)
+            alarmMessages[ message.alarmCode ] = message;
+    }
+    qDebug() << "Grbl::readAlarmsMessages: Messages read " << alarmMessages.size();
+
+};
+
+void Grbl::readBuildOptionsMessages()
+{
+    QCSVFile file("./csv/build_option_codes_en_US.csv");
+    if(!file.open(QFile::ReadOnly |
+                  QFile::Text))
+    {
+        qDebug() << "Grbl::readBuildOptionsMessages: Could not open file.";
+        return;
+    }
+
+    QStringList row;
+    while (file.readLine(&row))
+    {
+        BuildOptionMessageType message;
+        message.buildOptionCode = row.at(0).at(0).toLatin1();
+        message.description = row.at(1);
+
+        buildOptionMessages[ message.buildOptionCode ] = message;
+    }
+    qDebug() << "Grbl::readBuildOptionsMessages: Messages read " << buildOptionMessages.size();
+};
+
+void Grbl::readSettingsMessages()
+{
+    QCSVFile file("./csv/setting_codes_en_US.csv");
+    if(!file.open(QFile::ReadOnly |
+                  QFile::Text))
+    {
+        qDebug() << "Grbl::readSettingsMessages: Could not open file.";
+        return;
+    }
+
+    QStringList row;
+    while (file.readLine(&row))
+    {
+        SettingMessageType message;
+        message.settingCode = row.at(0).toInt();
+        message.setting = row.at(1);
+        message.unit = row.at(2);
+        message.description = row.at(3);
+
+        if (message.settingCode)
+            settingMessages[ message.settingCode ] = message;
+    }
+    qDebug() << "Grbl::readSettingsMessages: Messages read " << settingMessages.size();
+};
+
 
 void Grbl::openConfiguration(QWidget *parent)
 {
@@ -143,7 +245,7 @@ void Grbl::openConfiguration(QWidget *parent)
         bitSet(features, FeatureFlags::flagAskStatus);
 
         // Open the configuration Dialog
-        GrblConfiguration grblConfig(widget);
+        GrblConfigurationDialog grblConfig(widget);
         // Use config to populate configuration dialog
         grblConfig.setConfiguration(this);
         grblConfig.exec();
@@ -404,6 +506,8 @@ void Grbl::parse(QString &line)
         bitSet(features, FeatureFlags::flagVersion);
         emit versionUpdated();
 
+        state = StateType::stateUnknown;
+
         // Problem : When clicking on reset switch, multiple reset occurs.
         //           Informations are asked multiple times (4 times).
         //           It works, but that take plenty of time
@@ -421,14 +525,16 @@ void Grbl::parse(QString &line)
     {
         QString block = line.right( line.size() - 6 );
         errorCode = block.toInt();
-        qDebug() << QString("Grbl::parse: Error %1 : %2 ").arg( errorCode ).arg( errors[ errorCode ] ).toUtf8().data();
+        qDebug() << QString("Grbl::parse: Error %1 : %2 ")
+                    .arg( errorCode )
+                    .arg( getErrorMessages( errorCode ).shortMessage ).toUtf8().data();
         emit error(errorCode);
     }
     else if (line.startsWith("ALARM:"))
     {
         QString block = line.right( line.size() - 6 );
         alarmCode = block.toInt();
-        //state = StateType::stateAlarm;
+        state = StateType::stateAlarm;
         emit alarm(alarmCode);
     }
     else if (line.startsWith('[')) // This is an information
@@ -613,7 +719,16 @@ void Grbl::parseStatus(QString &line)
     if ( block.startsWith("Hold:") )
     {
         block = block.right( block.size() - 5 );
-        holdCode = block.toInt();
+        int newHoldCode = block.toInt();
+
+        // This is a hack to have a signal stateUpdated on holdCode change !!!
+        // Maybe we should duplicate the if statement with "Hold:0" and "Hold:1"...
+        if (newHoldCode != holdCode)
+        {
+            state = StateType::stateUnknown;
+            holdCode = newHoldCode;
+        }
+
         newstate = StateType::stateHold;
     }
     if ( block == "Jog" )
@@ -700,7 +815,7 @@ void Grbl::parseStatus(QString &line)
                 //      in case WorkingOffset changed
                 if (bitIsSet(infos, InfoFlags::flagHasWorkingOffset))
                 {
-                    coords.z = machineCoordinates.x - workingOffset.x;
+                    coords.x = machineCoordinates.x - workingOffset.x;
                     coords.y = machineCoordinates.y - workingOffset.y;
                     coords.z = machineCoordinates.z - workingOffset.z;
                     if ((workingCoordinates != coords) || first) changed = true;
@@ -828,7 +943,7 @@ void Grbl::parseStatus(QString &line)
 
                 if (bitIsClear(infos, InfoFlags::flagHasWorkingCoords))
                 {
-                    coords.z = machineCoordinates.x - workingOffset.x;
+                    coords.x = machineCoordinates.x - workingOffset.x;
                     coords.y = machineCoordinates.y - workingOffset.y;
                     coords.z = machineCoordinates.z - workingOffset.z;
                     changed = true;
@@ -901,7 +1016,7 @@ void Grbl::parseStatus(QString &line)
     }
 
     // This block is here as we must emit switchesUpdated event if no Pn: parameter is present
-    if (switches != newSwitches)
+    //if (switches != newSwitches)
     {
         switches = newSwitches;
         emit switchesUpdated();
@@ -950,7 +1065,7 @@ void Grbl::parseConfig(QString &line)
 
 void Grbl::setXWorkingZero()
 {
-    if (sendCommand( "G92X0" ))
+    if (sendCommand( "G10L20P1X0" ))
     {
         workingCoordinates.x = 0;
         bitClear(infos, Machine::InfoFlags::flagHasWorkingOffset);
@@ -959,7 +1074,7 @@ void Grbl::setXWorkingZero()
 
 void Grbl::setYWorkingZero()
 {
-    if (sendCommand( "G92Y0" ))
+    if (sendCommand( "G10L20P1Y0" ))
     {
         workingCoordinates.y = 0;
         bitClear(infos, Machine::InfoFlags::flagHasWorkingOffset);
@@ -968,7 +1083,7 @@ void Grbl::setYWorkingZero()
 
 void Grbl::setZWorkingZero()
 {
-    if (sendCommand( "G92Z0" ))
+    if (sendCommand( "G10L20P1Z0" ))
     {
         workingCoordinates.z = 0;
         bitClear(infos, Machine::InfoFlags::flagHasWorkingOffset);

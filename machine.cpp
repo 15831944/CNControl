@@ -47,7 +47,12 @@ QString Machine::getMachineVersion()
 }
 bool Machine::isState( int type ) { return state == type; };
 int Machine::getState() { return state; };
-const QString &Machine::getStateString() { return states.at(state); };
+
+const QString Machine::getStateMessages(int state) { return stateMessages.value(state, QString()); };
+const Machine::ErrorMessageType Machine::getErrorMessages(int error) { return errorMessages.value(error, Machine::ErrorMessageType()); };
+const Machine::AlarmMessageType Machine::getAlarmMessages(int alarm) { return alarmMessages.value(alarm, Machine::AlarmMessageType()); };
+const Machine::BuildOptionMessageType Machine::getBuildOptionsMessages(char option) { return buildOptionMessages.value(option, BuildOptionMessageType()); };
+const Machine::SettingMessageType Machine::getSettingMessages(int setting) { return settingMessages.value(setting, SettingMessageType()); };
 
 quint64 Machine::getFeatures() { return features; };
 bool Machine::hasFeature( int flag ) { return bitIsSet(features, flag); };
@@ -85,11 +90,9 @@ int Machine::getFOverride() { return fOverride; };
 int Machine::getROverride() { return rOverride; };
 int Machine::getSpindleSpeedOverride() { return spindleSpeedOverride; };
 
-const QString &Machine::getErrorString(int errorCode) { return errors.at(errorCode); };
-
 const QString &Machine::getLastLine() { return lastLine; };
 
-bool Machine::sendCommand(QString gcode, bool withNewline, bool )
+bool Machine::sendCommand(QString gcode, bool withNewline, bool noLog)
 {
     if (!port) return false;
 
@@ -98,13 +101,14 @@ bool Machine::sendCommand(QString gcode, bool withNewline, bool )
 
     if (withNewline) gcode += "\n";
 
-    //if (!noLog)
-//    if (gcode[0] <= 127)
-//        qDebug() << "Machine::sendCommand(" << gcode << ")";
-//    else
-//        qDebug() << "Machine::sendCommand(" << QString().setNum( static_cast<char>(gcode[0].toLatin1()), 16) << ")";
+    if (!noLog)
+    {
+        if (gcode[0] <= 127)
+            qDebug() << "Machine::sendCommand(" << gcode << ")";
+        else
+            qDebug() << "Machine::sendCommand(" << QString().setNum( static_cast<char>(gcode[0].toLatin1()), 16) << ")";
+    }
 
     emit commandSent(gcode);
     return port->write(gcode.toLocal8Bit()) == gcode.size();
 }
-

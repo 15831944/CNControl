@@ -7,6 +7,7 @@
 #include <QTimer>
 
 #include "port_serial.h"
+#include "gcodeparser.h"
 #include "machine.h"
 #include "highlighter.h"
 
@@ -76,6 +77,7 @@ private slots:
 
     void onPortError(Port::PortError error);
     void onMachineError(int error);
+    void onMachineAlarm(int alarm);
 
     void onCommandExecuted();
 
@@ -131,25 +133,20 @@ private slots:
     void on_resetToolButton_clicked();
     void on_cancelJogToolButton_clicked();
 
-    void on_interval1mmToolButton_clicked();
-    void on_interval10mmToolButton_clicked();
-    void on_interval100mmToolButton_clicked();
-
     void on_runToolButton_clicked();
     void on_stepToolButton_clicked();
-    void on_pauseToolButton_clicked();
 
     void on_stopToolButton_clicked();
     void on_actionNew_triggered();
 
-    void on_zeroWorkingPushButton_clicked();
-    void on_zeroMachinePushButton_clicked();
     void on_homeWorkingToolButton_clicked();
     void on_homeMachineToolButton_clicked();
 
     void on_homingToolButton_clicked();
 
     void on_actionAbout_triggered();
+
+    void on_jogIntervalSlider_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;
@@ -160,11 +157,13 @@ private:
     QStringList devicesList;
     Machine *machine;
     Port *port;
-    int jogInterval;
+    double jogInterval;
+
+    GCodeParser *gcodeParser;
 
     QStringList gcode;
     int gcodeIndex;
-    bool stepCommand;
+    bool stepCommand, doResetOnHold;
 
     bool moveMachine, moveWorking;
 };

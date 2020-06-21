@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "stdio.h"
+//#include "stdio.h"
 
 #include <QString>
 #include <QStringList>
@@ -47,12 +47,13 @@ MainWindow::MainWindow(QWidget *parent) :
 //    connect( ui->yMachineLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(yMachineLineEdit_focusOut(QFocusEvent *)));
 //    connect( ui->zMachineLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(zMachineLineEdit_focusOut(QFocusEvent *)));
 
+    gcodeParser = new GCodeParser();
     SerialPort *serial = new SerialPort();
     serial->setSpeed( 38400 );
     port = serial;
 
     machine = nullptr;
-    jogInterval = 10;
+    on_jogIntervalSlider_valueChanged( 3 );
     gcodeIndex = 0;
 
     QFont font;
@@ -108,10 +109,9 @@ void MainWindow::setUIConnected()
     ui->switchesGroupBox->setEnabled(true);
     ui->gcodeComboBox->setEnabled(true);
 
-    ui->actionRun->setEnabled(true);
-    ui->actionStep->setEnabled(true);
-    ui->actionPause->setEnabled(true);
-    ui->actionStop->setEnabled(true);
+    ui->runToolButton->setEnabled(true);
+    ui->stepToolButton->setEnabled(true);
+    ui->stopToolButton->setEnabled(false);
 
     ui->xZeroToolButton->setEnabled(true);
     ui->xMachineLineEdit->setEnabled(true);
@@ -144,13 +144,11 @@ void MainWindow::setUIDisconnected()
     ui->jogGroupBox->setEnabled(false);
     ui->actionGroupBox->setEnabled(false);
     ui->switchesGroupBox->setEnabled(false);
-    ui->commandsWidget->setEnabled(false);
     ui->gcodeComboBox->setEnabled(false);
 
-    ui->actionRun->setEnabled(false);
-    ui->actionStep->setEnabled(false);
-    ui->actionPause->setEnabled(false);
-    ui->actionStop->setEnabled(false);
+    ui->runToolButton->setEnabled(false);
+    ui->stepToolButton->setEnabled(false);
+    ui->stopToolButton->setEnabled(false);
 
     ui->xZeroToolButton->setEnabled(false);
     ui->xMachineLineEdit->setEnabled(false);
@@ -178,17 +176,15 @@ void MainWindow::setUIDisconnected()
 
 void MainWindow::setUISleeping()
 {
-    ui->commandsWidget->setEnabled(false);
     ui->gcodeComboBox->setEnabled(false);
 
-    ui->actionRun->setEnabled(true);
-    ui->actionStep->setEnabled(true);
-    ui->actionPause->setEnabled(true);
-    ui->actionStop->setEnabled(true);
+    ui->runToolButton->setEnabled(false);
+    ui->stepToolButton->setEnabled(false);
+    ui->stopToolButton->setEnabled(false);
 
-    ui->xZeroToolButton->setEnabled(true);
-    ui->xMachineLineEdit->setEnabled(true);
-    ui->xWorkingLineEdit->setEnabled(true);
+    ui->xZeroToolButton->setEnabled(false);
+    ui->xMachineLineEdit->setEnabled(false);
+    ui->xWorkingLineEdit->setEnabled(false);
 
     ui->yZeroToolButton->setEnabled(true);
     ui->yMachineLineEdit->setEnabled(true);
@@ -228,13 +224,33 @@ void MainWindow::openFile(QString fileName)
                 tr("gcode files (*.tap;*.nc;*.gcode);;All Files (*)"));
     }
 
+    if (fileName.isNull()) return;
     QFile file( fileName );
 
     if (file.open(QFile::ReadOnly | QFile::Text))
     {
         ui->gcodeCodeEditor->setPlainText(file.readAll());
         ui->gcodeCodeEditor->setCurrentLine( 10);
-        checkGcode();
+
+        //if (machine)
+          //  checkGcode();
+
+        if (gcodeParser)
+        {
+            QStringList lines = ui->gcodeCodeEditor->toPlainText().split("\n");
+            gcodeParser->parse( lines );
+
+            ui->gCodeSizeInfo->setText( QString("%1 / %2 mm")
+                        .arg( QString().sprintf("%4.2lf", gcodeParser->getMaxX() - gcodeParser->getMinX()) )
+                        .arg( QString().sprintf("%4.2lf", gcodeParser->getMaxY() - gcodeParser->getMinY()) )
+                        );
+
+            ui->gCodeZeroInfo->setText( QString("%1 / %2 mm")
+                        .arg( QString().sprintf("%4.2lf",  - gcodeParser->getMinX()) )
+                        .arg( QString().sprintf("%4.2lf",  - gcodeParser->getMinY()) )
+                        );
+
+        }
         gcodeIndex = 0;
     }
     else QMessageBox::critical(this,"Error",QString("Can't read file %1").arg( fileName ));
@@ -259,8 +275,8 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    openFile("/home/yann/Téléchargements/Adaptateur trou.gcode");
-    return;
+    //openFile("/home/yann/Téléchargements/Adaptateur trou.gcode");
+    //return;
     openFile();
 }
 
@@ -343,6 +359,7 @@ void MainWindow::openPort()
 
             connect( port, SIGNAL(error(Port::PortError)), this, SLOT(onPortError(Port::PortError)));
             connect( machine, SIGNAL(error(int)), this, SLOT(onMachineError(int)) );
+            connect( machine, SIGNAL(alarm(int)), this, SLOT(onMachineAlarm(int)) );
 
             connect( machine, SIGNAL(statusUpdated()), this, SLOT(onStatusUpdated()) );
 
@@ -363,7 +380,7 @@ void MainWindow::openPort()
         {
             qDebug() << "Error connecting to " << portName.toUtf8();
             QMessageBox::critical(this,tr("Connection Error", "Error dialog caption"),
-                QString(tr("Unable to connect to %1\n%2")).arg(portName).arg(port->errorString()));
+                tr("Unable to connect to %1\n%2").arg(portName).arg(port->errorString()).toUtf8().data());
             closePort();
         }
     }
@@ -375,7 +392,9 @@ void MainWindow::onPortError(Port::PortError error)
     qDebug() << "Port error : " << error;
     if (error == Port::ResourceError) {
         if (port)
-            QMessageBox::critical(this, tr("Critical Error", "Port error dialog caption"), port->errorString());
+            QMessageBox::critical(this,
+                                  tr("Critical Error", "Port error dialog caption"),
+                                  port->errorString());
         closePort();
     }
     else {
@@ -399,8 +418,25 @@ void MainWindow::closePort()
 
 void MainWindow::onMachineError(int error)
 {
-    QString msg = QString(tr("Error %1: %2","Machine error message")).arg(error).arg( machine->getErrorString(error) );
-    QMessageBox::critical(this, tr("Machine Error","Machine error dialog caption"), msg);
+    QMessageBox::critical(this, machine->getErrorMessages(error).shortMessage,
+                          machine->getErrorMessages(error).longMessage );
+//    QMessageBox::critical(this, QString(tr("Machine Error %1", "Machine error dialog title")).arg( error ),
+//                          QString("%2\n\n%3")
+//                          .arg( machine->getErrorMessages(error).shortMessage )
+//                          .arg( machine->getErrorMessages(error).longMessage )
+//                          );
+}
+
+void MainWindow::onMachineAlarm(int alarm)
+{
+    QMessageBox::critical(this, machine->getAlarmMessages(alarm).shortMessage,
+                          machine->getAlarmMessages(alarm).longMessage );
+//    QMessageBox::critical(this, QString(tr("Machine Alarm %1", "Machine alarm dialog title")).arg( alarm ),
+//                          QString("%2\n\n%3")
+//                          .arg( machine->getAlarmMessages(alarm).shortMessage )
+//                          .arg( machine->getAlarmMessages(alarm).longMessage )
+//                          );
+    machine->ask(Machine::CommandType::commandReset);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -412,7 +448,8 @@ void MainWindow::onStateUpdated()
     if (!machineOk()) return; // security
 
     // Display status in coordinatesBox
-    ui->statePushButton->setText( machine->getStateString() );
+    QString stateMessage = machine->getStateMessages( machine->getState() );
+    ui->statePushButton->setText( stateMessage );
 
     if (ui->statePushButton->isChecked())
         ui->statePushButton->setChecked(false);
@@ -426,7 +463,9 @@ void MainWindow::onStateUpdated()
         ui->coordsGroupBox->setEnabled(false);
         ui->jogGroupBox->setEnabled(false);
         ui->actionGroupBox->setEnabled(false);
-        ui->commandsWidget->setEnabled(false);
+
+        ui->statePushButton->setToolTip( tr("Machine state is unknown") );
+
         break;
     case Machine::StateType::stateIdle:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_green.png"));
@@ -435,19 +474,27 @@ void MainWindow::onStateUpdated()
         ui->coordsGroupBox->setFocusPolicy(focusPolicy);
         ui->jogGroupBox->setEnabled(true);
         ui->actionGroupBox->setEnabled(true);
-        ui->commandsWidget->setEnabled(true);
+        ui->runToolButton->setEnabled(true);
+        ui->stepToolButton->setEnabled(true);
+        ui->statePushButton->setToolTip( tr("Pause machine") );
 
         uncheckJogButtons();
         moveMachine = moveWorking = false;
         break;
     case Machine::StateType::stateHold:
+        if (doResetOnHold && machine->getHoldCode() == 0)
+        {
+            machine->ask(Machine::CommandType::commandReset);
+            doResetOnHold = false;
+        }
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_orange.png"));
         //ui->coordsGroupBox->setEnabled(false);
         ui->jogGroupBox->setEnabled(false);
         ui->actionGroupBox->setEnabled(true);
-        ui->commandsWidget->setEnabled(false);
 
         ui->statePushButton->setChecked(true);
+        ui->statePushButton->setToolTip( tr("Resume machine") );
+
         break;
     case Machine::StateType::stateJog:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_yellow.png"));
@@ -465,7 +512,6 @@ void MainWindow::onStateUpdated()
 
         ui->jogGroupBox->setEnabled(true);
         ui->actionGroupBox->setEnabled(true);
-        ui->commandsWidget->setEnabled(false);
         break;
     case Machine::StateType::stateRun:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_green.png"));
@@ -483,46 +529,54 @@ void MainWindow::onStateUpdated()
 
         ui->jogGroupBox->setEnabled(false);
         ui->actionGroupBox->setEnabled(true);
-        ui->commandsWidget->setEnabled(true);
         break;
     case Machine::StateType::stateDoor:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_orange.png"));
         ui->coordsGroupBox->setEnabled(false);
         ui->jogGroupBox->setEnabled(false);
         ui->actionGroupBox->setEnabled(false);
-        ui->commandsWidget->setEnabled(false);
         break;
     case Machine::StateType::stateHome:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_violet.png"));
         ui->coordsGroupBox->setEnabled(false);
         ui->jogGroupBox->setEnabled(false);
         ui->actionGroupBox->setEnabled(false);
-        ui->commandsWidget->setEnabled(false);
         break;
     case Machine::StateType::stateAlarm:
+    {
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_red.png"));
         ui->coordsGroupBox->setEnabled(false);
         ui->jogGroupBox->setEnabled(false);
         ui->actionGroupBox->setEnabled(false);
-        ui->commandsWidget->setEnabled(false);
         if (!ui->statePushButton->isChecked())
             ui->statePushButton->setChecked(true);
+
+        int alarm = machine->getAlarmCode();
+        stateMessage += QString(" %1").arg( alarm );
+        ui->statePushButton->setToolTip( QString("%2\n\n%3")
+                                         .arg( machine->getAlarmMessages(alarm).shortMessage )
+                                         .arg( machine->getAlarmMessages(alarm).longMessage ) );
         stopGcode();
         break;
+    }
     case Machine::StateType::stateCheck:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_blue.png"));
         ui->coordsGroupBox->setEnabled(false);
         ui->jogGroupBox->setEnabled(false);
         ui->actionGroupBox->setEnabled(false);
-        ui->commandsWidget->setEnabled(false);
+
+        ui->statePushButton->setToolTip( tr("Resume normal operations") );
+
         break;
     case Machine::StateType::stateSleep:
         ui->statePushButton->setIcon(QIcon(":/images/leds/led_black.png"));
         ui->coordsGroupBox->setEnabled(false);
         ui->jogGroupBox->setEnabled(false);
         ui->actionGroupBox->setEnabled(false);
-        ui->commandsWidget->setEnabled(false);
         setUISleeping();
+
+        ui->statePushButton->setToolTip( tr("Wake-up machine") );
+
         break;
     }
 
@@ -725,15 +779,12 @@ void MainWindow::checkGcode()
 {
     if (machine)
     {
-        ui->actionRun->setEnabled(false);
-        ui->actionStep->setEnabled(false);
-        ui->actionStop->setEnabled(false);
-        ui->actionPause->setEnabled(false);
+        ui->runToolButton->setEnabled(false);
+        ui->stepToolButton->setEnabled(false);
+        ui->stopToolButton->setEnabled(false);
 
         gcodeIndex = 0;
         gcode = ui->gcodeCodeEditor->toPlainText().split("\n", QString::KeepEmptyParts, Qt::CaseInsensitive);
-        ui->gcodeSentProgressBar->setValue(0);
-        ui->gcodeSentProgressBar->setMaximum( gcode.size() );
 
         ui->gcodeExecutedProgressBar->setValue(0);
         ui->gcodeExecutedProgressBar->setMaximum( gcode.size() );
@@ -751,23 +802,12 @@ void MainWindow::runGcode(bool step)
 {
     if (!machineOk()) return; // security
 
-    //ui->gcodeCodeEditor->setReadOnly(true);
-    ui->actionRun->setEnabled(false);
-    ui->actionStep->setEnabled(step);
-    ui->actionStop->setEnabled(true);
-    ui->actionPause->setEnabled(!step);
-
     if (gcodeIndex == 0)
     {
         gcode = ui->gcodeCodeEditor->toPlainText().split("\n", QString::KeepEmptyParts, Qt::CaseInsensitive);
 
-        ui->gcodeSentProgressBar->setValue(0);
-        ui->gcodeSentProgressBar->setMaximum( gcode.size() );
-
         ui->gcodeExecutedProgressBar->setValue(0);
         ui->gcodeExecutedProgressBar->setMaximum( gcode.size() );
-
-        connect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
 
         if (!step)
         {
@@ -778,21 +818,27 @@ void MainWindow::runGcode(bool step)
             // machine->ask(Grbl::CommandType::commandOverrideCoolantMistToggle);
 
         }
+        connect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
     }
 
     stepCommand = step;
+
+    // This pauses immediately, but seems weird !!!
+    if (step)
+        machine->ask(Machine::CommandType::commandPause, true);
+    else
+        machine->ask(Machine::CommandType::commandPause, false);
+
+    ui->runToolButton->setEnabled(step);
+    ui->stepToolButton->setEnabled(true);
+    ui->stopToolButton->setEnabled(true);
+
     sendNextGCode();
 }
 
 void MainWindow::pauseGcode()
 {
-    if (machine)
-        disconnect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
-    //ui->gcodeCodeEditor->setReadOnly(false);
-    ui->actionRun->setEnabled(true);
-    ui->actionStep->setEnabled(true);
-    ui->actionStop->setEnabled(false);
-    ui->actionPause->setEnabled(false);
+    qDebug() << "MainWindow::pauseGcode";
 }
 
 void MainWindow::stopGcode()
@@ -800,26 +846,28 @@ void MainWindow::stopGcode()
     if (machine)
     {
         disconnect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
+        machine->ask(Machine::CommandType::commandPause, true);
+        doResetOnHold = true;
+
         if (machine->isState(Machine::StateType::stateCheck))
             machine->ask(Grbl::CommandType::commandCheck);
     }
 
-    ui->actionRun->setEnabled(true);
-    ui->actionStep->setEnabled(true);
-    ui->actionStop->setEnabled(false);
-    ui->actionPause->setEnabled(false);
-
     gcodeIndex = 0;
+
+    ui->runToolButton->setEnabled(true);
+    ui->stepToolButton->setEnabled(true);
+    ui->stopToolButton->setEnabled(false);
+
     ui->gcodeExecutedProgressBar->setValue(0);
-    ui->gcodeSentProgressBar->setValue(0);
 }
 
 void MainWindow::onCommandExecuted()
 {
-    //qDebug() << "MainWindow::onCommandExecuted()";
+    qDebug() << "MainWindow::onCommandExecuted() stepCommand=" << stepCommand;
+
     if (stepCommand)
     {
-        ui->actionRun->setEnabled(true);
         ui->actionStep->setEnabled(true);
     }
     else sendNextGCode();
@@ -831,13 +879,12 @@ void MainWindow::sendNextGCode()
     if (gcodeIndex < gcode.size())
     {
         machine->sendCommand( QString("N%1%2").arg(gcodeIndex+1).arg(gcode.at(gcodeIndex)).toUtf8() );
-        ui->gcodeSentProgressBar->setValue(gcodeIndex);
         gcodeIndex++;
     }
 
     if (gcodeIndex >= gcode.size())
     {
-        ui->gcodeSentProgressBar->setValue(gcode.size());
+        disconnect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
         ui->gcodeExecutedProgressBar->setValue(gcode.size());
         stopGcode();
     }
@@ -884,7 +931,7 @@ void MainWindow::on_xWorkingLineEdit_returnPressed()
     if (!moveMachine) // Do not do Machine and Working moves at the same time.
     {
         double x = ui->xWorkingLineEdit->text().toDouble();
-        if (machine->sendCommand(QString("G0X%1").arg(x).toUtf8()))
+        if (machine->sendCommand(QString("$J=G90X%1F1000").arg(x).toUtf8()))
             moveWorking = true;
     }
     ui->xWorkingLineEdit->setModified(false);
@@ -907,7 +954,7 @@ void MainWindow::on_yWorkingLineEdit_returnPressed()
     if (!moveMachine) // Do not do Machine and Working moves at the same time.
     {
         double y = ui->yWorkingLineEdit->text().toDouble();
-        if (machine->sendCommand(QString("G0Y%1").arg(y).toUtf8()))
+        if (machine->sendCommand(QString("$J=G90Y%1F1000").arg(y).toUtf8()))
             moveWorking = true;
     }
     ui->yWorkingLineEdit->setModified(false);
@@ -930,7 +977,7 @@ void MainWindow::on_zWorkingLineEdit_returnPressed()
     if (!moveMachine) // Do not do Machine and Working moves at the same time.
     {
         double z = ui->zWorkingLineEdit->text().toDouble();
-        if (machine->sendCommand(QString("G0Z%1").arg(z).toUtf8()))
+        if (machine->sendCommand(QString("$J=G90Z%1F1000").arg(z).toUtf8()))
             moveWorking = true;
     }
     ui->zWorkingLineEdit->setModified(false);
@@ -953,7 +1000,7 @@ void MainWindow::on_xMachineLineEdit_returnPressed()
     if (!moveWorking) // Do not do Machine and Working moves at the same time.
     {
         double x = ui->xMachineLineEdit->text().toDouble() - machine->getWorkingOffset().x;
-        if (machine->sendCommand(QString("G0X%1").arg(x).toUtf8()))
+        if (machine->sendCommand(QString("$J=G90G53X%1F1000").arg(x).toUtf8()))
             moveMachine = true;
     }
     ui->xMachineLineEdit->setModified(false);
@@ -976,7 +1023,7 @@ void MainWindow::on_yMachineLineEdit_returnPressed()
     if (!moveWorking) // Do not do Machine and Working moves at the same time.
     {
         double y = ui->yMachineLineEdit->text().toDouble() - machine->getWorkingOffset().y;
-        if (machine->sendCommand(QString("G0Y%1").arg(y).toUtf8()))
+        if (machine->sendCommand(QString("$J=G90G53Y%1F1000").arg(y).toUtf8()))
             moveMachine = true;
     }
     ui->yMachineLineEdit->setModified(false);
@@ -999,7 +1046,7 @@ void MainWindow::on_zMachineLineEdit_returnPressed()
     if (!moveWorking) // Do not do Machine and Working moves at the same time.
     {
         double z = ui->zMachineLineEdit->text().toDouble() - machine->getWorkingOffset().z;
-        if (machine->sendCommand(QString("G0Z%1").arg(z).toUtf8()))
+        if (machine->sendCommand(QString("$J=G90G53Z%1F1000").arg(z).toUtf8()))
             moveMachine = true;
     }
     ui->zMachineLineEdit->setModified(false);
@@ -1205,41 +1252,36 @@ void MainWindow::on_zPlusToolButton_clicked()
 void MainWindow::on_zSafeToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    Machine::CoordinatesType coords = machine->getMachineCoordinates();
-    if (coords.z < 0)
-    {
-        QString cmd = QString("$J=G91G53Z0F1000");
-        qDebug() << "Jog : " << cmd;
-        if (machine->sendCommand( cmd ))
-            ui->zSafeToolButton->setChecked(true);
-    }
-    else ui->zSafeToolButton->setChecked(false);
 
+    QString cmd = QString("$J=G90Z0F1000");
+    qDebug() << "Jog : " << cmd;
+    machine->sendCommand( cmd );
 }
 
 //-----------------------------------------------------------------------------------------
-void MainWindow::on_interval1mmToolButton_clicked()
+void MainWindow::on_jogIntervalSlider_valueChanged(int value)
 {
-    ui->interval1mmToolButton->setChecked(true);
-    ui->interval10mmToolButton->setChecked(false);
-    ui->interval100mmToolButton->setChecked(false);
-    jogInterval = 1;
-}
-
-void MainWindow::on_interval10mmToolButton_clicked()
-{
-    ui->interval1mmToolButton->setChecked(false);
-    ui->interval10mmToolButton->setChecked(true);
-    ui->interval100mmToolButton->setChecked(false);
-    jogInterval = 10;
-}
-
-void MainWindow::on_interval100mmToolButton_clicked()
-{
-    ui->interval1mmToolButton->setChecked(false);
-    ui->interval10mmToolButton->setChecked(false);
-    ui->interval100mmToolButton->setChecked(true);
-    jogInterval = 100;
+    switch(value)
+    {
+    case 0:
+        jogInterval = 0.01;
+        break;
+    case 1:
+        jogInterval = 0.1;
+        break;
+    case 2:
+        jogInterval = 1;
+        break;
+    case 3:
+        jogInterval = 10;
+        break;
+    case 4:
+        jogInterval = 100;
+        break;
+    default:
+        jogInterval = 10;
+    }
+    ui->jogIntervalLineEdit->setText( QString("%1").arg(jogInterval));
 }
 
 void MainWindow::on_runToolButton_clicked()
@@ -1252,11 +1294,6 @@ void MainWindow::on_stepToolButton_clicked()
     runGcode(true);
 }
 
-void MainWindow::on_pauseToolButton_clicked()
-{
-    pauseGcode();
-}
-
 void MainWindow::on_stopToolButton_clicked()
 {
     stopGcode();
@@ -1264,50 +1301,24 @@ void MainWindow::on_stopToolButton_clicked()
     // resetMachine();
 }
 
+#define zSafe 5
 void MainWindow::zeroWorking()
 {
     if (!machineOk()) return; // security
-    Machine::CoordinatesType coords = machine->getMachineCoordinates();
-    if (coords.z < 0)
+
+    Machine::CoordinatesType coords = machine->getWorkingCoordinates();
+    if (coords.z < zSafe)
     {
-        if (machine->sendCommand("$J=G90G53Z0F1000"))
+        if (!machine->sendCommand("$J=G90Z5F1000")) // how much zSafe whould be ?
         {
-            ui->statusbar->showMessage("ZSafe");
-            qDebug() << "MainWindow::zeroWorking: zSafe sent.";
-        }
-        else
-        {
-            qDebug() << "MainWindow::zeroWorking: Can't execute zeroWorking";
-            ui->zeroMachinePushButton->setChecked(false);
-            ui->homeMachineToolButton->setChecked(false);
+            qDebug() << "MainWindow::zeroWorking: Can't execute zSafe command.";
+            // there should be a QMessage box here ?
             return;
         }
+    }
 
-    }
-    else qDebug() << "MainWindow::zeroWorking: Can't execute zSafe command.";
-
-    coords = machine->getWorkingCoordinates();
-    if ((coords.x != 0) || (coords.y != 0) || (coords.z != 0))
-    {
-        if (machine->sendCommand("$J=G90X0Y0F1000"))
-        {
-            if (machine->sendCommand("$J=G90Z0F1000"))
-            {
-                ui->zeroWorkingPushButton->setEnabled(true);
-            }
-            else qDebug() << "MainWindow::zeroWorking: Can't execute zZero command.";
-        }
-        else qDebug() << "MainWindow::zeroWorking: Can't execute xyZero command.";
-    }
-    else
-    {
-        ui->zeroWorkingPushButton->setChecked(false);
-        ui->homeWorkingToolButton->setChecked(false);
-    }
-}
-void MainWindow::on_zeroWorkingPushButton_clicked()
-{
-    zeroWorking();
+    if (!machine->sendCommand("$J=G90X0Y0F1000"))
+        qDebug() << "MainWindow::zeroWorking: Can't execute xyZero command.";
 }
 
 void MainWindow::on_homeWorkingToolButton_clicked()
@@ -1329,7 +1340,7 @@ void MainWindow::zeroMachine()
         else
         {
             qDebug() << "MainWindow::zeroWorking: Can't execute zeroWorking";
-            ui->zeroMachinePushButton->setChecked(false);
+            //ui->zeroMachinePushButton->setChecked(false);
             ui->homeMachineToolButton->setChecked(false);
             return;
         }
@@ -1351,14 +1362,9 @@ void MainWindow::zeroMachine()
     }
     else
     {
-        ui->zeroMachinePushButton->setChecked(false);
+        //ui->zeroMachinePushButton->setChecked(false);
         ui->homeMachineToolButton->setChecked(false);
     }
-}
-
-void MainWindow::on_zeroMachinePushButton_clicked()
-{
-    zeroMachine();
 }
 
 void MainWindow::on_homeMachineToolButton_clicked()
@@ -1377,3 +1383,4 @@ void MainWindow::on_actionAbout_triggered()
 {
     QMessageBox::about(this, PROGRAM_NAME, QString("%1 %2").arg(PROGRAM_NAME).arg(PROGRAM_VERSION));
 }
+

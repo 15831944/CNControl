@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QStringList>
 #include <QMap>
+#include <QFile>
 
 #include "port.h"
 #include "bits.h"
@@ -11,6 +12,39 @@
 class Machine : public QObject
 {    
     Q_OBJECT
+
+protected:
+    class ErrorMessageType
+    {
+    public:
+        int errorCode;
+        QString shortMessage;
+        QString longMessage;
+    };
+
+    class AlarmMessageType
+    {
+    public:
+        int alarmCode;
+        QString shortMessage;
+        QString longMessage;
+    };
+
+    class SettingMessageType
+    {
+    public:
+        int settingCode;
+        QString setting;
+        QString unit;
+        QString description;
+    };
+
+    class BuildOptionMessageType
+    {
+    public:
+        char buildOptionCode;
+        QString description;
+    };
 
 public:
 
@@ -162,7 +196,13 @@ protected:
     int lineNumber;
     int fOverride, rOverride, spindleSpeedOverride;
 
-    QStringList errors, states;
+    QMap<int, QString> stateMessages;
+
+    QMap<int, ErrorMessageType> errorMessages;
+    QMap<int, AlarmMessageType> alarmMessages;
+    QMap<int, SettingMessageType> settingMessages;
+    QMap<int, BuildOptionMessageType> buildOptionMessages;
+
     QString lastLine;
 
     QMap<uint, QString> config;
@@ -179,7 +219,13 @@ public:
 
     virtual bool isState( int type );
     virtual int getState();
-    virtual const QString &getStateString();
+
+    // Message functions
+    virtual const QString getStateMessages(int state);
+    virtual const ErrorMessageType getErrorMessages(int error);
+    virtual const AlarmMessageType getAlarmMessages(int alarm);
+    virtual const BuildOptionMessageType getBuildOptionsMessages(char option);
+    virtual const SettingMessageType getSettingMessages(int setting);
 
     virtual QString getMachineVersion();
 
@@ -216,8 +262,6 @@ public:
     virtual int getFOverride();
     virtual int getROverride();
     virtual int getSpindleSpeedOverride();
-
-    virtual const QString &getErrorString(int error);
 
     virtual const QString &getLastLine();
 
