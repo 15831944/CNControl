@@ -1,5 +1,5 @@
 #!/bin/bash
 
-lupdate *.pro
+lupdate -no-obsolete *.pro
 linguist *.ts
 lrelease *.pro

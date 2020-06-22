@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->spindleRateProgressBar->setMaximum(255);
 
+    // editingFinished seems to be emitted when Alt is pressed.
     connect( ui->gcodeComboBox->lineEdit(), &GLineEdit::editingFinished, this, &MainWindow::onGcodeChanged);
 
 //    connect( ui->xWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(xWorkingLineEdit_focusOut(QFocusEvent *)));
@@ -222,7 +223,7 @@ void MainWindow::openFile(QString fileName)
     {
         fileName = QFileDialog::getOpenFileName(nullptr,
                 tr("Open Gcode File"), "",
-                tr("gcode files (*.tap;*.nc;*.gcode);;All Files (*)"));
+                tr("gcode files (*.tap *.nc *.gcode);;All Files (*)"));
     }
 
     if (fileName.isNull()) return;
@@ -243,14 +244,16 @@ void MainWindow::openFile(QString fileName)
 
             ui->visualizer->setGCode( gcodeParser );
 
+            QVector3D size = gcodeParser->getSize();
             ui->gCodeSizeInfo->setText( QString("%1 / %2 mm")
-                        .arg( QString().sprintf("%4.2lf", gcodeParser->getMaxX() - gcodeParser->getMinX()) )
-                        .arg( QString().sprintf("%4.2lf", gcodeParser->getMaxY() - gcodeParser->getMinY()) )
+                        .arg( QString().sprintf("%4.2f", size.x()) )
+                        .arg( QString().sprintf("%4.2f", size.y()) )
                         );
 
+            QVector3D minPoint = gcodeParser->getMin();
             ui->gCodeZeroInfo->setText( QString("%1 / %2 mm")
-                        .arg( QString().sprintf("%4.2lf",  - gcodeParser->getMinX()) )
-                        .arg( QString().sprintf("%4.2lf",  - gcodeParser->getMinY()) )
+                        .arg( QString().sprintf("%4.2f",  - minPoint.x()) )
+                        .arg( QString().sprintf("%4.2f",  - minPoint.y()) )
                         );
 
         }

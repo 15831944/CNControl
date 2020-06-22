@@ -34,7 +34,7 @@
     <item row="1" column="0" rowspan="3" colspan="2">
      <widget class="QTabWidget" name="tabWidget_2">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="visualizationTab">
        <attribute name="title">
@@ -1077,33 +1077,6 @@
         <property name="spacing">
          <number>0</number>
         </property>
-        <item row="1" column="0">
-         <widget class="QPushButton" name="yLimitSwitchPushButton">
-          <property name="focusPolicy">
-           <enum>Qt::NoFocus</enum>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">text-align:left;
-padding: 3px;
-margin: 2px;
-</string>
-          </property>
-          <property name="text">
-           <string>Y Limit</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/images/leds/led_white.png</normaloff>
-            <normalon>:/images/leds/led_green.png</normalon>:/images/leds/led_white.png</iconset>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0">
          <widget class="QPushButton" name="xLimitSwitchPushButton">
           <property name="focusPolicy">
@@ -1117,60 +1090,6 @@ margin: 2px;
           </property>
           <property name="text">
            <string>X Limit</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/images/leds/led_white.png</normaloff>
-            <normalon>:/images/leds/led_green.png</normalon>:/images/leds/led_white.png</iconset>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QPushButton" name="probeSwitchPushButton">
-          <property name="focusPolicy">
-           <enum>Qt::NoFocus</enum>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">text-align:left;
-padding: 3px;
-margin: 2px;
-</string>
-          </property>
-          <property name="text">
-           <string>Probe</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/images/leds/led_white.png</normaloff>
-            <normalon>:/images/leds/led_green.png</normalon>:/images/leds/led_white.png</iconset>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QPushButton" name="zLimitSwitchPushButton">
-          <property name="focusPolicy">
-           <enum>Qt::NoFocus</enum>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">text-align:left;
-padding: 3px;
-margin: 2px;
-</string>
-          </property>
-          <property name="text">
-           <string>Z Limit</string>
           </property>
           <property name="icon">
            <iconset resource="resources.qrc">
@@ -1212,8 +1131,8 @@ margin: 2px;
           </property>
          </widget>
         </item>
-        <item row="0" column="2">
-         <widget class="QPushButton" name="feedHoldSwitchPushButton">
+        <item row="2" column="2">
+         <widget class="QPushButton" name="resetSwitchPushButton">
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -1224,7 +1143,7 @@ margin: 2px;
 </string>
           </property>
           <property name="text">
-           <string>Feed Hold</string>
+           <string>Reset</string>
           </property>
           <property name="icon">
            <iconset resource="resources.qrc">
@@ -1239,7 +1158,88 @@ margin: 2px;
           </property>
          </widget>
         </item>
-        <item row="1" column="2">
+        <item row="2" column="0">
+         <widget class="QPushButton" name="zLimitSwitchPushButton">
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">text-align:left;
+padding: 3px;
+margin: 2px;
+</string>
+          </property>
+          <property name="text">
+           <string>Z Limit</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/images/leds/led_white.png</normaloff>
+            <normalon>:/images/leds/led_green.png</normalon>:/images/leds/led_white.png</iconset>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="yLimitSwitchPushButton">
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">text-align:left;
+padding: 3px;
+margin: 2px;
+</string>
+          </property>
+          <property name="text">
+           <string>Y Limit</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/images/leds/led_white.png</normaloff>
+            <normalon>:/images/leds/led_green.png</normalon>:/images/leds/led_white.png</iconset>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="probeSwitchPushButton">
+          <property name="focusPolicy">
+           <enum>Qt::NoFocus</enum>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">text-align:left;
+padding: 3px;
+margin: 2px;
+</string>
+          </property>
+          <property name="text">
+           <string>Probe</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/images/leds/led_white.png</normaloff>
+            <normalon>:/images/leds/led_green.png</normalon>:/images/leds/led_white.png</iconset>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
          <widget class="QPushButton" name="cycleStartSwitchPushButton">
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
@@ -1266,8 +1266,8 @@ margin: 2px;
           </property>
          </widget>
         </item>
-        <item row="2" column="2">
-         <widget class="QPushButton" name="resetSwitchPushButton">
+        <item row="1" column="2">
+         <widget class="QPushButton" name="feedHoldSwitchPushButton">
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -1278,7 +1278,7 @@ margin: 2px;
 </string>
           </property>
           <property name="text">
-           <string>Reset</string>
+           <string>Feed Hold</string>
           </property>
           <property name="icon">
            <iconset resource="resources.qrc">

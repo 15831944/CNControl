@@ -40,9 +40,11 @@ private:
 
     float  distance = -15.0;
 
-    QVector3D rotation = { -600.0f, 0.0f, -2200.0f };
-    QVector3D center={0.0f, 0.0f, -1.0f};
-    QVector3D plateSize={ 6, 6, 1 };
+    QVector3D eye       = {0.0f,  -distance, 0.0f};
+    QVector3D up        = {0.0f, 0.0f, 1.0f};
+    QVector3D rotation  = { -600.0f, 0.0f, -2200.0f };
+    QVector3D center    = {0.0f, 0.0f, -1.0f};
+    QVector3D plateSize = { 6, 6, 1 };
     float     plateInterval = 0.5f;
 
     GCode *gcode;

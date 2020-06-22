@@ -103,7 +103,7 @@ void Grbl::readErrorsMessages()
     if(!file.open(QFile::ReadOnly |
                   QFile::Text))
     {
-        qDebug() << "Grbl::readErrorsMessages: Could not open file.";
+        qDebug() << QString("Grbl::readErrorsMessages: Could not open file %1.").arg(file.fileName());
         return;
     }
 
@@ -127,7 +127,7 @@ void Grbl::readAlarmsMessages()
     if(!file.open(QFile::ReadOnly |
                   QFile::Text))
     {
-        qDebug() << "Grbl::readAlarmsMessages: Could not open file.";
+        qDebug() << QString("Grbl::readAlarmsMessages: Could not open file %1.").arg(file.fileName());
         return;
     }
 
@@ -152,7 +152,7 @@ void Grbl::readBuildOptionsMessages()
     if(!file.open(QFile::ReadOnly |
                   QFile::Text))
     {
-        qDebug() << "Grbl::readBuildOptionsMessages: Could not open file.";
+        qDebug() << QString("Grbl::readBuildOptionsMessages: Could not open file %1.").arg(file.fileName());
         return;
     }
 
@@ -174,7 +174,7 @@ void Grbl::readSettingsMessages()
     if(!file.open(QFile::ReadOnly |
                   QFile::Text))
     {
-        qDebug() << "Grbl::readSettingsMessages: Could not open file.";
+        qDebug() << QString("Grbl::readSettingsMessages: Could not open file %1.").arg(file.fileName());
         return;
     }
 

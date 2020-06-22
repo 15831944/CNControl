@@ -20,6 +20,7 @@ void Visualizer::initializeGL()
     // GL options
     glClearColor(0.52f, 0.52f, 0.52f, 1.0f);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LINE_SMOOTH);
 }
 
 #include <assert.h>
@@ -28,15 +29,13 @@ void Visualizer::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPolygonMode(GL_FRONT, GL_LINE);
-    glEnable(GL_LINE_SMOOTH);
 
     // Model view matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     QMatrix4x4  modelview;
-    QVector3D eye={0.0f,  -distance, 0.0f};
-    //QVector3D center={0.0f, -1.0f, 1.0f};
-    QVector3D up={0.0f, 0.0f, 1.0f};
+
+    eye.setY( -distance );
 
     modelview.lookAt(eye, center, up);
     modelview.rotate(rotation.x() / 16.0f, QVector3D(1.0f, 0.0f, 0.0f));
@@ -52,19 +51,18 @@ void Visualizer::paintGL()
 
     paintBoard();
     paintGCode();
-    paintRepere(); // Repere is drown at the end, to stay visible et all time
     paintStats();
+    paintRepere(); // Repere is drown at the end, to stay visible et all time
 }
 
 void Visualizer::paintBoard()
 {
-    glBegin(GL_QUADS);
+    glBegin(GL_TRIANGLE_STRIP);
         glColor4f(0.3f, 0.3f, 0.3f, 0.3f);
-
         glVertex3f( -plateSize.x() / 2.0f, -plateSize.y() / 2.0f, 0.0f);
         glVertex3f( -plateSize.x() / 2.0f,  plateSize.y() / 2.0f, 0.0f);
-        glVertex3f(  plateSize.x() / 2.0f,  plateSize.y() / 2.0f, 0.0f);
         glVertex3f(  plateSize.x() / 2.0f, -plateSize.y() / 2.0f, 0.0f);
+        glVertex3f(  plateSize.x() / 2.0f,  plateSize.y() / 2.0f, 0.0f);
     glEnd();
 
     glBegin(GL_LINES);
@@ -140,43 +138,54 @@ void Visualizer::paintGCode()
 
         float color = 0.9f;
 
-        glBegin(GL_LINES);
+//        glBegin(GL_LINES);
+        glBegin(GL_LINE_STRIP);
             glColor3f(0.8f, 0.8f, 0.0f);
-            int nbPointsTotal = points.size();
             int nbPoints = points.size() * perc / 1000L;
 
             for( int i=0 ; i < nbPoints; i++)
             {
                 QVector3D point = points.at(i);
+                QVector3D minPoint = gcode->getMin();
+
                 int motion = motions.at(i);
 
                 // Convert X and Y from mm to cm, but keep Z bigger for visualization
                 point.setX( point.x() / 100.0f );
                 point.setY( point.y() / 100.0f );
-//                point.setZ( (point.z() - gcode->getMinZ()) / 10.0f );
-                point.setZ( point.z() / 10.0f );
+                point.setZ( (point.z() - minPoint.z()) / 10.0f );
 
                 if (motion != lastMotion)
                 {
+                    // Change color according to motion
                     switch(motion)
                     {
-                    case GCode::MotionType::jog:
+                    case GCode::MotionType::jogMove:
                         glColor3f(0.0f, color, 0.0f);
                         glLineWidth( 1.0f );
                         break;
-                    case GCode::MotionType::run:
+                    case GCode::MotionType::feedMove:
                         glColor3f(color, color, 0.0f);
                         glLineWidth( 2.0f );
                         break;
-                    case GCode::MotionType::move:
+                    case GCode::MotionType::rapidMove:
                         glColor3f(0.0f, 0.0f, color);
                         glLineWidth( 1.0f );
                         break;
+                    case GCode::MotionType::clockwiseArcMove:
+                        glColor3f(color, color / 2.0f, 0.0f);
+                        glLineWidth( 2.0f );
+                        break;
+                    case GCode::MotionType::counterClockwiseArcMove:
+                        glColor3f(color / 2.0f, color, 0.0f);
+                        glLineWidth( 2.0f );
+                        break;
+
                     default:
                         qDebug() << "Visualizer::paintGL: Motion unknown " << motion;
                     }
                 }
-                glVertex3f(lastPoint.x(), lastPoint.y(), lastPoint.z());
+//                glVertex3f(lastPoint.x(), lastPoint.y(), lastPoint.z());
                 glVertex3f(point.x(), point.y(), point.z());
 
                 //qDebug() << "Point " << point.x() << ", " << point.y();
@@ -210,8 +219,10 @@ void Visualizer::paintStats()
 //                     .arg(rotation.y())
 //                     .arg(rotation.z()));
 
-    painter.drawText(QRectF(10.0, 5.0, 300.0, 100.0), QString("d=%1")
+    if (gcode)
+    painter.drawText(QRectF(10.0, 5.0, 300.0, 100.0), QString("d=%1, p=%2")
                      .arg(distance)
+                     .arg(gcode->getPoints().size())
                      );
 
 //    if (gcode)
@@ -259,6 +270,7 @@ void Visualizer::wheelEvent(QWheelEvent *event)
 {
     distance *= 1.0f - (1.0f * event->delta() / 1200.0f);
     if (distance > -2.0f) distance = -2.0f;
+    if (distance < -50.0f) distance = -50.0f;
 
     update();
 }
