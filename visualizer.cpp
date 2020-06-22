@@ -138,8 +138,8 @@ void Visualizer::paintGCode()
 
         float color = 0.9f;
 
-//        glBegin(GL_LINES);
-        glBegin(GL_LINE_STRIP);
+        glBegin(GL_LINES);
+//        glBegin(GL_LINE_STRIP);
             glColor3f(0.8f, 0.8f, 0.0f);
             int nbPoints = points.size() * perc / 1000L;
 
@@ -185,7 +185,7 @@ void Visualizer::paintGCode()
                         qDebug() << "Visualizer::paintGL: Motion unknown " << motion;
                     }
                 }
-//                glVertex3f(lastPoint.x(), lastPoint.y(), lastPoint.z());
+                glVertex3f(lastPoint.x(), lastPoint.y(), lastPoint.z());
                 glVertex3f(point.x(), point.y(), point.z());
 
                 //qDebug() << "Point " << point.x() << ", " << point.y();
