@@ -96,8 +96,6 @@ public:
     QList<QVector3D> &getPoints()  { return points; }
     QList<int>       &getMotions() { return motions; }
 protected:
-    quint64 features;
-
     QVector3D center, minPoint, maxPoint;
     QList<QVector3D> points;
     QList<int>       motions;

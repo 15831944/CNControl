@@ -18,23 +18,30 @@ bool GCode::parse(QStringList &gcode)
     // We start at zero for each coordinates
     QVector3D point {0,0,0};
     QVector3D lastPoint = {0,0,0};
+    quint64 words = 0;
+    quint64 features = 0;
+    int motion = -1;
+    bool inComment = false;
+
+    QString row;
+    QChar letter;
 
     points.clear();
     motions.clear();
 
     for (int nRow = 0; nRow < gcode.size(); ++nRow)
     {
-        QString row =  gcode.at(nRow).trimmed();
-        bool inComment = false;
+        row =  gcode.at(nRow).trimmed();
+        inComment = false;
 
-        int motion = -1;
-        quint64 words = 0;
+        motion = -1;
+        words = 0;
 
         // qDebug() << "Line:" << nRow;
 
         while (!row.isEmpty())
         {
-            QChar letter = row.at(0).toUpper();
+            letter = row.at(0).toUpper();
             row = row.right( row.size()-1 );
 
             if (inComment)
@@ -108,6 +115,7 @@ bool GCode::parse(QStringList &gcode)
                     switch (intValue)
                     {
                     case 2:
+                    case 30:
                         // End program
                         break;
                     default:
@@ -205,9 +213,9 @@ bool GCode::parse(QStringList &gcode)
                     }
                     else
                         qDebug() << letter.toLatin1() << intValue << " command not supported.";
-                }
-            }
-        } // End of row parsing
+                } // switch
+            } // if
+        } // while - End of row parsing
 
         if (motion>=0)
         {
@@ -240,18 +248,13 @@ bool GCode::parse(QStringList &gcode)
                 break;
             }
 
-            //qDebug() << "Point("<< x << "," << y << "," << z << "), motion " << motion;
             lastPoint = point;
         } // End of row
     } // End of gCode
 
-//    qDebug() << "End of gCode";
     qDebug() << "Min  : " << getMin();
-    //minX << "," << minY << "," << minZ;
     qDebug() << "Max  : " << getMax();
-    //maxX << "," << maxY << "," << maxZ;
     qDebug() << "Size : " << getSize();
-                              //) << "," << (maxY-minY) << "," << (maxZ-minZ);
     assert( motions.size() == points.size() );
     return true;
 };

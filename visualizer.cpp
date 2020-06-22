@@ -194,7 +194,6 @@ void Visualizer::paintGCode()
             }
         glEnd();
     }
-    paintRepere();
 }
 
 void Visualizer::paintStats()
@@ -212,18 +211,18 @@ void Visualizer::paintStats()
     // FPS display
     glPolygonMode(GL_FRONT, GL_FILL);
     QPainter painter(this);
-    painter.setPen(Qt::white);
+//    painter.setPen(Qt::white);
 //    painter.drawText(QRectF(10.0, 10.0, 300.0, 100.0), QString("FPS:%1, x=%2, y=%3, z=%4")
 //                     .arg(last_count)
 //                     .arg(rotation.x())
 //                     .arg(rotation.y())
 //                     .arg(rotation.z()));
 
-    if (gcode)
-    painter.drawText(QRectF(10.0, 5.0, 300.0, 100.0), QString("d=%1, p=%2")
-                     .arg(distance)
-                     .arg(gcode->getPoints().size())
-                     );
+//    if (gcode)
+//    painter.drawText(QRectF(10.0, 5.0, 300.0, 100.0), QString("d=%1, p=%2")
+//                     .arg(distance)
+//                     .arg(gcode->getPoints().size())
+//                     );
 
 //    if (gcode)
 //    {
