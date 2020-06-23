@@ -9,6 +9,4 @@
  *  - Mettre X, Y, Z à zero.
  *
  * Ce pourrait être dans l'objet Machine... Qui serait alors capable de se sauver sur disque en JSon.
- *
- * Idee : un bouton point zero qui place le zero là où est la machine, pour y revenir plus tard.
  */

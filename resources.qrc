@@ -19,5 +19,7 @@
         <file>images/actions/step.png</file>
         <file>images/actions/stop.png</file>
         <file>images/Logo.png</file>
+        <file>images/view_isometric.png</file>
+        <file>images/view_top.png</file>
     </qresource>
 </RCC>

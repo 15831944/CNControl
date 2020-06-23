@@ -1,5 +1,6 @@
 #include "machine.h"
 #include <QtDebug>
+#include <QJsonDocument>
 
 Machine::Machine(Port *port)
 {
@@ -24,6 +25,23 @@ Machine::Machine(Port *port)
     this->port = port;
 
 };
+
+QJsonObject Machine::toJsonObject()
+{
+    QJsonObject json;
+    json["type"] = "machine";
+    json["zSafe"] = 2;
+    json["center.x"] = 310;
+    json["center.y"] = 360;
+    json["center.z"] = 50;
+
+    return json;
+}
+
+QString Machine::toJson()
+{
+    return QJsonDocument( toJsonObject() ).toJson();
+}
 
 QString Machine::getMachineVersion()
 {

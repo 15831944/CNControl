@@ -265,7 +265,27 @@ bool GCode::parse(QStringList &gcode)
 #define ARC_ANGULAR_TRAVEL_EPSILON 5E-7f
 #define ARC_TOLERANCE 0.002f
 
-// This method is inspired from Grbl 1.1h mc_arc function from motion_control.c
+// The next method is inspired from Grbl 1.1h mc_arc function from motion_control.c
+/*
+  motion_control.c - high level interface for issuing motion commands
+  Part of Grbl
+
+  Copyright (c) 2011-2016 Sungeun K. Jeon for Gnea Research LLC
+  Copyright (c) 2009-2011 Simen Svale Skogsrud
+
+  Grbl is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Grbl is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+*/
 void GCode::mc_arc(QVector3D &target, QVector3D &position, QVector3D &offset,
                    float radius, int motion)
 {

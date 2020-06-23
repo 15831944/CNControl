@@ -36,7 +36,7 @@ public:
     virtual bool setDevice(QString &portName) = 0;
 
     virtual bool setProperty(const char *prop, QVariant &val);
-    virtual qint64 	write(const QByteArray &);
+    virtual qint64 	write(const QByteArray &) = 0;
 
     virtual QString errorString() = 0;
 

@@ -12,61 +12,61 @@
 <context>
     <name>Grbl</name>
     <message>
-        <location filename="grbl.cpp" line="22"/>
+        <location filename="grbl.cpp" line="25"/>
         <source>Unknown</source>
         <comment>Grbl state</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="grbl.cpp" line="23"/>
+        <location filename="grbl.cpp" line="26"/>
         <source>Idle</source>
         <comment>Grbl state</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="grbl.cpp" line="24"/>
+        <location filename="grbl.cpp" line="27"/>
         <source>Run</source>
         <comment>Grbl state</comment>
         <translation>Working</translation>
     </message>
     <message>
-        <location filename="grbl.cpp" line="25"/>
+        <location filename="grbl.cpp" line="28"/>
         <source>Hold</source>
         <comment>Grbl state</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="grbl.cpp" line="26"/>
+        <location filename="grbl.cpp" line="29"/>
         <source>Jog</source>
         <comment>Grbl state</comment>
         <translation>Jogging</translation>
     </message>
     <message>
-        <location filename="grbl.cpp" line="27"/>
+        <location filename="grbl.cpp" line="30"/>
         <source>Home</source>
         <comment>Grbl state</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="grbl.cpp" line="28"/>
+        <location filename="grbl.cpp" line="31"/>
         <source>Alarm</source>
         <comment>Grbl state</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="grbl.cpp" line="29"/>
+        <location filename="grbl.cpp" line="32"/>
         <source>Check</source>
         <comment>Grbl state</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="grbl.cpp" line="30"/>
+        <location filename="grbl.cpp" line="33"/>
         <source>Door</source>
         <comment>Grbl state</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="grbl.cpp" line="31"/>
+        <location filename="grbl.cpp" line="34"/>
         <source>Sleep</source>
         <comment>Grbl state</comment>
         <translation></translation>
@@ -339,105 +339,105 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="mainwindow.ui" line="1366"/>
+        <location filename="mainwindow.ui" line="1376"/>
         <source>&lt;Choose port&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1310"/>
+        <location filename="mainwindow.ui" line="1320"/>
         <source>Connect</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1608"/>
+        <location filename="mainwindow.ui" line="1618"/>
         <source>Coordinates</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1402"/>
-        <location filename="mainwindow.cpp" line="137"/>
+        <location filename="mainwindow.ui" line="1412"/>
+        <location filename="mainwindow.cpp" line="138"/>
         <source>Unknown</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1884"/>
+        <location filename="mainwindow.ui" line="1894"/>
         <source>Working</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="477"/>
-        <location filename="mainwindow.ui" line="1900"/>
+        <location filename="mainwindow.ui" line="487"/>
+        <location filename="mainwindow.ui" line="1910"/>
         <source>Machine</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1254"/>
+        <location filename="mainwindow.ui" line="1264"/>
         <source>Cycle Start</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1200"/>
+        <location filename="mainwindow.ui" line="1210"/>
         <source>Y Limit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="826"/>
+        <location filename="mainwindow.ui" line="836"/>
         <source>Homing</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1281"/>
+        <location filename="mainwindow.ui" line="1291"/>
         <source>Feed Hold</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1146"/>
-        <location filename="mainwindow.ui" line="2115"/>
+        <location filename="mainwindow.ui" line="1156"/>
+        <location filename="mainwindow.ui" line="2125"/>
         <source>Reset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1119"/>
+        <location filename="mainwindow.ui" line="1129"/>
         <source>Door</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1173"/>
+        <location filename="mainwindow.ui" line="1183"/>
         <source>Z Limit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1092"/>
+        <location filename="mainwindow.ui" line="1102"/>
         <source>X Limit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1227"/>
+        <location filename="mainwindow.ui" line="1237"/>
         <source>Probe</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="229"/>
+        <location filename="mainwindow.ui" line="234"/>
         <source>Feed Rate :</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="203"/>
+        <location filename="mainwindow.ui" line="208"/>
         <source>Blocks :</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="148"/>
+        <location filename="mainwindow.ui" line="153"/>
         <source>Spindle speed :</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="290"/>
+        <location filename="mainwindow.ui" line="295"/>
         <source>Receive :</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="283"/>
+        <location filename="mainwindow.ui" line="288"/>
         <source>%p%</source>
         <translation></translation>
     </message>
@@ -447,550 +447,559 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2030"/>
+        <location filename="mainwindow.ui" line="2040"/>
         <source>Stop program</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2033"/>
+        <location filename="mainwindow.ui" line="2043"/>
         <source>⏹</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1979"/>
+        <location filename="mainwindow.ui" line="1989"/>
         <source>Execute program</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="763"/>
-        <location filename="mainwindow.ui" line="1982"/>
+        <location filename="mainwindow.ui" line="773"/>
+        <location filename="mainwindow.ui" line="1992"/>
         <source>▶</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2006"/>
+        <location filename="mainwindow.ui" line="2016"/>
         <source>Execute 1 command</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2009"/>
+        <location filename="mainwindow.ui" line="2019"/>
         <source>⏯</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1479"/>
+        <location filename="mainwindow.ui" line="1489"/>
         <source>Activate mist coolant</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1488"/>
+        <location filename="mainwindow.ui" line="1498"/>
         <source>𝕄ist</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1554"/>
+        <location filename="mainwindow.ui" line="1564"/>
         <source>Activate spindle</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1563"/>
+        <location filename="mainwindow.ui" line="1573"/>
         <source>𝕊pindle</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1518"/>
+        <location filename="mainwindow.ui" line="1528"/>
         <source>Activate flooding coolant</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="41"/>
-        <source>Visualize</source>
-        <oldsource>Visualyse</oldsource>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="88"/>
-        <source>Editor</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="126"/>
+        <location filename="mainwindow.ui" line="131"/>
         <source>Machine informations</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="303"/>
+        <location filename="mainwindow.ui" line="308"/>
         <source>gCode informations</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="315"/>
+        <location filename="mainwindow.ui" line="320"/>
         <source>Bounding box :</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="328"/>
-        <location filename="mainwindow.ui" line="354"/>
+        <location filename="mainwindow.ui" line="333"/>
+        <location filename="mainwindow.ui" line="359"/>
         <source>0 x 0 mm</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="341"/>
+        <location filename="mainwindow.ui" line="346"/>
         <source>Starting point :</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="389"/>
+        <location filename="mainwindow.ui" line="383"/>
+        <source>Log</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="399"/>
         <source>Send command to the machine</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="402"/>
+        <location filename="mainwindow.ui" line="412"/>
         <source>Line :</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="793"/>
+        <location filename="mainwindow.ui" line="803"/>
         <source>⇖𝕎</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="829"/>
+        <location filename="mainwindow.ui" line="839"/>
         <source>⇖ℍ</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="971"/>
+        <location filename="mainwindow.ui" line="981"/>
         <source>⇖𝕄</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="988"/>
+        <location filename="mainwindow.ui" line="998"/>
         <source>X / Y :</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1005"/>
+        <location filename="mainwindow.ui" line="1015"/>
         <source>Z :</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1357"/>
+        <location filename="mainwindow.ui" line="1367"/>
         <source>Grbl</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1527"/>
+        <location filename="mainwindow.ui" line="1537"/>
         <source>𝔽lood</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1653"/>
+        <location filename="mainwindow.ui" line="1663"/>
         <source>X machine coordinate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1668"/>
+        <location filename="mainwindow.ui" line="1678"/>
         <source>Zero Y working coordinate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1671"/>
+        <location filename="mainwindow.ui" line="1681"/>
         <source>𝕐</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1683"/>
+        <location filename="mainwindow.ui" line="1693"/>
         <source>Zero Z working coordinate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1686"/>
+        <location filename="mainwindow.ui" line="1696"/>
         <source>ℤ</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1698"/>
+        <location filename="mainwindow.ui" line="1708"/>
         <source>Zero X working coordinate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1701"/>
+        <location filename="mainwindow.ui" line="1711"/>
         <source>𝕏</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1732"/>
+        <location filename="mainwindow.ui" line="1742"/>
         <source>X working coordinate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1766"/>
+        <location filename="mainwindow.ui" line="1776"/>
         <source>Y working coordinate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1800"/>
+        <location filename="mainwindow.ui" line="1810"/>
         <source>Z working coordinate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1834"/>
+        <location filename="mainwindow.ui" line="1844"/>
         <source>Y machine coordinate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1868"/>
+        <location filename="mainwindow.ui" line="1878"/>
         <source>Z machine coordinate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="586"/>
+        <location filename="mainwindow.ui" line="596"/>
         <source>Jogging</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="908"/>
+        <location filename="mainwindow.ui" line="918"/>
         <source>Z Minus</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="911"/>
-        <location filename="mainwindow.ui" line="941"/>
+        <location filename="mainwindow.ui" line="921"/>
+        <location filename="mainwindow.ui" line="951"/>
         <source>▼</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="700"/>
+        <location filename="mainwindow.ui" line="710"/>
         <source>Z Plus</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="627"/>
-        <location filename="mainwindow.ui" line="703"/>
+        <location filename="mainwindow.ui" line="637"/>
+        <location filename="mainwindow.ui" line="713"/>
         <source>▲</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="730"/>
+        <location filename="mainwindow.ui" line="740"/>
         <source>Cancel jog</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="733"/>
+        <location filename="mainwindow.ui" line="743"/>
         <source>✖</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="853"/>
+        <location filename="mainwindow.ui" line="863"/>
         <source>X Minus</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="856"/>
+        <location filename="mainwindow.ui" line="866"/>
         <source>◀</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="790"/>
+        <location filename="mainwindow.ui" line="800"/>
         <source>Home working</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="760"/>
+        <location filename="mainwindow.ui" line="770"/>
         <source>X Plus</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="938"/>
+        <location filename="mainwindow.ui" line="948"/>
         <source>Y Minus</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="624"/>
+        <location filename="mainwindow.ui" line="634"/>
         <source>Y Plus</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="981"/>
-        <location filename="mainwindow.ui" line="1012"/>
+        <location filename="mainwindow.ui" line="991"/>
+        <location filename="mainwindow.ui" line="1022"/>
         <source>mm</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="968"/>
+        <location filename="mainwindow.ui" line="978"/>
         <source>Home machine</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="654"/>
+        <location filename="mainwindow.ui" line="664"/>
         <source>Z safe position</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="657"/>
+        <location filename="mainwindow.ui" line="667"/>
         <source>⇖ℤ</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="415"/>
-        <location filename="mainwindow.ui" line="431"/>
+        <location filename="mainwindow.ui" line="425"/>
+        <location filename="mainwindow.ui" line="441"/>
         <source>Commands executed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1393"/>
+        <location filename="mainwindow.ui" line="1403"/>
         <source>Pause / Resume machine</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1340"/>
+        <location filename="mainwindow.ui" line="1350"/>
         <source>Reset machine</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1346"/>
+        <location filename="mainwindow.ui" line="1356"/>
         <source>☢</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="447"/>
+        <location filename="mainwindow.ui" line="457"/>
         <source>Command :</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="466"/>
+        <location filename="mainwindow.ui" line="476"/>
         <source>File</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2071"/>
+        <location filename="mainwindow.ui" line="2081"/>
         <source>&amp;Quit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2083"/>
+        <location filename="mainwindow.ui" line="2093"/>
         <source>Machine Config</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2144"/>
+        <location filename="mainwindow.ui" line="2154"/>
         <source>Parameters</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="496"/>
+        <location filename="mainwindow.ui" line="506"/>
         <source>?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1062"/>
+        <location filename="mainwindow.ui" line="1072"/>
         <source>Switches</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1446"/>
+        <location filename="mainwindow.ui" line="1456"/>
         <source>Actions</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="120"/>
+        <location filename="mainwindow.ui" line="125"/>
         <source>Informations</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="512"/>
+        <location filename="mainwindow.ui" line="41"/>
+        <source>Image</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="46"/>
+        <source>toolPath</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="93"/>
+        <source>gCode</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="522"/>
         <source>File Tool Bar</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="1952"/>
+        <location filename="mainwindow.ui" line="1962"/>
         <source>📂</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2059"/>
+        <location filename="mainwindow.ui" line="2069"/>
         <source>&amp;Open</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2062"/>
+        <location filename="mainwindow.ui" line="2072"/>
         <source>Alt+O</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2074"/>
+        <location filename="mainwindow.ui" line="2084"/>
         <source>Alt+Q</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2086"/>
+        <location filename="mainwindow.ui" line="2096"/>
         <source>Alt+C</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2096"/>
+        <location filename="mainwindow.ui" line="2106"/>
         <source>Stop</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2106"/>
+        <location filename="mainwindow.ui" line="2116"/>
         <source>Run</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2124"/>
+        <location filename="mainwindow.ui" line="2134"/>
         <source>&amp;New</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2129"/>
+        <location filename="mainwindow.ui" line="2139"/>
         <source>About</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="2139"/>
+        <location filename="mainwindow.ui" line="2149"/>
         <source>Step</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="85"/>
+        <location filename="mainwindow.cpp" line="86"/>
         <source>Machine Error</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="85"/>
+        <location filename="mainwindow.cpp" line="86"/>
         <source>No machine connected.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="95"/>
+        <location filename="mainwindow.cpp" line="96"/>
         <source>Port Error</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="95"/>
+        <location filename="mainwindow.cpp" line="96"/>
         <source>No port available.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="140"/>
+        <location filename="mainwindow.cpp" line="141"/>
         <source>Connect</source>
         <comment>Connect button</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="106"/>
+        <location filename="mainwindow.cpp" line="107"/>
         <source>Disconnect</source>
         <comment>Disconnect button</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="224"/>
+        <location filename="mainwindow.cpp" line="225"/>
         <source>Open Gcode File</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="225"/>
+        <location filename="mainwindow.cpp" line="226"/>
         <source>gcode files (*.tap *.nc *.gcode);;All Files (*)</source>
         <oldsource>gcode files (*.tap,*.nc,*.gcode);All Files (*)</oldsource>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="264"/>
+        <location filename="mainwindow.cpp" line="267"/>
         <source>Save Gcode file</source>
         <comment>Save dialog caption</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="264"/>
+        <location filename="mainwindow.cpp" line="267"/>
         <source>Do you want to save current file ?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="306"/>
+        <location filename="mainwindow.cpp" line="309"/>
         <source>Port %1 added</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="321"/>
+        <location filename="mainwindow.cpp" line="324"/>
         <source>Port %1 removed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="327"/>
+        <location filename="mainwindow.cpp" line="330"/>
         <source>Port %1 inserted</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="360"/>
+        <location filename="mainwindow.cpp" line="363"/>
         <source>Starting machine.</source>
         <comment>StatusBar message</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="385"/>
+        <location filename="mainwindow.cpp" line="388"/>
         <source>Connection Error</source>
         <comment>Error dialog caption</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="386"/>
+        <location filename="mainwindow.cpp" line="389"/>
         <source>Unable to connect to %1
 %2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="399"/>
+        <location filename="mainwindow.cpp" line="402"/>
         <source>Critical Error</source>
         <comment>Port error dialog caption</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="405"/>
+        <location filename="mainwindow.cpp" line="408"/>
         <source>Critical Error</source>
         <comment>Port warning dialog caption</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="470"/>
+        <location filename="mainwindow.cpp" line="473"/>
         <source>Machine state is unknown</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="482"/>
+        <location filename="mainwindow.cpp" line="485"/>
         <source>Pause machine</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="499"/>
+        <location filename="mainwindow.cpp" line="502"/>
         <source>Resume machine</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="571"/>
+        <location filename="mainwindow.cpp" line="574"/>
         <source>Resume normal operations</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="581"/>
+        <location filename="mainwindow.cpp" line="584"/>
         <source>Wake-up machine</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="725"/>
+        <location filename="mainwindow.cpp" line="728"/>
         <source>%1 / %2</source>
         <comment>blockBuffer format</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="733"/>
+        <location filename="mainwindow.cpp" line="736"/>
         <source>%1 / %2</source>
         <comment>rxBuffer format</comment>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="899"/>
+        <location filename="mainwindow.cpp" line="902"/>
         <source>Resetting machine.</source>
         <comment>StatusBar message</comment>
         <translation></translation>

@@ -1,11 +1,14 @@
 #include <string.h>
 #include "grbl.h"
 
+#include "grbl_config.h"
+#include "grbl_defaults.h"
+
 #include <QDebug>
 #include <QIcon>
 #include <QMessageBox>
-#include <QFile>
-#include <QCSVFile>
+#include <QCsvFile>
+#include <QJsonDocument>
 
 #include "grblconfigurationdialog.h"
 
@@ -30,52 +33,8 @@ Grbl::Grbl(Port *device) :
     stateMessages.insert( StateType::stateDoor,    tr("Door","Grbl state"));
     stateMessages.insert( StateType::stateSleep,   tr("Sleep","Grbl state"));
 
-//    // Initialize error list
-//    errors << tr("Ok","Grbl Error Message")                               <<    // 0
-//              tr("Command letter missing","Grbl Error Message")           <<    // 1
-//              tr("Bad number format","Grbl Error Message")                <<    // 2
-//              tr("Invalid statement","Grbl Error Message")                <<    // 3
-//              tr("Negative value","Grbl Error Message")                   <<    // 4
-//              tr("Setting disabled","Grbl Error Message")                 <<    // 5
-//              tr("Setting step pulse min","Grbl Error Message")           <<    // 6
-//              tr("Setting read fail","Grbl Error Message")                <<    // 7
-//              tr("Idle error","Grbl Error Message")                       <<    // 8
-//              tr("System GC lock","Grbl Error Message")                   <<    // 9
-//              tr("Soft limit error","Grbl Error Message")                 <<    // 10
-//              tr("Overflow","Grbl Error Message")                         <<    // 11
-//              tr("Max step rate exceeded","Grbl Error Message")           <<    // 12
-//              tr("Check door","Grbl Error Message")                       <<    // 13
-//              tr("Line length exceeded","Grbl Error Message")             <<    // 14
-//              tr("Travel exceeded","Grbl Error Message")                  <<    // 15
-//              tr("Invalid Jog command","Grbl Error Message")              <<    // 16
-//              tr("Setting disabled (laser)","Grbl Error Message")         <<    // 17
-//              tr("Error 18","Grbl Error Message")                         <<    // 18
-//              tr("Error 19","Grbl Error Message")                         <<    // 19
-//              tr("Gcode: Unsupported command","Grbl Error Message")       <<    // 20
-//              tr("Gcode: Modal group violation","Grbl Error Message")     <<    // 21
-//              tr("Gcode: Undefined feed rate","Grbl Error Message")       <<    // 22
-//              tr("Gcode: Command value not integer","Grbl Error Message") <<    // 23
-//              tr("Gcode: Axis command conflict","Grbl Error Message")     <<    // 24
-//              tr("Gcode: Word repeated","Grbl Error Message")             <<    // 25
-//              tr("Gcode: No axis words","Grbl Error Message")             <<    // 26
-//              tr("Gcode: Invalid line number","Grbl Error Message")       <<    // 27
-//              tr("Gcode: Value word missing","Grbl Error Message")        <<    // 28
-//              tr("Gcode: Unsupported coords system","Grbl Error Message") <<    // 29
-//              tr("Gcode: G53 invalid motion mode","Grbl Error Message")   <<    // 30
-//              tr("Gcode: Axis word exists","Grbl Error Message")          <<    // 31
-//              tr("Gcode: No axis word in plane","Grbl Error Message")     <<    // 32
-//              tr("Gcode: Invalid target","Grbl Error Message")            <<    // 33
-//              tr("Gcode: Arc radius error","Grbl Error Message")          <<    // 34
-//              tr("Gcode: No offsets in plane","Grbl Error Message")       <<    // 35
-//              tr("Gcode: Unused words","Grbl Error Message")              <<    // 36
-//              tr("Gcode: G43 dynamic axis error","Grbl Error Message")    <<    // 37
-//              tr("Gcode: Max value exceeded","Grbl Error Message");             // 38
-
     features = bit(FeatureFlags::flagAskStatus) |
                bit(FeatureFlags::flagName);
-
-//    bitSet(infos, Machine::InfoFlags::flagHasWorkingCoords);
-//    bitSet(infos, Machine::InfoFlags::flagHasMachineCoords);
 
     // Get command line from port
     connect( port, SIGNAL(lineAvailable(QString&)), this, SLOT(parse(QString&)));
@@ -96,10 +55,25 @@ Grbl::~Grbl()
     qDebug() << "Grbl::~Grbl: machine deleted.";
 }
 
+QJsonObject Grbl::toJsonObject()
+{
+    QJsonObject json = Machine::toJsonObject();
+
+    json["type"] = "grbl";
+    for (auto key : config.keys())
+        json[QString("$%1").arg(key)] = config[key];
+
+    return json;
+}
+
+QString Grbl::toJson()
+{
+    return QJsonDocument( toJsonObject() ).toJson();
+}
 
 void Grbl::readErrorsMessages()
 {
-    QCSVFile file("./csv/error_codes_en_US.csv");
+    QCsvFile file("./csv/error_codes_en_US.csv");
     if(!file.open(QFile::ReadOnly |
                   QFile::Text))
     {
@@ -123,7 +97,7 @@ void Grbl::readErrorsMessages()
 
 void Grbl::readAlarmsMessages()
 {
-    QCSVFile file("./csv/alarm_codes_en_US.csv");
+    QCsvFile file("./csv/alarm_codes_en_US.csv");
     if(!file.open(QFile::ReadOnly |
                   QFile::Text))
     {
@@ -148,7 +122,7 @@ void Grbl::readAlarmsMessages()
 
 void Grbl::readBuildOptionsMessages()
 {
-    QCSVFile file("./csv/build_option_codes_en_US.csv");
+    QCsvFile file("./csv/build_option_codes_en_US.csv");
     if(!file.open(QFile::ReadOnly |
                   QFile::Text))
     {
@@ -170,7 +144,7 @@ void Grbl::readBuildOptionsMessages()
 
 void Grbl::readSettingsMessages()
 {
-    QCSVFile file("./csv/setting_codes_en_US.csv");
+    QCsvFile file("./csv/setting_codes_en_US.csv");
     if(!file.open(QFile::ReadOnly |
                   QFile::Text))
     {

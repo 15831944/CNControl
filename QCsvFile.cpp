@@ -1,13 +1,14 @@
-#include "QCSVFile"
+#include "QCsvFile"
 
 #include <QDebug>
+#include <QTextStream>
 
-QCSVFile::QCSVFile(const QString &name, QObject *parent) : QFile(name, parent) {};
-QCSVFile::QCSVFile(QObject *parent) : QFile(parent) {};
-QCSVFile::QCSVFile(const QString &name) : QFile(name) {};
-QCSVFile::QCSVFile() : QFile() {};
+QCsvFile::QCsvFile(const QString &name, QObject *parent) : QFile(name, parent) {};
+QCsvFile::QCsvFile(QObject *parent) : QFile(parent) {};
+QCsvFile::QCsvFile(const QString &name) : QFile(name) {};
+QCsvFile::QCsvFile() : QFile() {};
 
-bool QCSVFile::readLine(QStringList *row)
+bool QCsvFile::readLine(QStringList *row)
 {
     static QTextStream in(this);
     static const int delta[][5] = {

@@ -211,12 +211,12 @@ void Visualizer::paintStats()
     // FPS display
     glPolygonMode(GL_FRONT, GL_FILL);
     QPainter painter(this);
-//    painter.setPen(Qt::white);
-//    painter.drawText(QRectF(10.0, 10.0, 300.0, 100.0), QString("FPS:%1, x=%2, y=%3, z=%4")
-//                     .arg(last_count)
-//                     .arg(rotation.x())
-//                     .arg(rotation.y())
-//                     .arg(rotation.z()));
+    painter.setPen(Qt::white);
+    painter.drawText(QRectF(10.0, 10.0, 300.0, 100.0), QString("FPS:%1, x=%2, y=%3, z=%4")
+                     .arg(last_count)
+                     .arg(rotation.x())
+                     .arg(rotation.y())
+                     .arg(rotation.z()));
 
 //    if (gcode)
 //    painter.drawText(QRectF(10.0, 5.0, 300.0, 100.0), QString("d=%1, p=%2")
@@ -260,6 +260,7 @@ void Visualizer::mouseMoveEvent(QMouseEvent *event)
     else if (event->buttons() == Qt::MiddleButton)
     {
         center += QVector3D( - dx * distance / 1150.0f, 0, - dy * distance / 1150.0f );
+        eye += QVector3D( - dx * distance / 1150.0f, 0, - dy * distance / 1150.0f );
     }
 
     update();
@@ -268,7 +269,7 @@ void Visualizer::mouseMoveEvent(QMouseEvent *event)
 void Visualizer::wheelEvent(QWheelEvent *event)
 {
     distance *= 1.0f - (1.0f * event->delta() / 1200.0f);
-    if (distance > -2.0f) distance = -2.0f;
+    if (distance > -1.0f) distance = -1.0f;
     if (distance < -50.0f) distance = -50.0f;
 
     update();

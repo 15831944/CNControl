@@ -4,7 +4,8 @@
 #include <QDialog>
 #include <QStringList>
 #include <QMap>
-#include <QFile>
+#include <QCsvFile>
+#include <QJsonObject>
 
 #include "port.h"
 #include "bits.h"
@@ -211,6 +212,9 @@ protected:
 public:
     Machine(Port *port);
     virtual ~Machine() {}
+
+    virtual QJsonObject toJsonObject();
+    virtual QString toJson();
 
     virtual void openConfiguration(QWidget *parent)=0;
 

@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->spindleRateProgressBar->setMaximum(255);
 
     // editingFinished seems to be emitted when Alt is pressed.
-    connect( ui->gcodeComboBox->lineEdit(), &GLineEdit::editingFinished, this, &MainWindow::onGcodeChanged);
+    connect( ui->commandComboBox->lineEdit(), &GLineEdit::editingFinished, this, &MainWindow::onGcodeChanged);
 
 //    connect( ui->xWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(xWorkingLineEdit_focusOut(QFocusEvent *)));
 //    connect( ui->yWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(yWorkingLineEdit_focusOut(QFocusEvent *)));
@@ -109,7 +109,7 @@ void MainWindow::setUIConnected()
 
     ui->devicesComboBox->setEnabled(false);
     ui->switchesGroupBox->setEnabled(true);
-    ui->gcodeComboBox->setEnabled(true);
+    ui->commandComboBox->setEnabled(true);
 
     ui->runToolButton->setEnabled(true);
     ui->stepToolButton->setEnabled(true);
@@ -146,7 +146,7 @@ void MainWindow::setUIDisconnected()
     ui->jogGroupBox->setEnabled(false);
     ui->actionGroupBox->setEnabled(false);
     ui->switchesGroupBox->setEnabled(false);
-    ui->gcodeComboBox->setEnabled(false);
+    ui->commandComboBox->setEnabled(false);
 
     ui->runToolButton->setEnabled(false);
     ui->stepToolButton->setEnabled(false);
@@ -178,7 +178,7 @@ void MainWindow::setUIDisconnected()
 
 void MainWindow::setUISleeping()
 {
-    ui->gcodeComboBox->setEnabled(false);
+    ui->commandComboBox->setEnabled(false);
 
     ui->runToolButton->setEnabled(false);
     ui->stepToolButton->setEnabled(false);
@@ -755,13 +755,13 @@ void MainWindow::onStatusUpdated()
 void MainWindow::onGcodeChanged()
 {
     if (!machineOk()) return; // security
-    QByteArray gcode = ui->gcodeComboBox->currentText().toUtf8();
+    QByteArray gcode = ui->commandComboBox->currentText().toUtf8();
     if (!gcode.isEmpty())
     {
         if (machine->sendCommand(gcode))
         {
-            ui->gcodeComboBox->addItem( gcode );
-            ui->gcodeComboBox->clearEditText();
+            ui->commandComboBox->addItem( gcode );
+            ui->commandComboBox->clearEditText();
         }
     }
 }
@@ -1394,4 +1394,14 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_gCodeExecutionSlider_valueChanged(int value)
 {
     ui->visualizer->setExecution(value);
+}
+
+void MainWindow::on_topViewToolButton_clicked()
+{
+    ui->visualizer->setRotation(QVector3D( -1441.0f , 0.0f, -2877.0f));
+}
+
+void MainWindow::on_isometricViewToolButton_clicked()
+{
+    ui->visualizer->setRotation(QVector3D( -600.0f, 0.0f, -2200.0f ));
 }

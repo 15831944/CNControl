@@ -150,6 +150,10 @@ private slots:
 
     void on_gCodeExecutionSlider_valueChanged(int value);
 
+    void on_topViewToolButton_clicked();
+
+    void on_isometricViewToolButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     QTimer  portsTimer;

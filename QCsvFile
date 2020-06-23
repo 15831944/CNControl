@@ -1,0 +1,17 @@
+#ifndef QCSVFILE_H
+#define QCSVFILE_H
+
+#include <QFile>
+
+class QCsvFile : public QFile
+{
+public:
+    QCsvFile(const QString &name, QObject *parent);
+    QCsvFile(QObject *parent);
+    QCsvFile(const QString &name);
+    QCsvFile();
+
+    bool readLine(QStringList *row);
+};
+
+#endif // QCSVFILE_H

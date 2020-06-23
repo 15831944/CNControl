@@ -25,7 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-    QCSVFile.cpp \
+    QCsvFile.cpp \
     aaaa_idees.cpp \
     configurationdialog.cpp \
     gcode.cpp \
@@ -42,9 +42,11 @@ SOURCES += \
     visualizer.cpp
 
 HEADERS += \
-    QCSVFile \
+    QCsvFile \
     configurationdialog.h \
     gcode.h \
+    grbl_config.h \
+    grbl_defaults.h \
     grblconfigurationdialog.h \
     mainwindow.h \
     singleton.h \

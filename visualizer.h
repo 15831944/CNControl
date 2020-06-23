@@ -16,6 +16,8 @@ public:
     void setGCode(GCode *gcode);
     void setExecution(int perc);
 
+    void setRotation(QVector3D rot) { rotation = rot; update(); }
+
     void initializeGL() override;
     void paintGL() override;
     void resizeGL(int width, int height) override;
@@ -42,8 +44,8 @@ private:
 
     QVector3D eye       = {0.0f,  -distance, 0.0f};
     QVector3D up        = {0.0f, 0.0f, 1.0f};
-    QVector3D rotation  = { -600.0f, 0.0f, -2200.0f };
-    QVector3D center    = {0.0f, 0.0f, -1.0f};
+    QVector3D rotation  = { -1441.0f , 0.0f, -2877.0f };
+    QVector3D center    = {0.0f, 0.0f, 0.0f};
     QVector3D plateSize = { 6, 6, 1 };
     float     plateInterval = 0.5f;
 
