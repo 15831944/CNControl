@@ -12,7 +12,7 @@
 #include <QDebug>
 
 #include "grbl.h"
-#include "glineedit.h"
+#include "QFocusLineEdit"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->spindleRateProgressBar->setMaximum(255);
 
     // editingFinished seems to be emitted when Alt is pressed.
-    connect( ui->commandComboBox->lineEdit(), &GLineEdit::editingFinished, this, &MainWindow::onGcodeChanged);
+    connect( ui->commandComboBox->lineEdit(), &QFocusLineEdit::editingFinished, this, &MainWindow::onGcodeChanged);
 
 //    connect( ui->xWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(xWorkingLineEdit_focusOut(QFocusEvent *)));
 //    connect( ui->yWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(yWorkingLineEdit_focusOut(QFocusEvent *)));
@@ -1398,7 +1398,7 @@ void MainWindow::on_gCodeExecutionSlider_valueChanged(int value)
 
 void MainWindow::on_topViewToolButton_clicked()
 {
-    ui->visualizer->setRotation(QVector3D( -1441.0f , 0.0f, -2877.0f));
+    ui->visualizer->setRotation(QVector3D( -1440.0f , 0.0f, -2880.0f));
 }
 
 void MainWindow::on_isometricViewToolButton_clicked()

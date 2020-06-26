@@ -44,7 +44,7 @@ private:
 
     QVector3D eye       = {0.0f,  -distance, 0.0f};
     QVector3D up        = {0.0f, 0.0f, 1.0f};
-    QVector3D rotation  = { -1441.0f , 0.0f, -2877.0f };
+    QVector3D rotation  = { -1440.0f , 0.0f, -2880.0f };
     QVector3D center    = {0.0f, 0.0f, 0.0f};
     QVector3D plateSize = { 6, 6, 1 };
     float     plateInterval = 0.5f;

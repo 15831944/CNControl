@@ -26,12 +26,12 @@ CONFIG += c++11
 
 SOURCES += \
     QCsvFile.cpp \
+    QFocusLineEdit.cpp \
     aaaa_idees.cpp \
     configurationdialog.cpp \
     gcode.cpp \
     grblconfigurationdialog.cpp \
     main.cpp \
-    glineedit.cpp \
     highlighter.cpp \
     machine.cpp \
     mainwindow.cpp \
@@ -43,14 +43,13 @@ SOURCES += \
 
 HEADERS += \
     QCsvFile \
+    QFocusLineEdit \
     configurationdialog.h \
     gcode.h \
     grbl_config.h \
-    grbl_defaults.h \
     grblconfigurationdialog.h \
     mainwindow.h \
     singleton.h \
-    glineedit.h \
     highlighter.h \
     bits.h \
     machine.h \

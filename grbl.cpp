@@ -1,14 +1,22 @@
 #include <string.h>
 #include "grbl.h"
 
-#include "grbl_config.h"
-#include "grbl_defaults.h"
-
 #include <QDebug>
 #include <QIcon>
 #include <QMessageBox>
 #include <QCsvFile>
 #include <QJsonDocument>
+
+#include "grbl_config.h"
+
+#define CMD_CONFIG     "$$"
+#define CMD_INFOS      "$I"
+#define CMD_GC         "$G"
+#define CMD_GXX        "$#"
+#define CMD_UNLOCK     "$X"
+#define CMD_HOME       "$H"
+#define CMD_STARTBLOCK "$N"
+#define CMD_CHECK      "$C"
 
 #include "grblconfigurationdialog.h"
 

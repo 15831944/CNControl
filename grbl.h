@@ -4,56 +4,18 @@
 #define Grbl_version V1.0
 
 #include <QTimer>
+#include <QMap>
 #include "port_serial.h"
 #include "machine.h"
 
-// From grbl config.h, must be synchronized.
-// -8<----------------------------------------------------------------------------------
-//#define CMD_RESET 0x18 // ctrl-x.
-//#define CMD_STATUS_REPORT '?'
-//#define CMD_CYCLE_START '~'
-//#define CMD_FEED_HOLD '!'
-
-// NOTE: All override realtime commands must be in the extended ASCII character set, starting
-// at character value 128 (0x80) and up to 255 (0xFF). If the normal set of realtime commands,
-// such as status reports, feed hold, reset, and cycle start, are moved to the extended set
-// space, serial.c's RX ISR will need to be modified to accomodate the change.
-// #define CMD_RESET 0x80
-// #define CMD_STATUS_REPORT 0x81
-// #define CMD_CYCLE_START 0x82
-// #define CMD_FEED_HOLD 0x83
-//#define CMD_SAFETY_DOOR 0x84
-//#define CMD_JOG_CANCEL  0x85
-//#define CMD_DEBUG_REPORT 0x86 // Only when DEBUG enabled, sends debug report in '{}' braces.
-//#define CMD_FEED_OVR_RESET 0x90         // Restores feed override value to 100%.
-//#define CMD_FEED_OVR_COARSE_PLUS 0x91
-//#define CMD_FEED_OVR_COARSE_MINUS 0x92
-//#define CMD_FEED_OVR_FINE_PLUS  0x93
-//#define CMD_FEED_OVR_FINE_MINUS  0x94
-//#define CMD_RAPID_OVR_RESET 0x95        // Restores rapid override value to 100%.
-//#define CMD_RAPID_OVR_MEDIUM 0x96
-//#define CMD_RAPID_OVR_LOW 0x97
-// #define CMD_RAPID_OVR_EXTRA_LOW 0x98 // *NOT SUPPORTED*
-//#define CMD_SPINDLE_OVR_RESET 0x99      // Restores spindle override value to 100%.
-//#define CMD_SPINDLE_OVR_COARSE_PLUS 0x9A
-//#define CMD_SPINDLE_OVR_COARSE_MINUS 0x9B
-//#define CMD_SPINDLE_OVR_FINE_PLUS 0x9C
-//#define CMD_SPINDLE_OVR_FINE_MINUS 0x9D
-//#define CMD_SPINDLE_OVR_STOP 0x9E
-//#define CMD_COOLANT_FLOOD_OVR_TOGGLE 0xA0
-//#define CMD_COOLANT_MIST_OVR_TOGGLE 0xA1
-// -8<-----------------------------------------------------------------------------------
-
-#define CMD_CONFIG "$$"
-#define CMD_INFOS "$I"
-#define CMD_GC "$G"
-#define CMD_GXX "$#"
-#define CMD_UNLOCK "$X"
-#define CMD_HOME "$H"
+#define CMD_CONFIG     "$$"
+#define CMD_INFOS      "$I"
+#define CMD_GC         "$G"
+#define CMD_GXX        "$#"
+#define CMD_UNLOCK     "$X"
+#define CMD_HOME       "$H"
 #define CMD_STARTBLOCK "$N"
-#define CMD_CHECK "$c"
-
-#include <QMap>
+#define CMD_CHECK      "$C"
 
 class Grbl : public Machine
 {

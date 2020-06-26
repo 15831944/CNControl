@@ -278,7 +278,6 @@ public slots:
 
 signals:
     void versionUpdated(); // When name or version has been found or changed
-
     void statusUpdated(); // When status of machine has been received (changed or not)
 
     void stateUpdated();
