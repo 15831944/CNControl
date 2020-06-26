@@ -1,3 +1,7 @@
 *~
 .*#
 old
+*.ts
+*.qm
+CNControl
+CNControl.pro.*
