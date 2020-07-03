@@ -11,7 +11,7 @@
 #include <QFileDialog>
 #include <QDebug>
 
-#include "grbl.h"
+#include "machineGrbl.h"
 #include "QFocusLineEdit"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -19,6 +19,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // Déclaration des différents type de machines
+    Grbl grbl;
 
     QWidget::setWindowTitle(QString("%1 %2").arg(PROGRAM_NAME).arg(PROGRAM_VERSION));
     //setLogWidget( ui->logListWidget );
@@ -40,30 +43,22 @@ MainWindow::MainWindow(QWidget *parent) :
     // editingFinished seems to be emitted when Alt is pressed.
     connect( ui->commandComboBox->lineEdit(), &QFocusLineEdit::editingFinished, this, &MainWindow::onGcodeChanged);
 
-//    connect( ui->xWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(xWorkingLineEdit_focusOut(QFocusEvent *)));
-//    connect( ui->yWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(yWorkingLineEdit_focusOut(QFocusEvent *)));
-//    connect( ui->zWorkingLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(zWorkingLineEdit_focusOut(QFocusEvent *)));
-
-//    connect( ui->xMachineLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(xMachineLineEdit_focusOut(QFocusEvent *)));
-//    connect( ui->yMachineLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(yMachineLineEdit_focusOut(QFocusEvent *)));
-//    connect( ui->zMachineLineEdit, SIGNAL(focusOut(QFocusEvent *)), this, SLOT(zMachineLineEdit_focusOut(QFocusEvent *)));
-
     gcodeParser = new GCode();
-
-    SerialPort *serial = new SerialPort();
-    serial->setSpeed( 38400 );
-    port = serial;
-
     machine = nullptr;
+
+//    PortSerial *serial = new PortSerial();
+//    serial->setSpeed( 38400 );
+//    port = serial;
+
     on_jogIntervalSlider_valueChanged( 3 );
     gcodeIndex = 0;
 
-    QFont font;
-    font.setFamily("Courier");
-    font.setFixedPitch(true);
-    font.setPointSize(10);
-    ui->gcodeCodeEditor->setFont(font);
-    highlighter = new Highlighter(ui->gcodeCodeEditor->document());
+//    QFont font;
+//    font.setFamily("Courier");
+//    font.setFixedPitch(true);
+//    font.setPointSize(10);
+//    ui->gcodeCodeEditor->setFont(font);
+//    gcodeHighlighter = new GCodeHighlighter(ui->gcodeCodeEditor->document());
 
     this->onPortsUpdate();
     connect( &portsTimer, SIGNAL(timeout()), this, SLOT(onPortsUpdate()) );
@@ -74,8 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete machine;
-    delete port;
+    if (machine) delete machine;
     delete ui;
 }
 
@@ -89,15 +83,15 @@ bool MainWindow::machineOk()
     return true;
 }
 
-bool MainWindow::portOk()
-{
-    if (!port) // Security
-    {
-        QMessageBox::information(this, tr("Port Error"), tr("No port available."));
-        return false;
-    }
-    return true;
-}
+//bool MainWindow::portOk()
+//{
+//    if (!port) // Security
+//    {
+//        QMessageBox::information(this, tr("Port Error"), tr("No port available."));
+//        return false;
+//    }
+//    return true;
+//}
 
 void MainWindow::setUIConnected()
 {
@@ -127,7 +121,7 @@ void MainWindow::setUIConnected()
     ui->zMachineLineEdit->setEnabled(true);
     ui->zWorkingLineEdit->setEnabled(true);
 
-    moveMachine = moveWorking = false;
+    movingMachine = movingWorking = false;
     onCoordinatesUpdated();
 }
 
@@ -173,7 +167,7 @@ void MainWindow::setUIDisconnected()
     ui->blockBufferValue->setText("-");
     ui->rxBufferValue->setText("-");
 
-    moveMachine = moveWorking = false;
+    movingMachine = movingWorking = false;
 }
 
 void MainWindow::setUISleeping()
@@ -232,7 +226,7 @@ void MainWindow::openFile(QString fileName)
     if (file.open(QFile::ReadOnly | QFile::Text))
     {
         ui->gcodeCodeEditor->setPlainText(file.readAll());
-        ui->gcodeCodeEditor->setCurrentLine( 10);
+        //ui->gcodeCodeEditor->setCurrentLine( 10);
 
         //if (machine)
           //  checkGcode();
@@ -361,13 +355,16 @@ void MainWindow::openPort()
 
             qDebug() << "Connected to" << portName.toUtf8().data();
             ui->statusbar->showMessage(tr("Starting machine.", "StatusBar message"));
-            machine = new Grbl(port);
+            machine = new Grbl();
 
-            connect( port, SIGNAL(error(Port::PortError)), this, SLOT(onPortError(Port::PortError)));
+            connect( port,    SIGNAL(error(Port::PortError)), this, SLOT(onPortError(Port::PortError)));
             connect( machine, SIGNAL(error(int)), this, SLOT(onMachineError(int)) );
             connect( machine, SIGNAL(alarm(int)), this, SLOT(onMachineAlarm(int)) );
 
             connect( machine, SIGNAL(statusUpdated()), this, SLOT(onStatusUpdated()) );
+
+            connect( machine, SIGNAL(infoReceived(QString)), this, SLOT(onMachineLog(QString)) );
+            connect( machine, SIGNAL(commandSent(QString)), this, SLOT(onMachineLog(QString)) );
 
             connect( machine, SIGNAL(versionUpdated()), this, SLOT(onVersionUpdated()) );
             connect( machine, SIGNAL(stateUpdated()), this, SLOT(onStateUpdated()) );
@@ -416,12 +413,38 @@ void MainWindow::closePort()
         delete machine;
         machine = nullptr;
     }
-    if (port)
-        port->close();
 
     setUIDisconnected();
 }
 
+void MainWindow::onMachineLog( QString line )
+{
+    if (line == "?")
+    {
+        return;
+    }
+    else if ((line.size() == 1) && (line[0].toLatin1() < 0))
+    {
+        line = QString("0x%1").arg(line[0].toLatin1());
+    }
+    else if (line.startsWith("<"))
+    {
+        if (!ui->statusCheckBox->isChecked()) return;
+    }
+
+    ui->logTextEdit->append( line.trimmed() );
+    if (ui->logTextEdit->document()->lineCount() > 200)
+    {
+        QTextCursor cursor = ui->logTextEdit->textCursor();
+
+        cursor.movePosition(QTextCursor::Start);
+        cursor.select(QTextCursor::LineUnderCursor);
+        cursor.removeSelectedText();
+        cursor.deleteChar();
+    }
+}
+
+//----------------------------------------------------------------------------------------------------0
 void MainWindow::onMachineError(int error)
 {
     QMessageBox::critical(this, machine->getErrorMessages(error).shortMessage,
@@ -485,7 +508,7 @@ void MainWindow::onStateUpdated()
         ui->statePushButton->setToolTip( tr("Pause machine") );
 
         uncheckJogButtons();
-        moveMachine = moveWorking = false;
+        movingMachine = movingWorking = false;
         break;
     case Machine::StateType::stateHold:
         if (doResetOnHold && machine->getHoldCode() == 0)
@@ -594,6 +617,7 @@ void MainWindow::onLineNumberUpdated()
     if ( machine->hasInfo( Machine::InfoFlags::flagHasLineNumber ))
     {
         ui->gcodeCodeEditor->setCurrentLine( machine->getLineNumber() );
+        ui->lineNbLabel->setText( QString().setNum(machine->getLineNumber()) );
         //ui->infoLabel->setText( QString("%1").arg(machine->getLineNumber()) );
         ui->gcodeExecutedProgressBar->setValue( machine->getLineNumber() );
     }
@@ -866,6 +890,7 @@ void MainWindow::stopGcode()
     ui->stopToolButton->setEnabled(false);
 
     ui->gcodeExecutedProgressBar->setValue(0);
+    ui->lineNbLabel->setText( QString() );
 }
 
 void MainWindow::onCommandExecuted()
@@ -892,6 +917,7 @@ void MainWindow::sendNextGCode()
     {
         disconnect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
         ui->gcodeExecutedProgressBar->setValue(gcode.size());
+        ui->lineNbLabel->setText( QString() );
         stopGcode();
     }
 };
@@ -934,11 +960,11 @@ void MainWindow::on_xWorkingLineEdit_focusOut(QFocusEvent*)
 void MainWindow::on_xWorkingLineEdit_returnPressed()
 {
     if (!machineOk()) return; // security
-    if (!moveMachine) // Do not do Machine and Working moves at the same time.
+    if (!movingMachine) // Do not do Machine and Working moves at the same time.
     {
         double x = ui->xWorkingLineEdit->text().toDouble();
         if (machine->sendCommand(QString("$J=G90X%1F1000").arg(x).toUtf8()))
-            moveWorking = true;
+            movingWorking = true;
     }
     ui->xWorkingLineEdit->setModified(false);
 }
@@ -957,11 +983,11 @@ void MainWindow::on_yWorkingLineEdit_focusOut(QFocusEvent*)
 void MainWindow::on_yWorkingLineEdit_returnPressed()
 {
     if (!machineOk()) return; // security
-    if (!moveMachine) // Do not do Machine and Working moves at the same time.
+    if (!movingMachine) // Do not do Machine and Working moves at the same time.
     {
         double y = ui->yWorkingLineEdit->text().toDouble();
         if (machine->sendCommand(QString("$J=G90Y%1F1000").arg(y).toUtf8()))
-            moveWorking = true;
+            movingWorking = true;
     }
     ui->yWorkingLineEdit->setModified(false);
 }
@@ -980,11 +1006,11 @@ void MainWindow::on_zWorkingLineEdit_focusOut(QFocusEvent*)
 void MainWindow::on_zWorkingLineEdit_returnPressed()
 {
     if (!machineOk()) return; // security
-    if (!moveMachine) // Do not do Machine and Working moves at the same time.
+    if (!movingMachine) // Do not do Machine and Working moves at the same time.
     {
         double z = ui->zWorkingLineEdit->text().toDouble();
         if (machine->sendCommand(QString("$J=G90Z%1F1000").arg(z).toUtf8()))
-            moveWorking = true;
+            movingWorking = true;
     }
     ui->zWorkingLineEdit->setModified(false);
 }
@@ -1003,11 +1029,11 @@ void MainWindow::on_xMachineLineEdit_focusOut(QFocusEvent*)
 void MainWindow::on_xMachineLineEdit_returnPressed()
 {
     if (!machineOk()) return; // security
-    if (!moveWorking) // Do not do Machine and Working moves at the same time.
+    if (!movingWorking) // Do not do Machine and Working moves at the same time.
     {
         double x = ui->xMachineLineEdit->text().toDouble() - machine->getWorkingOffset().x;
         if (machine->sendCommand(QString("$J=G90G53X%1F1000").arg(x).toUtf8()))
-            moveMachine = true;
+            movingMachine = true;
     }
     ui->xMachineLineEdit->setModified(false);
 }
@@ -1026,11 +1052,11 @@ void MainWindow::on_yMachineLineEdit_focusOut(QFocusEvent*)
 void MainWindow::on_yMachineLineEdit_returnPressed()
 {
     if (!machineOk()) return; // security
-    if (!moveWorking) // Do not do Machine and Working moves at the same time.
+    if (!movingWorking) // Do not do Machine and Working moves at the same time.
     {
         double y = ui->yMachineLineEdit->text().toDouble() - machine->getWorkingOffset().y;
         if (machine->sendCommand(QString("$J=G90G53Y%1F1000").arg(y).toUtf8()))
-            moveMachine = true;
+            movingMachine = true;
     }
     ui->yMachineLineEdit->setModified(false);
 }
@@ -1049,11 +1075,11 @@ void MainWindow::on_zMachineLineEdit_focusOut(QFocusEvent*)
 void MainWindow::on_zMachineLineEdit_returnPressed()
 {
     if (!machineOk()) return; // security
-    if (!moveWorking) // Do not do Machine and Working moves at the same time.
+    if (!movingWorking) // Do not do Machine and Working moves at the same time.
     {
         double z = ui->zMachineLineEdit->text().toDouble() - machine->getWorkingOffset().z;
         if (machine->sendCommand(QString("$J=G90G53Z%1F1000").arg(z).toUtf8()))
-            moveMachine = true;
+            movingMachine = true;
     }
     ui->zMachineLineEdit->setModified(false);
 }
@@ -1061,7 +1087,13 @@ void MainWindow::on_zMachineLineEdit_returnPressed()
 //----------------------------------------------------------------------------------------------------
 void MainWindow::on_connectPushButton_clicked()
 {
-    openPort();
+    try {
+        Machine *machineType = machines
+        machine = machineType
+        machine->connect();
+    } catch (machineConnectException &e) {
+            // handle exception
+    }
 }
 
 void MainWindow::on_spindlePushButton_clicked(bool checked)

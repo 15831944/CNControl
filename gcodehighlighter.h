@@ -4,12 +4,12 @@
 #include <QSyntaxHighlighter>
 #include <QRegularExpression>
 
-class Highlighter : public QSyntaxHighlighter
+class GCodeHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
 
 public:
-    Highlighter(QTextDocument *parent = nullptr);
+    GCodeHighlighter(QTextDocument *parent = nullptr);
 
 protected:
     void highlightBlock(const QString &text) override;

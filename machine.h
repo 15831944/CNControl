@@ -2,16 +2,30 @@
 #define MACHINE_H
 
 #include <QDialog>
-#include <QStringList>
+#include <QString>
+#include <QList>
 #include <QMap>
-#include <QCsvFile>
 #include <QJsonObject>
 
 #include "port.h"
 #include "bits.h"
+#include "singletonFactory.h"
 
-class Machine : public QObject
-{    
+namespace Ui {
+class Machine;
+}
+
+#include <QException>
+
+class machineConnectException : public QException
+{
+public:
+    void raise() const override { throw *this; }
+    machineConnectException *clone() const override { return new machineConnectException(*this); }
+};
+
+class Machine : public QDialog, public SingletonFactory<Machine>
+{
     Q_OBJECT
 
 protected:
@@ -172,6 +186,9 @@ public:
 
 protected:
 
+    Ui::Machine *uiMachine;
+
+    QString machineType;
     QString machineName;
     QString machineVersion;
     QString machineBuild;
@@ -209,14 +226,20 @@ protected:
     QMap<uint, QString> config;
 
     Port *port;
+
 public:
-    Machine(Port *port);
-    virtual ~Machine() {}
+    explicit Machine() { registerMachine( this ); }
+    explicit Machine(QWidget *parent = nullptr);
+    ~Machine();
+
+    static void registerMachine(Machine *machine);
+    virtual void connect();
+    virtual void disconnect();
 
     virtual QJsonObject toJsonObject();
     virtual QString toJson();
 
-    virtual void openConfiguration(QWidget *parent)=0;
+    virtual void openConfiguration(QWidget *parent);
 
     virtual bool sendCommand(QString gcode, bool withNewline = true, bool noLog = false);
     virtual bool ask(int commandCode, int commandArg = 0, bool noLog = false) = 0;
@@ -231,6 +254,8 @@ public:
     virtual const BuildOptionMessageType getBuildOptionsMessages(char option);
     virtual const SettingMessageType getSettingMessages(int setting);
 
+    virtual QString getMachineType();
+    virtual QString getMachineName();
     virtual QString getMachineVersion();
 
     virtual quint64 getFeatures();
@@ -294,7 +319,9 @@ signals:
     void error(int errorCode); // When error has been received
     void alarm(int alarmCode); // When alarm has been received
     void commandExecuted();    // When command has been accepted (not necesserally executed !!!)
-    void commandSent(QString &gcode); // When a command is send to machine
+
+    void infoReceived(QString line); // When a command is received from the machine
+    void commandSent(QString line); // When a command is send to machine
 
 };
 

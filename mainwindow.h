@@ -6,10 +6,10 @@
 #include <QKeyEvent>
 #include <QTimer>
 
-#include "port_serial.h"
+#include "portSerial.h"
 #include "gcode.h"
 #include "machine.h"
-#include "highlighter.h"
+//#include "gcodehighlighter.h"
 
 #define PROGRAM_NAME "CNControl"
 #define PROGRAM_VERSION "v1.0"
@@ -27,16 +27,15 @@ public:
     ~MainWindow();
 
     bool machineOk();
-    bool portOk();
-
+//    bool portOk();
 
     void setUIConnected();
     void setUIDisconnected();
     void setUISleeping();
     //bool eventFilter(QObject *obj, QEvent *event);
 
-    void openPort();
-    void closePort();
+//    void openPort();
+//    void closePort();
 
     bool gcodeSend(QString gcode);
     void sendNextGCode();
@@ -78,6 +77,8 @@ private slots:
     void onPortError(Port::PortError error);
     void onMachineError(int error);
     void onMachineAlarm(int alarm);
+
+    void onMachineLog( QString line );
 
     void onCommandExecuted();
 
@@ -143,35 +144,31 @@ private slots:
     void on_homeMachineToolButton_clicked();
 
     void on_homingToolButton_clicked();
-
     void on_actionAbout_triggered();
-
     void on_jogIntervalSlider_valueChanged(int value);
-
     void on_gCodeExecutionSlider_valueChanged(int value);
-
     void on_topViewToolButton_clicked();
-
     void on_isometricViewToolButton_clicked();
 
 private:
     Ui::MainWindow *ui;
     QTimer  portsTimer;
 
-    Highlighter *highlighter;
+//    GCodeHighlighter *gcodeHighlighter;
+
+    static QMap<QString, Machine*> machines;
 
     QStringList devicesList;
     Machine *machine;
-    Port *port;
-    double jogInterval;
 
     GCode *gcodeParser;
 
     QStringList gcode;
     int gcodeIndex;
-    bool stepCommand, doResetOnHold;
 
-    bool moveMachine, moveWorking;
+    double jogInterval;
+    bool stepCommand, doResetOnHold;
+    bool movingMachine, movingWorking;
 };
 
 #endif // MAINWINDOW_H

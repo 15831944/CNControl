@@ -4,6 +4,8 @@
 #include <QPlainTextEdit>
 #include <QObject>
 
+#include "gcodehighlighter.h"
+
 class QPaintEvent;
 class QResizeEvent;
 class QSize;
@@ -35,6 +37,7 @@ private slots:
     void updateLineNumberArea(const QRect &, int);
 
 private:
+    GCodeHighlighter *gcodeHighlighter;
     QWidget *lineNumberArea;
 };
 

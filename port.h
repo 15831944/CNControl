@@ -4,6 +4,15 @@
 #include <QObject>
 #include <QStringList>
 
+#include <QException>
+
+class portOpenException : public QException
+{
+public:
+    void raise() const override { throw *this; }
+    portOpenException *clone() const override { return new portOpenException(*this); }
+};
+
 class Port : public QObject
 {
     Q_OBJECT

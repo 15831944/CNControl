@@ -1,9 +1,15 @@
 #include "machine.h"
+#include "ui_machine.h"
 #include <QtDebug>
 #include <QJsonDocument>
 
-Machine::Machine(Port *port)
+Machine::Machine(QWidget *parent) :
+    QDialog(parent),
+    uiMachine(new Ui::Machine)
 {
+    uiMachine->setupUi(this);
+
+
     features = infos = switches = actioners = 0;
 
     state = StateType::stateUnknown;
@@ -22,9 +28,24 @@ Machine::Machine(Port *port)
     lineNumber = 0;
     fOverride = rOverride = spindleSpeedOverride = 0;
 
-    this->port = port;
+//    this->port = port;
+}
 
-};
+Machine::~Machine()
+{
+    delete uiMachine;
+}
+
+QMap<QString, Machine*> Machine::machines;
+void Machine::registerMachine(Machine *machine)
+{
+    QString type = machine->getMachineType();
+    if ( ! machines.contains( type ) )
+    {
+        qDebug() << "Machine::registerMachine(" << type << ")";
+        machines[ type ] = machine;
+    }
+}
 
 QJsonObject Machine::toJsonObject()
 {
@@ -43,23 +64,31 @@ QString Machine::toJson()
     return QJsonDocument( toJsonObject() ).toJson();
 }
 
+void Machine::openConfiguration(QWidget *parent)
+{
+
+}
+
+QString Machine::getMachineType()
+{
+    return machineType;
+}
+
+QString Machine::getMachineName()
+{
+    return machineName;
+}
+
+
 QString Machine::getMachineVersion()
 {
-    QString version;
+    QString version = machineName;
 
-    if (hasFeature(FeatureFlags::flagName))
-        version += machineName;
+    if (!version.isEmpty()) version += " ";
+    version += machineVersion;
 
-    if (hasFeature(FeatureFlags::flagVersion))
-    {
-        if (!version.isEmpty()) version += " ";
-        version += machineVersion;
-    }
-    if (hasFeature(FeatureFlags::flagBuild))
-    {
-        if (!version.isEmpty()) version += ".";
-        version += machineBuild;
-    }
+    if (!version.isEmpty()) version += ".";
+    version += machineBuild;
 
     return version;
 }

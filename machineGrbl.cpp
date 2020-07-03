@@ -1,5 +1,4 @@
-#include <string.h>
-#include "grbl.h"
+#include "machineGrbl.h"
 
 #include <QDebug>
 #include <QIcon>
@@ -7,7 +6,10 @@
 #include <QCsvFile>
 #include <QJsonDocument>
 
+#include "ui_grbl.h"
+#include "ui_machine.h"
 #include "grbl_config.h"
+#include "machine.h"
 
 #define CMD_CONFIG     "$$"
 #define CMD_INFOS      "$I"
@@ -18,18 +20,21 @@
 #define CMD_STARTBLOCK "$N"
 #define CMD_CHECK      "$C"
 
-#include "grblconfigurationdialog.h"
-
-Grbl::Grbl(Port *device) :
-    Machine(device)
+Grbl::Grbl(QWidget *parent) :
+    Machine(parent),
+    uiGrbl(new Ui::Grbl)
 {
-    machineName = "GRBL";
+    machineType = "Grbl";
+    registerMachine( this );
+
+    uiGrbl->setupUi( uiMachine->machineWidget );
 
     readErrorsMessages();
     readAlarmsMessages();
     readBuildOptionsMessages();
     readSettingsMessages();
 
+    // Declare machine states names
     stateMessages.insert( StateType::stateUnknown, tr("Unknown","Grbl state"));
     stateMessages.insert( StateType::stateIdle,    tr("Idle","Grbl state"));
     stateMessages.insert( StateType::stateRun,     tr("Run","Grbl state"));
@@ -44,24 +49,44 @@ Grbl::Grbl(Port *device) :
     features = bit(FeatureFlags::flagAskStatus) |
                bit(FeatureFlags::flagName);
 
-    // Get command line from port
-    connect( port, SIGNAL(lineAvailable(QString&)), this, SLOT(parse(QString&)));
-
-    // Start by asking informations for version
-    ask(CommandType::commandInfos);
-
-    // Ask for status regularely (5Hz)
-    connect( &statusTimer, &QTimer::timeout, this, &Grbl::timeout);
-    statusTimer.start(200);
-
     qDebug() << "Grbl::Grbl: machine initialized.";
 }
 
 Grbl::~Grbl()
 {
+    delete uiGrbl;
+
     statusTimer.stop();
     qDebug() << "Grbl::~Grbl: machine deleted.";
 }
+
+#include "portSerial.h"
+void Grbl::connect()
+{
+    port = new PortSerial();
+//    port->setDevice( portName );
+
+    if (!port->open())
+        throw machineConnectException();
+
+//    connect( &statusTimer, &QTimer::timeout, this, &Grbl::timeout);
+    QObject::connect( &statusTimer, SIGNAL(timeout()), this, SLOT(timeout()));
+    QObject::connect( port, SIGNAL(lineAvailable(QString&)), this, SLOT(parse(QString&)));
+
+    // Start by asking informations for version
+    ask(CommandType::commandInfos);
+    statusTimer.start(200);
+}
+
+void Grbl::disconnect()
+{
+    if (port)
+    {
+        delete port;
+        port = nullptr;
+    }
+}
+
 
 QJsonObject Grbl::toJsonObject()
 {
@@ -221,23 +246,23 @@ void Grbl::openConfiguration(QWidget *parent)
 
         // Call when command executed
         delete waitMessage;
-        disconnect( this, SIGNAL(commandExecuted()), this, SLOT(openConfiguration()));
+        QObject::disconnect( this, SIGNAL(commandExecuted()), this, SLOT(openConfiguration()));
 
         qDebug() << "Grbl::openConfiguration: Got configuration and starting blocks.";
         bitSet(features, FeatureFlags::flagAskStatus);
 
         // Open the configuration Dialog
-        GrblConfigurationDialog grblConfig(widget);
+
         // Use config to populate configuration dialog
-        grblConfig.setConfiguration(this);
-        grblConfig.exec();
-//        grblConfig.open(this,nullptr);
-        if (grblConfig.result() == QDialog::Accepted)
-        {
-            if (grblConfig.getConfiguration(this))
-                writeConfiguration(true);
-        }
-        else bitSet(features, FeatureFlags::flagAskStatus);
+        //setConfiguration(this);
+        //uiGrbl->exec();
+
+//        if (grblConfig.result() == QDialog::Accepted)
+//        {
+//            if (grblConfig.getConfiguration(this))
+//                writeConfiguration(true);
+//        }
+//        else bitSet(features, FeatureFlags::flagAskStatus);
     }
 }
 
@@ -293,6 +318,153 @@ void Grbl::writeConfiguration(bool start)
         qDebug() << "Grbl::writeConfiguration: configuration set.";
         bitSet(features, FeatureFlags::flagAskStatus);
     }
+}
+
+#define xFlagMask (1<<2)
+#define yFlagMask (1<<1)
+#define zFlagMask (1<<0)
+#define noFlagMask 0
+
+void Grbl::setConfiguration()
+{
+    for( auto key : config.keys() )
+    {
+        QString val = config[key];
+        uint valUInt = val.toUInt();
+        qDebug()<<"key="<<key<<",val="<<val;
+
+        switch (key)
+        {
+        case Grbl::ConfigType::configStepPulse: uiGrbl->stepPulseLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configStepIdleDelay: uiGrbl->stepIdleDelayLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configStepPortInvert:
+            uiGrbl->xStepPortInvertCheckBox->setChecked( valUInt & xFlagMask );
+            uiGrbl->yStepPortInvertCheckBox->setChecked( valUInt & yFlagMask );
+            uiGrbl->zStepPortInvertCheckBox->setChecked( valUInt & zFlagMask );
+            break;
+        case Grbl::ConfigType::configDirPortInvert:
+            uiGrbl->xDirPortInvertCheckBox->setChecked( valUInt & xFlagMask );
+            uiGrbl->yDirPortInvertCheckBox->setChecked( valUInt & yFlagMask );
+            uiGrbl->zDirPortInvertCheckBox->setChecked( valUInt & zFlagMask );
+            break;
+        case Grbl::ConfigType::configStepEnableInvert: uiGrbl->stepEnableInvertCheckBox->setChecked( val == '1' ); break;
+        case Grbl::ConfigType::configLimitPinInvert: uiGrbl->limitPinsInvertCheckBox->setChecked( val == '1' ); break;
+        case Grbl::ConfigType::configProbePinInvert: uiGrbl->probePinInvertCheckBox->setChecked( val == '1' ); break;
+
+        case Grbl::ConfigType::configStatusReport:
+            // Warning : no verification of index
+            uiGrbl->statusReportComboBox->setCurrentIndex( val.toInt() );
+            // Mask
+            break;
+        case Grbl::ConfigType::configJunctionDeviation: uiGrbl->junctionDeviationLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configArcTolerance: uiGrbl->arcToleranceLineEdit->setText( val ); break;
+
+            // Warning : no verification of index
+        case Grbl::ConfigType::configReportInches: uiGrbl->reportInchesComboBox->setCurrentIndex( val.toInt() ); break;
+        case Grbl::ConfigType::configSoftLimits: uiGrbl->softLimitsCheckBox->setChecked( val == '1' ); break;
+        case Grbl::ConfigType::configHardLimits: uiGrbl->hardLimitsCheckBox->setChecked( val == '1' ); break;
+
+        case Grbl::ConfigType::configHomingCycle: uiGrbl->homingCycleCheckBox->setChecked( val == '1' ); break;
+        case Grbl::ConfigType::configHomingDirInvert:
+            uiGrbl->xHomingDirInvertCheckBox->setChecked( valUInt & xFlagMask );
+            uiGrbl->yHomingDirInvertCheckBox->setChecked( valUInt & yFlagMask );
+            uiGrbl->zHomingDirInvertCheckBox->setChecked( valUInt & zFlagMask );
+            break;
+        case Grbl::ConfigType::configHomingFeed: uiGrbl->homingFeedLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configHomingSeek: uiGrbl->homingSeekLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configHomingDebounce: uiGrbl->homingDebounceLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configHomingPullOff: uiGrbl->homingPullofflineEdit->setText( val ); break;
+
+        case Grbl::ConfigType::configMaxSpindleSpeed: uiGrbl->spindleSpeedMaxLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configMinSpindleSpeed: uiGrbl->spindleSpeedMinLineEdit->setText( val ); break;
+
+        case Grbl::ConfigType::configLaserMode:
+            uiGrbl->laserModeCheckBox->setEnabled( hasFeature( Grbl::InfoFlags::flagHasLaserMode) );
+            uiGrbl->laserModeCheckBox->setChecked( val == 1 );
+            break;
+
+        case Grbl::ConfigType::configXSteps: uiGrbl->xStepsLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configYSteps: uiGrbl->yStepsLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configZSteps: uiGrbl->zStepsLineEdit->setText( val ); break;
+
+        case Grbl::ConfigType::configXMaxRate: uiGrbl->xMaxRateLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configYMaxRate: uiGrbl->yMaxRateLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configZMaxRate: uiGrbl->zMaxRateLineEdit->setText( val ); break;
+
+        case Grbl::ConfigType::configXAcceleration: uiGrbl->xAccelerationLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configYAcceleration: uiGrbl->yAccelerationLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configZAcceleration: uiGrbl->zAccelerationLineEdit->setText( val ); break;
+
+        case Grbl::ConfigType::configXMaxTravel: uiGrbl->xMaxTravelLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configYMaxTravel: uiGrbl->yMaxTravelLineEdit->setText( val ); break;
+        case Grbl::ConfigType::configZMaxTravel: uiGrbl->zMaxTravelLineEdit->setText( val ); break;
+
+        case Grbl::ConfigType::configStartingBlock0:
+            uiGrbl->startingBlock0LineEdit->setText( val ); break;
+        case Grbl::ConfigType::configStartingBlock1:
+            uiGrbl->startingBlock1LineEdit->setText( val ); break;
+
+        default: qDebug() << "GrblConfiguration::setConfiguration: Key unknown " << key;
+        }
+    }
+}
+
+bool Grbl::getConfiguration()
+{
+    config[ Grbl::ConfigType::configStepPulse         ] = uiGrbl->stepPulseLineEdit->text();
+    config[ Grbl::ConfigType::configStepIdleDelay     ] = uiGrbl->stepIdleDelayLineEdit->text();
+    config[ Grbl::ConfigType::configStepPortInvert    ] = QString("%1").arg(
+                                                                (uiGrbl->xStepPortInvertCheckBox->isChecked()?xFlagMask:noFlagMask) |
+                                                                (uiGrbl->yStepPortInvertCheckBox->isChecked()?yFlagMask:noFlagMask) |
+                                                                (uiGrbl->zStepPortInvertCheckBox->isChecked()?zFlagMask:noFlagMask) );
+    config[ Grbl::ConfigType::configDirPortInvert     ] = QString("%1").arg(
+                                                                (uiGrbl->xDirPortInvertCheckBox->isChecked()?xFlagMask:noFlagMask) |
+                                                                (uiGrbl->yDirPortInvertCheckBox->isChecked()?yFlagMask:noFlagMask) |
+                                                                (uiGrbl->zDirPortInvertCheckBox->isChecked()?zFlagMask:noFlagMask) );
+    config[ Grbl::ConfigType::configStepEnableInvert  ] = uiGrbl->stepEnableInvertCheckBox->isChecked()?'1':'0';
+    config[ Grbl::ConfigType::configLimitPinInvert    ] = uiGrbl->limitPinsInvertCheckBox->isChecked()?'1':'0';
+    config[ Grbl::ConfigType::configProbePinInvert    ] = uiGrbl->probePinInvertCheckBox->isChecked()?'1':'0';
+    config[ Grbl::ConfigType::configStatusReport      ] = QString("%1").arg(uiGrbl->statusReportComboBox->currentIndex());
+    config[ Grbl::ConfigType::configJunctionDeviation ] = uiGrbl->junctionDeviationLineEdit->text();
+    config[ Grbl::ConfigType::configArcTolerance      ] = uiGrbl->arcToleranceLineEdit->text();
+    config[ Grbl::ConfigType::configReportInches      ] = QString("%1").arg(uiGrbl->reportInchesComboBox->currentIndex());
+    config[ Grbl::ConfigType::configSoftLimits        ] = uiGrbl->softLimitsCheckBox->isChecked()?'1':'0';
+    config[ Grbl::ConfigType::configHardLimits        ] = uiGrbl->hardLimitsCheckBox->isChecked()?'1':'0';
+    config[ Grbl::ConfigType::configHomingCycle       ] = uiGrbl->homingCycleCheckBox->isChecked()?'1':'0';
+    config[ Grbl::ConfigType::configHomingDirInvert   ] = QString("%1").arg(
+                                                                (uiGrbl->xHomingDirInvertCheckBox->isChecked()?xFlagMask:noFlagMask) |
+                                                                (uiGrbl->yHomingDirInvertCheckBox->isChecked()?yFlagMask:noFlagMask) |
+                                                                (uiGrbl->zHomingDirInvertCheckBox->isChecked()?zFlagMask:noFlagMask) );
+    config[ Grbl::ConfigType::configHomingFeed        ] = uiGrbl->homingFeedLineEdit->text();
+    config[ Grbl::ConfigType::configHomingSeek        ] = uiGrbl->homingSeekLineEdit->text();
+    config[ Grbl::ConfigType::configHomingDebounce    ] = uiGrbl->homingDebounceLineEdit->text();
+    config[ Grbl::ConfigType::configHomingPullOff     ] = uiGrbl->homingPullofflineEdit->text();
+    config[ Grbl::ConfigType::configMaxSpindleSpeed   ] = uiGrbl->spindleSpeedMaxLineEdit->text();
+    config[ Grbl::ConfigType::configMinSpindleSpeed   ] = uiGrbl->spindleSpeedMinLineEdit->text();
+
+    config[ Grbl::ConfigType::configLaserMode         ] = uiGrbl->laserModeCheckBox->isChecked()?1.0:0.0;
+
+    config[ Grbl::ConfigType::configXSteps            ] = uiGrbl->xStepsLineEdit->text();
+    config[ Grbl::ConfigType::configYSteps            ] = uiGrbl->yStepsLineEdit->text();
+    config[ Grbl::ConfigType::configZSteps            ] = uiGrbl->zStepsLineEdit->text();
+
+    config[ Grbl::ConfigType::configXMaxRate          ] = uiGrbl->xMaxRateLineEdit->text();
+    config[ Grbl::ConfigType::configYMaxRate          ] = uiGrbl->yMaxRateLineEdit->text();
+    config[ Grbl::ConfigType::configZMaxRate          ] = uiGrbl->zMaxRateLineEdit->text();
+
+    config[ Grbl::ConfigType::configXAcceleration     ] = uiGrbl->xAccelerationLineEdit->text();
+    config[ Grbl::ConfigType::configYAcceleration     ] = uiGrbl->yAccelerationLineEdit->text();
+    config[ Grbl::ConfigType::configZAcceleration     ] = uiGrbl->zAccelerationLineEdit->text();
+
+    config[ Grbl::ConfigType::configXMaxTravel        ] = uiGrbl->xMaxTravelLineEdit->text();
+    config[ Grbl::ConfigType::configYMaxTravel        ] = uiGrbl->yMaxTravelLineEdit->text();
+    config[ Grbl::ConfigType::configZMaxTravel        ] = uiGrbl->zMaxTravelLineEdit->text();
+
+    // Include starting blocks in config
+    config[ Grbl::ConfigType::configStartingBlock0    ] = uiGrbl->startingBlock0LineEdit->text();
+    config[ Grbl::ConfigType::configStartingBlock1    ] = uiGrbl->startingBlock1LineEdit->text();
+
+    return true;
 }
 
 // ----------------------------------------------------------------------------------
@@ -472,6 +644,8 @@ void Grbl::timeout()
 void Grbl::parse(QString &line)
 {
     lastLine = line;
+
+    emit infoReceived(line);
 
     //qDebug() << "line=" << line;
     // Parse message

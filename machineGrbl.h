@@ -1,25 +1,21 @@
 #ifndef GRBL_H
 #define GRBL_H
 
-#define Grbl_version V1.0
-
 #include <QTimer>
 #include <QMap>
-#include "port_serial.h"
 #include "machine.h"
+#include "portSerial.h"
 
-#define CMD_CONFIG     "$$"
-#define CMD_INFOS      "$I"
-#define CMD_GC         "$G"
-#define CMD_GXX        "$#"
-#define CMD_UNLOCK     "$X"
-#define CMD_HOME       "$H"
-#define CMD_STARTBLOCK "$N"
-#define CMD_CHECK      "$C"
+namespace Ui {
+class Grbl;
+}
 
-class Grbl : public Machine
+class Grbl : public Machine, public SingletonFactory<Grbl>
 {
     Q_OBJECT
+
+private:
+    Ui::Grbl *uiGrbl;
 
     QTimer  statusTimer;
 
@@ -180,11 +176,17 @@ public:
         };
     };
 
-    Grbl(Port *port);
-    virtual ~Grbl();
+    explicit Grbl(QWidget *parent = nullptr);
+    ~Grbl();
+
+    virtual void connect();
+    virtual void disconnect();
 
     virtual QJsonObject toJsonObject();
     virtual QString toJson();
+
+    void setConfiguration();
+    bool getConfiguration();
 
     virtual bool ask(int command, int arg = 0, bool noLog = false);
 
@@ -215,4 +217,4 @@ signals:
     friend class GrblConfigurationDialog;
 };
 
-#endif // GRBL_H
+#endif // GGRBL_H

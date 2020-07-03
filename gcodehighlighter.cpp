@@ -1,6 +1,6 @@
-#include "highlighter.h"
+#include "gcodehighlighter.h"
 
-Highlighter::Highlighter(QTextDocument *parent)
+GCodeHighlighter::GCodeHighlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
     HighlightingRule rule;
@@ -64,7 +64,7 @@ Highlighter::Highlighter(QTextDocument *parent)
     highlightingRules.append(rule);
 }
 
-void Highlighter::highlightBlock(const QString &text)
+void GCodeHighlighter::highlightBlock(const QString &text)
 {
     for (const HighlightingRule &rule : qAsConst(highlightingRules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);

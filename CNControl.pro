@@ -30,39 +30,42 @@ SOURCES += \
     aaaa_idees.cpp \
     configurationdialog.cpp \
     gcode.cpp \
-    grblconfigurationdialog.cpp \
-    main.cpp \
-    highlighter.cpp \
+    gcodehighlighter.cpp \
     machine.cpp \
+    machineGrbl.cpp \
+    main.cpp \
     mainwindow.cpp \
-    port_serial.cpp \
+    operation.cpp \
     port.cpp \
     codeeditor.cpp \
-    grbl.cpp \
+    portSerial.cpp \
     visualizer.cpp
 
 HEADERS += \
+    Exceptions.h \
     QCsvFile \
     QFocusLineEdit \
     configurationdialog.h \
     gcode.h \
+    gcodehighlighter.h \
     grbl_config.h \
-    grblconfigurationdialog.h \
-    mainwindow.h \
-    singleton.h \
-    highlighter.h \
-    bits.h \
     machine.h \
-    port_serial.h \
+    machineGrbl.h \
+    mainwindow.h \
+    operation.h \
+    bits.h \
     port.h \
     codeeditor.h \
-    grbl.h \
+    portSerial.h \
+    singletonFactory.h \
     visualizer.h
 
 FORMS += \
     configurationdialog.ui \
-    grblconfigurationdialog.ui \
-    mainwindow.ui
+    machine.ui \
+    machineGrbl.ui \
+    mainwindow.ui \
+    operation.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

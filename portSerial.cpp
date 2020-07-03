@@ -1,9 +1,9 @@
-#include "port_serial.h"
+#include "portSerial.h"
 
 #include <QByteArray>
 #include <QDebug>
 
-SerialPort::SerialPort() : Port ()
+PortSerial::PortSerial() : Port ()
 {
     setSpeed();
     setDataBits();
@@ -14,14 +14,15 @@ SerialPort::SerialPort() : Port ()
     qDebug() << "SerialPort : Port initialized.";
 }
 
-SerialPort::~SerialPort()
+PortSerial::~PortSerial()
 {
+    close();
     qDebug() << "SerialPort : Port deleted.";
 }
 
-QList<QSerialPortInfo> SerialPort::list;
+QList<QSerialPortInfo> PortSerial::list;
 
-QStringList SerialPort::getDevices(void)
+QStringList PortSerial::getDevices(void)
 {
     QSerialPortInfo info;
     QStringList infos;
@@ -35,7 +36,7 @@ QStringList SerialPort::getDevices(void)
     return infos;
 }
 
-QSerialPortInfo SerialPort::getDeviceInfo( QString portName )
+QSerialPortInfo PortSerial::getDeviceInfo( QString portName )
 {
     for (QSerialPortInfo item : list)
     {
@@ -48,19 +49,19 @@ QSerialPortInfo SerialPort::getDeviceInfo( QString portName )
     return info;
 }
 
-void SerialPort::setDeviceInfo(QSerialPortInfo info)
+void PortSerial::setDeviceInfo(QSerialPortInfo info)
 {
     serial.setPort(info);
 }
 
-bool SerialPort::setDevice(QString &portName)
+bool PortSerial::setDevice(QString &portName)
 {
     QSerialPortInfo deviceInfo = getDeviceInfo( portName );
     setDeviceInfo(deviceInfo);
     return true;
 }
 
-bool SerialPort::setOptions(qint32 speed,
+bool PortSerial::setOptions(qint32 speed,
           QSerialPort::DataBits dataBits,
           QSerialPort::FlowControl flowControl,
           QSerialPort::Parity parity,
@@ -74,7 +75,7 @@ bool SerialPort::setOptions(qint32 speed,
     return true;
 };
 
-bool SerialPort::setSpeed(qint32 speed)
+bool PortSerial::setSpeed(qint32 speed)
 {
     //int i = serial.setBaudRate(speed, QSerialPort::AllDirections);
     if(!serial.setBaudRate(speed, QSerialPort::AllDirections))
@@ -86,7 +87,7 @@ bool SerialPort::setSpeed(qint32 speed)
     return false;
 }
 
-bool SerialPort::setDataBits(QSerialPort::DataBits dataBits)
+bool PortSerial::setDataBits(QSerialPort::DataBits dataBits)
 {
     if(!serial.setDataBits(dataBits))
         return true;
@@ -97,7 +98,7 @@ bool SerialPort::setDataBits(QSerialPort::DataBits dataBits)
     return false;
 };
 
-bool SerialPort::setFlowControl(QSerialPort::FlowControl flowControl)
+bool PortSerial::setFlowControl(QSerialPort::FlowControl flowControl)
 {
     if(!serial.setFlowControl(flowControl))
         return true;
@@ -108,7 +109,7 @@ bool SerialPort::setFlowControl(QSerialPort::FlowControl flowControl)
     return false;
 };
 
-bool SerialPort::setParity(QSerialPort::Parity parity)
+bool PortSerial::setParity(QSerialPort::Parity parity)
 {
     if(!serial.setParity(parity))
         return true;
@@ -119,7 +120,7 @@ bool SerialPort::setParity(QSerialPort::Parity parity)
     return false;
 };
 
-bool SerialPort::setStopBits(QSerialPort::StopBits stopBits)
+bool PortSerial::setStopBits(QSerialPort::StopBits stopBits)
 {
     if(!serial.setStopBits(stopBits))
         return true;
@@ -130,7 +131,7 @@ bool SerialPort::setStopBits(QSerialPort::StopBits stopBits)
     return false;
 };
 
-bool SerialPort::setProperty(const char *prop, QVariant &val)
+bool PortSerial::setProperty(const char *prop, QVariant &val)
 {
     bool res;
     if (!strcmp(prop, "speed")) setSpeed(val.toInt(&res));
@@ -142,17 +143,17 @@ bool SerialPort::setProperty(const char *prop, QVariant &val)
     return res;
 }
 
-bool SerialPort::isOpen()
+bool PortSerial::isOpen()
 {
     return serial.isOpen();
 };
 
-bool SerialPort::open()
+bool PortSerial::open()
 {
     if (serial.open(QIODevice::ReadWrite))
     {
         serial.flush();
-        connect(&serial, &QIODevice::readyRead, this, &SerialPort::readyReadSlot);
+        connect(&serial, &QIODevice::readyRead, this, &PortSerial::readyReadSlot);
         qDebug() << "SerialPort : Port opened.";
 
         return true;
@@ -162,30 +163,30 @@ bool SerialPort::open()
     return false;
 }
 
-void SerialPort::close()
+void PortSerial::close()
 {
     serial.close();
     qDebug() << "SerialPort : Port closed.";
 }
 
-bool SerialPort::flush()
+bool PortSerial::flush()
 {
     return serial.flush();
 };
 
-qint64 SerialPort::write(const QByteArray &byteArray)
+qint64 PortSerial::write(const QByteArray &byteArray)
 {
     qint64 res = serial.write(byteArray);
     serial.flush();
     return res;
 }
 
-QString SerialPort::errorString()
+QString PortSerial::errorString()
 {
     return serial.errorString();
 }
 
-void SerialPort::readyReadSlot()
+void PortSerial::readyReadSlot()
 {
     while (!serial.atEnd()) {
         QByteArray data = serial.readLine();

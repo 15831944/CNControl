@@ -12,9 +12,15 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
+
+    QFont font;
+    font.setFamily("Courier");
+    font.setFixedPitch(true);
+    font.setPointSize(10);
+    setFont(font);
+
+    gcodeHighlighter = new GCodeHighlighter(document());
 }
-
-
 
 int CodeEditor::lineNumberAreaWidth()
 {

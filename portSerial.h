@@ -1,5 +1,5 @@
-#ifndef SerialPort_H
-#define SerialPort_H
+#ifndef PortSerial_H
+#define PortSerial_H
 
 #include <QSerialPort>
 #include <QSerialPortInfo>
@@ -12,7 +12,7 @@
 #define DEFAULT_PARITY      QSerialPort::NoParity
 #define DEFAULT_STOPBITS    QSerialPort::OneStop
 
-class SerialPort : public Port
+class PortSerial : public Port
 {
     Q_OBJECT
 
@@ -22,8 +22,8 @@ class SerialPort : public Port
 
     QString buffer;
 public:
-    SerialPort();
-    virtual ~SerialPort();
+    PortSerial();
+    virtual ~PortSerial();
 
     QSerialPortInfo getDeviceInfo( QString portName );
     void setDeviceInfo(QSerialPortInfo info);
@@ -61,4 +61,4 @@ signals:
     void lineAvailable(QString &line);
 };
 
-#endif // SerialPort_H
+#endif // PortSerial_H
