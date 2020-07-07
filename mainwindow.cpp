@@ -288,7 +288,6 @@ void MainWindow::openFile(QString fileName)
             QStringList lines = ui->gcodeCodeEditor->toPlainText().split("\n");
             gcodeParser->parse( lines );
 
-            int nbLines = lines.size();
             ui->linesNbLabel->setText( QString().setNum( lines.size()) );
             ui->pointsNbLabel->setText( QString().setNum(gcodeParser->getPoints().size()) );
             ui->visualizer->setGCode( gcodeParser );
