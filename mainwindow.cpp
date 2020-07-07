@@ -278,10 +278,6 @@ void MainWindow::openFile(QString fileName)
     if (file.open(QFile::ReadOnly | QFile::Text))
     {
         ui->gcodeCodeEditor->setPlainText(file.readAll());
-        //ui->gcodeCodeEditor->setCurrentLine( 10);
-
-        //if (machine)
-          //  checkGcode();
 
         if (gcodeParser)
         {
