@@ -6,6 +6,8 @@
 #include <QList>
 #include <QMap>
 #include <QJsonObject>
+#include <QVector3D>
+#include <QTabWidget>
 
 #include "port.h"
 #include "bits.h"
@@ -14,15 +16,6 @@
 namespace Ui {
 class Machine;
 }
-
-#include <QException>
-
-class machineConnectException : public QException
-{
-public:
-    void raise() const override { throw *this; }
-    machineConnectException *clone() const override { return new machineConnectException(*this); }
-};
 
 class Machine : public QDialog, public SingletonFactory<Machine>
 {
@@ -169,24 +162,22 @@ public:
         };
     };
 
-    typedef struct CoordinatesType
-    {
-        double x;
-        double y;
-        double z;
-        bool operator==(CoordinatesType coords)
-        {
-            return (coords.x == x) && (coords.y == y) && (coords.z == z);
-        }
-        bool operator!=(CoordinatesType coords)
-        {
-            return !(*this == coords);
-        }
-    } CoordinatesType;
+//    typedef struct CoordinatesType
+//    {
+//        double x;
+//        double y;
+//        double z;
+//        bool operator==(CoordinatesType coords)
+//        {
+//            return (coords.x == x) && (coords.y == y) && (coords.z == z);
+//        }
+//        bool operator!=(CoordinatesType coords)
+//        {
+//            return !(*this == coords);
+//        }
+//    } CoordinatesType;
 
 protected:
-
-    Ui::Machine *uiMachine;
 
     QString machineType;
     QString machineName;
@@ -202,57 +193,63 @@ protected:
 
     int errorCode, alarmCode, holdCode, doorCode;
 
-    CoordinatesType machineCoordinates;
-    CoordinatesType workingCoordinates;
+    QVector3D machineCoordinates;
+    QVector3D workingCoordinates;
+    QVector3D workingOffset;
 
     int blockBuffer, rxBuffer;
     int blockBufferMax, rxBufferMax;
     int feedRate, spindleSpeed;
 
-    CoordinatesType workingOffset;
-
     int lineNumber;
     int fOverride, rOverride, spindleSpeedOverride;
-
-    QMap<int, QString> stateMessages;
 
     QMap<int, ErrorMessageType> errorMessages;
     QMap<int, AlarmMessageType> alarmMessages;
     QMap<int, SettingMessageType> settingMessages;
     QMap<int, BuildOptionMessageType> buildOptionMessages;
+    QMap<int, QString> stateMessages;
 
     QString lastLine;
 
-    QMap<uint, QString> config;
+    QMap<int, QString> config;
+    //QJsonObject &config;
 
     Port *port;
 
 public:
-    explicit Machine() { registerMachine( this ); }
+//    explicit Machine(QJsonObject &configMachine, QWidget *parent = nullptr);
     explicit Machine(QWidget *parent = nullptr);
     ~Machine();
 
-    static void registerMachine(Machine *machine);
-    virtual void connect();
-    virtual void disconnect();
+    virtual void openMachine(QString portName)=0;
+    virtual void closeMachine()=0;
 
-    virtual QJsonObject toJsonObject();
-    virtual QString toJson();
+//    virtual QJsonObject toJsonObject();
+//    virtual QString toJson();
 
-    virtual void openConfiguration(QWidget *parent);
+    virtual bool moveToX(double x, double feed, bool jog=false, bool machine=false, bool absolute=false)=0;
+    virtual bool moveToY(double y, double feed, bool jog=false, bool machine=false, bool absolute=false)=0;
+    virtual bool moveToXY(double x, double y, double feed, bool jog=false, bool machine=false, bool absolute=false)=0;
+    virtual bool moveToZ(double z, double feed, bool jog=false, bool machine=false, bool absolute=false)=0;
+    virtual bool moveToXYZ(double x, double y, double z, double feed, bool jog=false, bool machine=false, bool absolute=false)=0;
+    virtual bool moveTo(QVector3D &poin, double feed, bool jog, bool machine=false, bool absolute=false)=0;
+    virtual bool stopMove()=0;
 
     virtual bool sendCommand(QString gcode, bool withNewline = true, bool noLog = false);
     virtual bool ask(int commandCode, int commandArg = 0, bool noLog = false) = 0;
 
-    virtual bool isState( int type );
-    virtual int getState();
+    void setMachineConfigurationWidget(QTabWidget *configTabWidget);
 
     // Message functions
-    virtual const QString getStateMessages(int state);
     virtual const ErrorMessageType getErrorMessages(int error);
     virtual const AlarmMessageType getAlarmMessages(int alarm);
     virtual const BuildOptionMessageType getBuildOptionsMessages(char option);
     virtual const SettingMessageType getSettingMessages(int setting);
+    virtual const QString getStateMessages(int state);
+
+    virtual bool isState( int type );
+    virtual int getState();
 
     virtual QString getMachineType();
     virtual QString getMachineName();
@@ -270,8 +267,9 @@ public:
     virtual quint64 getActions();
     virtual bool hasAction( int flag );
 
-    virtual CoordinatesType getMachineCoordinates();
-    virtual CoordinatesType getWorkingCoordinates();
+    virtual QVector3D getMachineCoordinates();
+    virtual QVector3D getWorkingCoordinates();
+    virtual QVector3D getWorkingOffset();
 
     virtual int getBlockBuffer();
     virtual int getRXBuffer();
@@ -280,7 +278,6 @@ public:
 
     virtual int getFeedRate();
     virtual int getSpindleSpeed();
-    virtual CoordinatesType getWorkingOffset();
     virtual int getLineNumber();
 //    virtual ??? getOverride();
     virtual int getErrorCode();
@@ -300,6 +297,7 @@ public:
 
 public slots:
     virtual void parse(QString &line)=0;
+    virtual int openConfiguration();
 
 signals:
     void versionUpdated(); // When name or version has been found or changed
@@ -323,6 +321,17 @@ signals:
     void infoReceived(QString line); // When a command is received from the machine
     void commandSent(QString line); // When a command is send to machine
 
+private:
+    Ui::Machine *ui;
+};
+
+#include <QException>
+
+class machineConnectException : public QException
+{
+public:
+    void raise() const override { throw *this; }
+    machineConnectException *clone() const override { return new machineConnectException(*this); }
 };
 
 #endif // MACHINE_H

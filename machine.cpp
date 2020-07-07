@@ -3,13 +3,12 @@
 #include <QtDebug>
 #include <QJsonDocument>
 
+//Machine::Machine(QJsonObject &configMachine, QWidget *parent) :
 Machine::Machine(QWidget *parent) :
     QDialog(parent),
-    uiMachine(new Ui::Machine)
+    ui(new Ui::Machine)
 {
-    uiMachine->setupUi(this);
-
-
+    ui->setupUi(this);
     features = infos = switches = actioners = 0;
 
     state = StateType::stateUnknown;
@@ -33,41 +32,40 @@ Machine::Machine(QWidget *parent) :
 
 Machine::~Machine()
 {
-    delete uiMachine;
+    delete ui;
 }
 
-QMap<QString, Machine*> Machine::machines;
-void Machine::registerMachine(Machine *machine)
+//QJsonObject Machine::toJsonObject()
+//{
+//    QJsonObject json;
+//    json["type"] = "machine";
+//    json["zSafe"] = 2;
+//    json["center.x"] = 310;
+//    json["center.y"] = 360;
+//    json["center.z"] = 50;
+
+//    return json;
+//}
+
+void Machine::setMachineConfigurationWidget(QTabWidget *configTabWidget)
 {
-    QString type = machine->getMachineType();
-    if ( ! machines.contains( type ) )
+    // Transfer all tabs from the machine QTabWidget into our.
+    // This makes all tabs at the same interface level
+    for (int i=0; i< configTabWidget->count(); i++)
     {
-        qDebug() << "Machine::registerMachine(" << type << ")";
-        machines[ type ] = machine;
+        QWidget *widget = configTabWidget->widget(i);
+        ui->configTabWidget->addTab( widget, configTabWidget->tabText(i) );
     }
 }
 
-QJsonObject Machine::toJsonObject()
+int Machine::openConfiguration()
 {
-    QJsonObject json;
-    json["type"] = "machine";
-    json["zSafe"] = 2;
-    json["center.x"] = 310;
-    json["center.y"] = 360;
-    json["center.z"] = 50;
+    show();
+    exec();
 
-    return json;
+    return result();
 }
 
-QString Machine::toJson()
-{
-    return QJsonDocument( toJsonObject() ).toJson();
-}
-
-void Machine::openConfiguration(QWidget *parent)
-{
-
-}
 
 QString Machine::getMachineType()
 {
@@ -113,8 +111,9 @@ bool Machine::hasSwitch(int flag) { return bitIsSet(switches, flag); };
 quint64 Machine::getActions() { return actioners; };
 bool Machine::hasAction(int flag) { return bitIsSet(actioners, flag); };
 
-Machine::CoordinatesType Machine::getMachineCoordinates() { return machineCoordinates; };
-Machine::CoordinatesType Machine::getWorkingCoordinates() { return workingCoordinates; };
+QVector3D Machine::getMachineCoordinates() { return machineCoordinates; };
+QVector3D Machine::getWorkingCoordinates() { return workingCoordinates; };
+QVector3D Machine::getWorkingOffset() { return workingOffset; };
 
 int Machine::getBlockBuffer() { return blockBuffer; };
 int Machine::getRXBuffer() { return rxBuffer; };
@@ -125,7 +124,6 @@ int Machine::getRXBufferMax() { return rxBufferMax; };
 int Machine::getFeedRate() { return feedRate; };
 int Machine::getSpindleSpeed() { return spindleSpeed; };
 
-Machine::CoordinatesType Machine::getWorkingOffset() { return workingOffset; };
 int Machine::getLineNumber() { return lineNumber; };
 
 int Machine::getErrorCode() { return errorCode; };

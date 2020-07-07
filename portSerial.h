@@ -46,7 +46,7 @@ public:
     virtual bool open();
     virtual void close();
     virtual bool flush();
-    virtual QStringList getDevices(void);
+    static QStringList getDevices(void);
     virtual bool setProperty(const char *prop, QVariant &val);
     // prop IN ( 'speed', 'dataBits', 'flowControl', 'parity', 'stopBits' )
     virtual qint64 	write(const QByteArray &byteArray);

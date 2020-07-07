@@ -1,7 +1,8 @@
-#include "mainwindow.h"
 #include <QApplication>
 #include <QTranslator>
 #include <QDebug>
+
+#include "mainwindow.h"
 #include "machineGrbl.h"
 
 int main(int argc, char *argv[])

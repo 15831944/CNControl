@@ -22,7 +22,7 @@ PortSerial::~PortSerial()
 
 QList<QSerialPortInfo> PortSerial::list;
 
-QStringList PortSerial::getDevices(void)
+QStringList PortSerial::getDevices()
 {
     QSerialPortInfo info;
     QStringList infos;

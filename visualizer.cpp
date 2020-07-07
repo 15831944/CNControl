@@ -18,7 +18,7 @@ void Visualizer::initializeGL()
     initializeOpenGLFunctions();
 
     // GL options
-    glClearColor(0.52f, 0.52f, 0.52f, 1.0f);
+    glClearColor(0.98f, 0.98f, 0.98f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
 }
@@ -56,6 +56,7 @@ void Visualizer::paintGL()
 
 void Visualizer::paintBoard()
 {
+    // Draw board
     glBegin(GL_TRIANGLE_STRIP);
         glColor4f(0.3f, 0.3f, 0.3f, 0.3f);
         glVertex3f( -plateSize.x() / 2.0f, -plateSize.y() / 2.0f, 0.0f);
@@ -64,17 +65,18 @@ void Visualizer::paintBoard()
         glVertex3f(  plateSize.x() / 2.0f,  plateSize.y() / 2.0f, 0.0f);
     glEnd();
 
+    // Draw board lines
     glBegin(GL_LINES);
         glColor3f(0.2f, 0.2f, 0.2f);
-        for(float i= -plateSize.x() / 2.0f + plateInterval; i < plateSize.x() / 2.0f; i+=plateInterval)
+        for(float i= -plateSize.x() / 2.0f + plateInterval; i < plateSize.x() / 2.0f; i += plateInterval)
         {
-            glVertex3f( -i, -plateSize.y() / 2.0f, 0.0f);
-            glVertex3f( -i,  plateSize.y() / 2.0f, 0.0f);
+            glVertex3f( -i, -plateSize.y() / 2.0f, 0.00001f);
+            glVertex3f( -i,  plateSize.y() / 2.0f, 0.00001f);
         }
-        for(float i= -plateSize.y() / 2.0f + plateInterval; i < plateSize.y() / 2.0f; i+=plateInterval)
+        for(float i= -plateSize.y() / 2.0f + plateInterval; i < plateSize.y() / 2.0f; i += plateInterval)
         {
-            glVertex3f( -plateSize.x() / 2.0f, -i, 0.0f);
-            glVertex3f(  plateSize.x() / 2.0f, -i, 0.0f);
+            glVertex3f( -plateSize.x() / 2.0f, -i, 0.00001f);
+            glVertex3f(  plateSize.x() / 2.0f, -i, 0.00001f);
         }
     glEnd();
 }
@@ -138,7 +140,6 @@ void Visualizer::paintGCode()
         float color = 0.9f;
 
         glBegin(GL_LINES);
-//        glBegin(GL_LINE_STRIP);
             glColor3f(0.8f, 0.8f, 0.0f);
             int nbPoints = points.size() * perc / 1000L;
 

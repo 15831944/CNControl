@@ -1,27 +1,19 @@
-#ifndef GRBL_H
-#define GRBL_H
+#ifndef MACHINEGRBL_H
+#define MACHINEGRBL_H
 
 #include <QTimer>
 #include <QMap>
+
 #include "machine.h"
 #include "portSerial.h"
 
 namespace Ui {
-class Grbl;
+class MachineGrbl;
 }
 
-class Grbl : public Machine, public SingletonFactory<Grbl>
+class MachineGrbl : public Machine, public SingletonFactory<MachineGrbl>
 {
     Q_OBJECT
-
-private:
-    Ui::Grbl *uiGrbl;
-
-    QTimer  statusTimer;
-
-    QMap<uint, CoordinatesType> GxxConfig;
-    CoordinatesType prbCoords;
-    double TLOValue;
 
 public:
     class StateType : public Machine::StateType
@@ -39,11 +31,13 @@ public:
     {
     public:
         enum {
-            flagAskStatus = Machine::FeatureFlags::Last,
-            flagWaitForReset,
+//            flagAskStatus ,
+            flagWaitForReset= Machine::FeatureFlags::Last,
             flagHasCoolantMist ,
             flagHasVariableSpindle,
             flagHasLaserMode,
+            flagHasLineNumbers,
+            flagHasCoreXY,
             Last
         };
     };
@@ -176,24 +170,34 @@ public:
         };
     };
 
-    explicit Grbl(QWidget *parent = nullptr);
-    ~Grbl();
+//    explicit MachineGrbl(QJsonObject &configMachine, QWidget *parent = nullptr);
+    explicit MachineGrbl(QWidget *parent = nullptr);
+    ~MachineGrbl();
 
-    virtual void connect();
-    virtual void disconnect();
+    virtual void openMachine(QString portName);
+    virtual void closeMachine();
 
-    virtual QJsonObject toJsonObject();
-    virtual QString toJson();
+    virtual bool moveToX(double x, double feed, bool jog=false, bool machine=false, bool absolute=false);
+    virtual bool moveToY(double y, double feed, bool jog=false, bool machine=false, bool absolute=false);
+    virtual bool moveToXY(double x, double y, double feed, bool jog=false, bool machine=false, bool absolute=false);
+    virtual bool moveToZ(double z, double feed, bool jog=false, bool machine=false, bool absolute=false);
+    virtual bool moveToXYZ(double x, double y, double z, double feed, bool jog=false, bool machine=false, bool absolute=false);
+    virtual bool moveTo(QVector3D &poin, double feed, bool jog, bool machine=false, bool absolute=false);
+    virtual bool stopMove();
+
+//    virtual QJsonObject toJsonObject();
+//    virtual QString toJson();
 
     void setConfiguration();
     bool getConfiguration();
 
     virtual bool ask(int command, int arg = 0, bool noLog = false);
 
-    void readErrorsMessages();
-    void readAlarmsMessages();
-    void readBuildOptionsMessages();
-    void readSettingsMessages();
+    void loadErrorsMessages();
+    void loadAlarmsMessages();
+    void loadBuildOptionsMessages();
+    void loadSettingsMessages();
+    void loadStatesMessages();
 
     virtual void setXWorkingZero();
     virtual void setYWorkingZero();
@@ -209,12 +213,21 @@ public slots:
 
 private slots:
     void timeout();
-    virtual void openConfiguration(QWidget *parent=nullptr);
-    virtual void writeConfiguration(bool start = false);
+    virtual int openConfiguration();
+    virtual void writeConfiguration();
 
-signals:
+private:
+    Ui::MachineGrbl *ui;
 
-    friend class GrblConfigurationDialog;
+    QTimer  statusTimer;
+//    PortSerial serial;
+
+
+    QMap<uint, QVector3D> GxxConfig;
+    QVector3D prbCoords;
+    double TLOValue;
+
+
 };
 
-#endif // GGRBL_H
+#endif // MACHINEGRBL_H

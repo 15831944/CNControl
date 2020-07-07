@@ -22,28 +22,31 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+    enum SaveFormat {
+        Json, Binary
+    };
+
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void openMachine();
+    void closeMachine();
     bool machineOk();
-//    bool portOk();
 
     void setUIConnected();
     void setUIDisconnected();
     void setUISleeping();
-    //bool eventFilter(QObject *obj, QEvent *event);
 
-//    void openPort();
-//    void closePort();
+    void defaultConfiguration();
+    bool loadConfiguration();
+    bool saveConfiguration();
 
     bool gcodeSend(QString gcode);
     void sendNextGCode();
 
     void resetMachine();
     void uncheckJogButtons();
-    void zeroWorking();
-    void zeroMachine();
 
 public slots:
     bool newFile();
@@ -74,7 +77,7 @@ private slots:
     void onGcodeChanged();
     void onPortsUpdate();
 
-    void onPortError(Port::PortError error);
+   // void onPortError(Port::PortError error);
     void onMachineError(int error);
     void onMachineAlarm(int alarm);
 
@@ -109,6 +112,21 @@ private slots:
     void on_yMachineLineEdit_returnPressed();
     void on_zMachineLineEdit_returnPressed();
 
+    void on_xZeroToolButton_clicked();
+    void on_yZeroToolButton_clicked();
+    void on_zZeroToolButton_clicked();
+
+    void on_xMinusToolButton_clicked();
+    void on_xPlusToolButton_clicked();
+
+    void on_yMinusToolButton_clicked();
+    void on_yPlusToolButton_clicked();
+
+    void on_zPlusToolButton_clicked();
+    void on_zMinusToolButton_clicked();
+
+    void on_zSafeToolButton_clicked();
+
     void on_actionOpen_triggered();
     void on_actionReset_triggered();
 
@@ -117,19 +135,7 @@ private slots:
     void on_coolantFloodPushButton_clicked(bool checked);
     void on_coolantMistPushButton_clicked(bool checked);
 
-    void on_xZeroToolButton_clicked();
-    void on_yZeroToolButton_clicked();
-    void on_zZeroToolButton_clicked();
-
     void on_actionConfig_triggered();
-
-    void on_xMinusToolButton_clicked();
-    void on_xPlusToolButton_clicked();
-    void on_yMinusToolButton_clicked();
-    void on_yPlusToolButton_clicked();
-    void on_zPlusToolButton_clicked();
-    void on_zMinusToolButton_clicked();
-    void on_zSafeToolButton_clicked();
 
     void on_resetToolButton_clicked();
     void on_cancelJogToolButton_clicked();
@@ -140,23 +146,28 @@ private slots:
     void on_stopToolButton_clicked();
     void on_actionNew_triggered();
 
-    void on_homeWorkingToolButton_clicked();
-    void on_homeMachineToolButton_clicked();
-
     void on_homingToolButton_clicked();
+    void on_zeroWorkingToolButton_clicked();
+    void on_zeroMachineToolButton_clicked();
+
     void on_actionAbout_triggered();
     void on_jogIntervalSlider_valueChanged(int value);
+
     void on_gCodeExecutionSlider_valueChanged(int value);
     void on_topViewToolButton_clicked();
     void on_isometricViewToolButton_clicked();
+
+    void on_pushButton_clicked();
+
+    void on_tabWidget_currentChanged(int index);
 
 private:
     Ui::MainWindow *ui;
     QTimer  portsTimer;
 
-//    GCodeHighlighter *gcodeHighlighter;
-
-    static QMap<QString, Machine*> machines;
+    QString configName;
+    QJsonObject config;
+    //static QMap<QString, Machine*> machines;
 
     QStringList devicesList;
     Machine *machine;

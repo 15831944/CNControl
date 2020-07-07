@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Grbl</class>
- <widget class="QWidget" name="Grbl">
+ <class>MachineGrbl</class>
+ <widget class="QWidget" name="MachineGrbl">
   <property name="geometry">
    <rect>
     <x>0</x>

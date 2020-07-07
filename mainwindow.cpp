@@ -1,8 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-//#include "stdio.h"
-
 #include <QString>
 #include <QStringList>
 #include <QSerialPort>
@@ -20,8 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // Déclaration des différents type de machines
-    Grbl grbl;
+    if (!loadConfiguration())
+        defaultConfiguration();
 
     QWidget::setWindowTitle(QString("%1 %2").arg(PROGRAM_NAME).arg(PROGRAM_VERSION));
     //setLogWidget( ui->logListWidget );
@@ -46,19 +44,8 @@ MainWindow::MainWindow(QWidget *parent) :
     gcodeParser = new GCode();
     machine = nullptr;
 
-//    PortSerial *serial = new PortSerial();
-//    serial->setSpeed( 38400 );
-//    port = serial;
-
     on_jogIntervalSlider_valueChanged( 3 );
     gcodeIndex = 0;
-
-//    QFont font;
-//    font.setFamily("Courier");
-//    font.setFixedPitch(true);
-//    font.setPointSize(10);
-//    ui->gcodeCodeEditor->setFont(font);
-//    gcodeHighlighter = new GCodeHighlighter(ui->gcodeCodeEditor->document());
 
     this->onPortsUpdate();
     connect( &portsTimer, SIGNAL(timeout()), this, SLOT(onPortsUpdate()) );
@@ -192,6 +179,71 @@ void MainWindow::setUISleeping()
 
 }
 
+
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QCborValue>
+#include <QCborMap>
+
+void MainWindow::defaultConfiguration()
+{
+    // This is the default configuration
+    config["a"] = true;
+    config["b"] = 0;
+    config["c"] = "Bonjour";
+
+    config["machines"] = QJsonArray();
+}
+
+bool MainWindow::loadConfiguration()
+{
+    QString configName = "config.json";
+    SaveFormat saveFormat = SaveFormat::Json ;
+
+//    QFile loadFile(saveFormat == Json
+//            ? QStringLiteral("save.json")
+//            : QStringLiteral("save.dat"));
+    QFile configFile(configName);
+
+    if (!configFile.open(QIODevice::ReadOnly)) {
+        qWarning("MainWindow::saveConfiguration: Couldn't open save file.");
+        return false;
+    }
+
+    QByteArray configData = configFile.readAll();
+
+    QJsonDocument configDoc(saveFormat == Json
+            ? QJsonDocument::fromJson(configData)
+            : QJsonDocument(QCborValue::fromCbor(configData).toMap().toJsonObject()));
+
+    config = configDoc.object();
+    qDebug() << "MainWindow::saveConfiguration(" << configName << ") done.";
+    return true;
+}
+
+bool MainWindow::saveConfiguration()
+{
+    QString configName = "config.json";
+    SaveFormat saveFormat = SaveFormat::Json ;
+
+//    QFile saveFile(saveFormat == Json
+//           ? QStringLiteral("save.json")
+//           : QStringLiteral("save.dat"));
+    QFile configFile( configName );
+
+    if (!configFile.open(QIODevice::WriteOnly)) {
+        qWarning("Couldn't open save file.");
+        return false;
+    }
+
+    configFile.write(saveFormat == SaveFormat::Json
+        ? QJsonDocument(config).toJson()
+        : QCborValue::fromJsonValue(config).toCbor());
+
+    return true;
+}
+
 void MainWindow::homing()
 {
     if (!machineOk()) return; // security
@@ -236,18 +288,21 @@ void MainWindow::openFile(QString fileName)
             QStringList lines = ui->gcodeCodeEditor->toPlainText().split("\n");
             gcodeParser->parse( lines );
 
+            int nbLines = lines.size();
+            ui->linesNbLabel->setText( QString().setNum( lines.size()) );
+            ui->pointsNbLabel->setText( QString().setNum(gcodeParser->getPoints().size()) );
             ui->visualizer->setGCode( gcodeParser );
 
             QVector3D size = gcodeParser->getSize();
             ui->gCodeSizeInfo->setText( QString("%1 / %2 mm")
-                        .arg( QString().sprintf("%4.2f", size.x()) )
-                        .arg( QString().sprintf("%4.2f", size.y()) )
+                        .arg( QString().sprintf("%4.2f", double(size.x())) )
+                        .arg( QString().sprintf("%4.2f", double(size.y())) )
                         );
 
             QVector3D minPoint = gcodeParser->getMin();
             ui->gCodeZeroInfo->setText( QString("%1 / %2 mm")
-                        .arg( QString().sprintf("%4.2f",  - minPoint.x()) )
-                        .arg( QString().sprintf("%4.2f",  - minPoint.y()) )
+                        .arg( QString().sprintf("%4.2f",  - double(minPoint.x())) )
+                        .arg( QString().sprintf("%4.2f",  - double(minPoint.y())) )
                         );
 
         }
@@ -283,15 +338,15 @@ void MainWindow::on_actionOpen_triggered()
 
 
 //----------------------------------------------------------------------------------------------------
+#include <QSerialPortInfo>
 void MainWindow::onPortsUpdate(void)
 {
-    if (!port) return; // security
-    QStringList devicesList = port->getDevices();
+    QStringList devicesList = PortSerial::getDevices();
     std::sort( devicesList.begin(), devicesList.end());
 
     // Prevoir de mettre j à 0 si la liste ne contient pas <Select port>
     int i=0, j=1; // ignore first item in list : <Select port>
-    int lastAddedIndex = 0;
+    int selectedIndex = 0;
 
 #define L1Finished() (i >= devicesList.size())
 #define L2Finished() (j >= ui->devicesComboBox->count())
@@ -302,7 +357,7 @@ void MainWindow::onPortsUpdate(void)
             ui->devicesComboBox->addItem( devicesList.at(i) );
             ui->statusbar->showMessage(QString(tr("Port %1 added")).arg(devicesList.at(i)), 2000);
             qDebug() << "Port" << devicesList.at(i).toUtf8().data() << "added.";
-            lastAddedIndex = j;
+            if (!selectedIndex) selectedIndex = j;
             i++; j++;
         }
         else if (L1Finished() || (ui->devicesComboBox->itemText(j) > devicesList.at(i)))
@@ -311,8 +366,8 @@ void MainWindow::onPortsUpdate(void)
             if (ui->devicesComboBox->currentIndex() == j)
             {
                 ui->devicesComboBox->setCurrentIndex(0);
-                if (port->isOpen())
-                    closePort();
+                if (machine)
+                    machine->close();
             }
             ui->devicesComboBox->removeItem(j);
             ui->statusbar->showMessage(QString(tr("Port %1 removed")).arg(device), 2000);
@@ -323,7 +378,7 @@ void MainWindow::onPortsUpdate(void)
             ui->devicesComboBox->insertItem(j, devicesList.at(i) );
             ui->statusbar->showMessage(QString(tr("Port %1 inserted")).arg(devicesList.at(i)), 2000);
             qDebug() << "Port" << devicesList.at(i).toUtf8().data() << "inserted.";
-            lastAddedIndex = j;
+            if (!selectedIndex) selectedIndex = j;
             i++;
         }
         else
@@ -331,82 +386,80 @@ void MainWindow::onPortsUpdate(void)
             i++; j++;
         }
     }
-    if (lastAddedIndex && (ui->devicesComboBox->currentIndex() == 0))
-        ui->devicesComboBox->setCurrentIndex(lastAddedIndex);
+    if (selectedIndex && (ui->devicesComboBox->currentIndex() == 0))
+        ui->devicesComboBox->setCurrentIndex(selectedIndex);
 }
 
-void MainWindow::openPort()
+void MainWindow::openMachine()
 {
-    if (!port) return; // security
     setUIDisconnected();
+
+    if (machine)
+    {
+        closeMachine();
+        delete machine;
+        machine = nullptr;
+        return;
+    }
     ui->connectPushButton->setEnabled(false);
 
-    if (port->isOpen())
-        closePort();
-    else
-    {
-        QString portName = ui->devicesComboBox->itemText( ui->devicesComboBox->currentIndex() );
-        port->setDevice( portName );
+    QString portName = ui->devicesComboBox->itemText( ui->devicesComboBox->currentIndex() );
+    try {
+        qDebug() << "Connecting to" << portName.toUtf8().data();
+        ui->statusbar->showMessage(tr("Connecting to machine.", "StatusBar message"));
 
-        if (port->open())
-        {
-            if (machine)
-                delete machine;
+        machine = new MachineGrbl(this);
+        machine->openMachine(portName);
 
-            qDebug() << "Connected to" << portName.toUtf8().data();
-            ui->statusbar->showMessage(tr("Starting machine.", "StatusBar message"));
-            machine = new Grbl();
+//        connect( machine, SIGNAL(error(Port::PortError)), this, SLOT(onPortError(Port::PortError)));
+        connect( machine, SIGNAL(error(int)), this, SLOT(onMachineError(int)) );
+        connect( machine, SIGNAL(alarm(int)), this, SLOT(onMachineAlarm(int)) );
 
-            connect( port,    SIGNAL(error(Port::PortError)), this, SLOT(onPortError(Port::PortError)));
-            connect( machine, SIGNAL(error(int)), this, SLOT(onMachineError(int)) );
-            connect( machine, SIGNAL(alarm(int)), this, SLOT(onMachineAlarm(int)) );
+        connect( machine, SIGNAL(statusUpdated()), this, SLOT(onStatusUpdated()) );
 
-            connect( machine, SIGNAL(statusUpdated()), this, SLOT(onStatusUpdated()) );
+        connect( machine, SIGNAL(infoReceived(QString)), this, SLOT(onMachineLog(QString)) );
+        connect( machine, SIGNAL(commandSent(QString)), this, SLOT(onMachineLog(QString)) );
 
-            connect( machine, SIGNAL(infoReceived(QString)), this, SLOT(onMachineLog(QString)) );
-            connect( machine, SIGNAL(commandSent(QString)), this, SLOT(onMachineLog(QString)) );
+        connect( machine, SIGNAL(versionUpdated()), this, SLOT(onVersionUpdated()) );
+        connect( machine, SIGNAL(stateUpdated()), this, SLOT(onStateUpdated()) );
+        connect( machine, SIGNAL(lineNumberUpdated()), this, SLOT(onLineNumberUpdated()) );
+        connect( machine, SIGNAL(coordinatesUpdated()), this, SLOT(onCoordinatesUpdated()) );
+        connect( machine, SIGNAL(switchesUpdated()), this, SLOT(onSwitchesUpdated()) );
+        connect( machine, SIGNAL(actionersUpdated()), this, SLOT(onActionersUpdated()) );
+        connect( machine, SIGNAL(ratesUpdated()), this, SLOT(onRatesUpdated()) );
+        connect( machine, SIGNAL(buffersUpdated()), this, SLOT(onBuffersUpdated()) );
 
-            connect( machine, SIGNAL(versionUpdated()), this, SLOT(onVersionUpdated()) );
-            connect( machine, SIGNAL(stateUpdated()), this, SLOT(onStateUpdated()) );
-            connect( machine, SIGNAL(lineNumberUpdated()), this, SLOT(onLineNumberUpdated()) );
-            connect( machine, SIGNAL(coordinatesUpdated()), this, SLOT(onCoordinatesUpdated()) );
-            connect( machine, SIGNAL(switchesUpdated()), this, SLOT(onSwitchesUpdated()) );
-            connect( machine, SIGNAL(actionersUpdated()), this, SLOT(onActionersUpdated()) );
-            connect( machine, SIGNAL(ratesUpdated()), this, SLOT(onRatesUpdated()) );
-            connect( machine, SIGNAL(buffersUpdated()), this, SLOT(onBuffersUpdated()) );
+        connect( machine, SIGNAL(infoUpdated()), this, SLOT(onInfoUpdated()) );
 
-            connect( machine, SIGNAL(infoUpdated()), this, SLOT(onInfoUpdated()) );
-
-            setUIConnected();
-        }
-        else
-        {
-            qDebug() << "Error connecting to " << portName.toUtf8();
-            QMessageBox::critical(this,tr("Connection Error", "Error dialog caption"),
-                tr("Unable to connect to %1\n%2").arg(portName).arg(port->errorString()).toUtf8().data());
-            closePort();
-        }
+        setUIConnected();
+        qDebug() << "Connected to" << portName.toUtf8().data();
+        ui->statusbar->showMessage(tr("Connected to machine.", "StatusBar message"));
+    } catch (machineConnectException &) {
+        qDebug() << "Error connecting to " << portName.toUtf8();
+        QMessageBox::critical(this,tr("Connection Error", "Error dialog caption"),
+            tr("Unable to connect to %1").arg(portName));
+        closeMachine();
     }
 }
 
-void MainWindow::onPortError(Port::PortError error)
-{
-    if (!port) return; // security
-    qDebug() << "Port error : " << error;
-    if (error == Port::ResourceError) {
-        if (port)
-            QMessageBox::critical(this,
-                                  tr("Critical Error", "Port error dialog caption"),
-                                  port->errorString());
-        closePort();
-    }
-    else {
-        if (port)
-            QMessageBox::warning(this, tr("Critical Error", "Port warning dialog caption"), port->errorString());
-    }
-}
+//void MainWindow::onPortError(Port::PortError error)
+//{
+//    if (!port) return; // security
+//    qDebug() << "Port error : " << error;
+//    if (error == Port::ResourceError) {
+//        if (port)
+//            QMessageBox::critical(this,
+//                                  tr("Critical Error", "Port error dialog caption"),
+//                                  port->errorString());
+//        closePort();
+//    }
+//    else {
+//        if (port)
+//            QMessageBox::warning(this, tr("Critical Error", "Port warning dialog caption"), port->errorString());
+//    }
+//}
 
-void MainWindow::closePort()
+void MainWindow::closeMachine()
 {
     if (machine)
     {
@@ -429,7 +482,7 @@ void MainWindow::onMachineLog( QString line )
     }
     else if (line.startsWith("<"))
     {
-        if (!ui->statusCheckBox->isChecked()) return;
+        if (!ui->statusPushButton->isChecked()) return;
     }
 
     ui->logTextEdit->append( line.trimmed() );
@@ -617,7 +670,10 @@ void MainWindow::onLineNumberUpdated()
     if ( machine->hasInfo( Machine::InfoFlags::flagHasLineNumber ))
     {
         ui->gcodeCodeEditor->setCurrentLine( machine->getLineNumber() );
-        ui->lineNbLabel->setText( QString().setNum(machine->getLineNumber()) );
+        ui->lineNbLabel->setText( QString("%1 / %2")
+                                  .arg(machine->getLineNumber())
+                                  .arg(gcode.size())
+                                  );
         //ui->infoLabel->setText( QString("%1").arg(machine->getLineNumber()) );
         ui->gcodeExecutedProgressBar->setValue( machine->getLineNumber() );
     }
@@ -631,25 +687,25 @@ void MainWindow::onCoordinatesUpdated()
 
     if (machine->hasInfo( Machine::InfoFlags::flagHasWorkingCoords ))
     {
-        Machine::CoordinatesType coords = machine->getWorkingCoordinates();
+        QVector3D coords = machine->getWorkingCoordinates();
 
         if (!ui->xWorkingLineEdit->isModified() )
         {
-            ui->xWorkingLineEdit->setText( QString().sprintf("%+03.3f", coords.x ));
+            ui->xWorkingLineEdit->setText( QString().sprintf("%+03.3f", double(coords.x()) ));
 //            if (ui->xWorkingLineEdit == focusWidget())
 //                ui->xWorkingLineEdit->selectAll();
         }
 
         if (!ui->yWorkingLineEdit->isModified())
         {
-            ui->yWorkingLineEdit->setText( QString().sprintf("%+03.3f", coords.y ));
+            ui->yWorkingLineEdit->setText( QString().sprintf("%+03.3f", double(coords.y()) ));
 //            if (ui->yWorkingLineEdit == focusWidget())
 //                ui->yWorkingLineEdit->selectAll();
         }
 
         if (!ui->zWorkingLineEdit->isModified())
         {
-            ui->zWorkingLineEdit->setText( QString().sprintf("%+03.3f", coords.z ));
+            ui->zWorkingLineEdit->setText( QString().sprintf("%+03.3f", double(coords.z()) ));
 //            if (ui->zWorkingLineEdit == focusWidget())
 //                ui->zWorkingLineEdit->selectAll();
         }
@@ -657,25 +713,25 @@ void MainWindow::onCoordinatesUpdated()
 
     if (machine->hasInfo( Machine::InfoFlags::flagHasMachineCoords ))
     {
-        Machine::CoordinatesType coords = machine->getMachineCoordinates();
+        QVector3D coords = machine->getMachineCoordinates();
 
         if (!ui->xMachineLineEdit->isModified())
         {
-            ui->xMachineLineEdit->setText( QString().sprintf("%+03.3f", coords.x ));
+            ui->xMachineLineEdit->setText( QString().sprintf("%+03.3f", double(coords.x()) ));
 //            if (ui->xMachineLineEdit == focusWidget())
 //                ui->xMachineLineEdit->selectAll();
         }
 
         if (!ui->yMachineLineEdit->isModified())
         {
-            ui->yMachineLineEdit->setText( QString().sprintf("%+03.3f", coords.y ));
+            ui->yMachineLineEdit->setText( QString().sprintf("%+03.3f", double(coords.y()) ));
 //            if (ui->yMachineLineEdit == focusWidget())
 //                ui->yMachineLineEdit->selectAll();
         }
 
         if (!ui->zMachineLineEdit->isModified())
         {
-            ui->zMachineLineEdit->setText( QString().sprintf("%+03.3f", coords.z ));
+            ui->zMachineLineEdit->setText( QString().sprintf("%+03.3f", double(coords.z()) ));
 //            if (ui->zMachineLineEdit == focusWidget())
 //                ui->zMachineLineEdit->selectAll();
         }
@@ -704,8 +760,8 @@ void MainWindow::onActionersUpdated()
     if (machine->hasInfo( Machine::InfoFlags::flagHasActioners ))
     {
         ui->spindlePushButton->setChecked( machine->hasAction( Machine::ActionerFlags::actionSpindle ) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked );
-        ui->coolantFloodPushButton->setChecked( machine->hasAction( Grbl::ActionerFlags::actionCoolantFlood ) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked );
-        ui->coolantMistPushButton->setChecked( machine->hasAction( Grbl::ActionerFlags::actionCoolantMist ) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked );
+        ui->coolantFloodPushButton->setChecked( machine->hasAction( MachineGrbl::ActionerFlags::actionCoolantFlood ) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked );
+        ui->coolantMistPushButton->setChecked( machine->hasAction( MachineGrbl::ActionerFlags::actionCoolantMist ) ? Qt::CheckState::Checked : Qt::CheckState::Unchecked );
     }
 }
 
@@ -800,7 +856,7 @@ void MainWindow::onInfoUpdated()
 {
     if (machine)
         // Check if CoolantMist is enabled in machine, and enable it in the UI
-        if (machine->hasFeature(Grbl::FeatureFlags::flagHasCoolantMist))
+        if (machine->hasFeature(MachineGrbl::FeatureFlags::flagHasCoolantMist))
             ui->coolantMistPushButton->setEnabled(true);
 }
 
@@ -819,9 +875,9 @@ void MainWindow::checkGcode()
         ui->gcodeExecutedProgressBar->setValue(0);
         ui->gcodeExecutedProgressBar->setMaximum( gcode.size() );
 
-        if (machine->isState( Grbl::StateType::stateIdle))
+        if (machine->isState( MachineGrbl::StateType::stateIdle))
         {
-            machine->ask(Grbl::CommandType::commandCheck);
+            machine->ask(MachineGrbl::CommandType::commandCheck);
             connect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
             sendNextGCode();
         }
@@ -841,9 +897,9 @@ void MainWindow::runGcode(bool step)
 
         if (!step)
         {
-            machine->ask(Grbl::CommandType::commandOverrideSpindle, Grbl::SubCommandType::commandReset);
-            machine->ask(Grbl::CommandType::commandOverrideFeed, Grbl::SubCommandType::commandReset);
-            machine->ask(Grbl::CommandType::commandOverrideRapid, Grbl::SubCommandType::commandReset);
+            machine->ask(MachineGrbl::CommandType::commandOverrideSpindle, MachineGrbl::SubCommandType::commandReset);
+            machine->ask(MachineGrbl::CommandType::commandOverrideFeed, MachineGrbl::SubCommandType::commandReset);
+            machine->ask(MachineGrbl::CommandType::commandOverrideRapid, MachineGrbl::SubCommandType::commandReset);
             // machine->ask(Grbl::CommandType::commandOverrideCoolantMistToggle);
             // machine->ask(Grbl::CommandType::commandOverrideCoolantMistToggle);
 
@@ -880,7 +936,7 @@ void MainWindow::stopGcode()
         doResetOnHold = true;
 
         if (machine->isState(Machine::StateType::stateCheck))
-            machine->ask(Grbl::CommandType::commandCheck);
+            machine->ask(MachineGrbl::CommandType::commandCheck);
     }
 
     gcodeIndex = 0;
@@ -938,8 +994,8 @@ void MainWindow::uncheckJogButtons()
     ui->zMinusToolButton->setChecked(false);
     ui->zPlusToolButton->setChecked(false);
 
-    ui->homeMachineToolButton->setChecked(false);
-    ui->homeWorkingToolButton->setChecked(false);
+    ui->zeroMachineToolButton->setChecked(false);
+    ui->zeroWorkingToolButton->setChecked(false);
 
     ui->zSafeToolButton->setChecked(false);
     ui->cancelJogToolButton->setChecked(false);
@@ -963,7 +1019,7 @@ void MainWindow::on_xWorkingLineEdit_returnPressed()
     if (!movingMachine) // Do not do Machine and Working moves at the same time.
     {
         double x = ui->xWorkingLineEdit->text().toDouble();
-        if (machine->sendCommand(QString("$J=G90X%1F1000").arg(x).toUtf8()))
+        if (machine->moveToX(x, 1000 /* feed */, true /* job */))
             movingWorking = true;
     }
     ui->xWorkingLineEdit->setModified(false);
@@ -986,7 +1042,7 @@ void MainWindow::on_yWorkingLineEdit_returnPressed()
     if (!movingMachine) // Do not do Machine and Working moves at the same time.
     {
         double y = ui->yWorkingLineEdit->text().toDouble();
-        if (machine->sendCommand(QString("$J=G90Y%1F1000").arg(y).toUtf8()))
+        if (machine->moveToY(y, 1000 /* feed */, true /* job */))
             movingWorking = true;
     }
     ui->yWorkingLineEdit->setModified(false);
@@ -1009,7 +1065,7 @@ void MainWindow::on_zWorkingLineEdit_returnPressed()
     if (!movingMachine) // Do not do Machine and Working moves at the same time.
     {
         double z = ui->zWorkingLineEdit->text().toDouble();
-        if (machine->sendCommand(QString("$J=G90Z%1F1000").arg(z).toUtf8()))
+        if (machine->moveToZ(z, 1000 /* feed */, true /* job */))
             movingWorking = true;
     }
     ui->zWorkingLineEdit->setModified(false);
@@ -1031,8 +1087,8 @@ void MainWindow::on_xMachineLineEdit_returnPressed()
     if (!machineOk()) return; // security
     if (!movingWorking) // Do not do Machine and Working moves at the same time.
     {
-        double x = ui->xMachineLineEdit->text().toDouble() - machine->getWorkingOffset().x;
-        if (machine->sendCommand(QString("$J=G90G53X%1F1000").arg(x).toUtf8()))
+        double x = ui->xMachineLineEdit->text().toDouble() - double(machine->getWorkingOffset().x());
+        if (machine->moveToX(x, 1000 /* feed */, true /* job */, true /* machine */))
             movingMachine = true;
     }
     ui->xMachineLineEdit->setModified(false);
@@ -1054,8 +1110,8 @@ void MainWindow::on_yMachineLineEdit_returnPressed()
     if (!machineOk()) return; // security
     if (!movingWorking) // Do not do Machine and Working moves at the same time.
     {
-        double y = ui->yMachineLineEdit->text().toDouble() - machine->getWorkingOffset().y;
-        if (machine->sendCommand(QString("$J=G90G53Y%1F1000").arg(y).toUtf8()))
+        double y = ui->yMachineLineEdit->text().toDouble() - double(machine->getWorkingOffset().y());
+        if (machine->moveToY(y, 1000 /* feed */, true /* job */, true /* machine */))
             movingMachine = true;
     }
     ui->yMachineLineEdit->setModified(false);
@@ -1077,8 +1133,8 @@ void MainWindow::on_zMachineLineEdit_returnPressed()
     if (!machineOk()) return; // security
     if (!movingWorking) // Do not do Machine and Working moves at the same time.
     {
-        double z = ui->zMachineLineEdit->text().toDouble() - machine->getWorkingOffset().z;
-        if (machine->sendCommand(QString("$J=G90G53Z%1F1000").arg(z).toUtf8()))
+        double z = ui->zMachineLineEdit->text().toDouble() - double(machine->getWorkingOffset().z());
+        if (machine->moveToZ(z, 1000 /* feed */, true /* job */, true /* machine */))
             movingMachine = true;
     }
     ui->zMachineLineEdit->setModified(false);
@@ -1087,13 +1143,8 @@ void MainWindow::on_zMachineLineEdit_returnPressed()
 //----------------------------------------------------------------------------------------------------
 void MainWindow::on_connectPushButton_clicked()
 {
-    try {
-        Machine *machineType = machines
-        machine = machineType
-        machine->connect();
-    } catch (machineConnectException &e) {
-            // handle exception
-    }
+    qDebug() << "MainWindow::on_connectPushButton_clicked()";
+    openMachine();
 }
 
 void MainWindow::on_spindlePushButton_clicked(bool checked)
@@ -1101,6 +1152,7 @@ void MainWindow::on_spindlePushButton_clicked(bool checked)
     if (!machineOk()) return; // security
 
     // Note : If machine is IDLE, send a command, if not, override
+    // All this should be put into the machine !!!
     if (machine->getState() == Machine::StateType::stateIdle)
     {
         if (checked)
@@ -1118,7 +1170,7 @@ void MainWindow::on_spindlePushButton_clicked(bool checked)
         if (machine->isState(Machine::StateType::stateHold))
         {
             qDebug() << "MainWindow::on_spindlePushButton_clicked: Sending spindle override";
-            machine->ask(Grbl::CommandType::commandOverrideSpindle, Grbl::SubCommandType::commandStop);
+            machine->ask(MachineGrbl::CommandType::commandOverrideSpindle, MachineGrbl::SubCommandType::commandStop);
             ui->spindlePushButton->setChecked(false);
         }
         ui->spindlePushButton->setChecked(false);
@@ -1130,6 +1182,7 @@ void MainWindow::on_coolantFloodPushButton_clicked(bool checked)
     if (!machineOk()) return; // security
 
     // Note : If machine is IDLE, send a command, if not, override
+    // All this should be put into the machine !!!
     if (machine->getState() == Machine::StateType::stateIdle)
     {
         if (checked)
@@ -1143,7 +1196,7 @@ void MainWindow::on_coolantFloodPushButton_clicked(bool checked)
     else
     {
         qDebug() << "MainWindow::on_coolantFloodPushButton_clicked: Sending flood coolant override";
-        machine->ask(Grbl::CommandType::commandOverrideCoolantFloodToggle);
+        machine->ask(MachineGrbl::CommandType::commandOverrideCoolantFloodToggle);
     }
 }
 
@@ -1151,7 +1204,8 @@ void MainWindow::on_coolantMistPushButton_clicked(bool checked)
 {
     if (!machineOk()) return; // security
 
-    // Note : If machine is IDLE, send a command, if not, override
+    // Note : If machine is IDLE, send a command, if not, use override
+    // All this should be put into the machine !!!
     if (machine->getState() == Machine::StateType::stateIdle)
     {
         if (checked)
@@ -1167,7 +1221,7 @@ void MainWindow::on_coolantMistPushButton_clicked(bool checked)
     else
     {
         qDebug() << "MainWindow::on_coolantMistPushButton_clicked: Sending mist coolant override";
-        machine->ask(Grbl::CommandType::commandOverrideCoolantMistToggle);
+        machine->ask(MachineGrbl::CommandType::commandOverrideCoolantMistToggle);
     }
 }
 
@@ -1185,8 +1239,9 @@ void MainWindow::on_statePushButton_clicked(bool checked)
     else if (machine->getState() == Machine::StateType::stateSleep)
     {
         // Get out of sleep
-        if (machine->ask(Machine::CommandType::commandReset))
-            setUIConnected();
+        if (!machine->ask(Machine::CommandType::commandReset))
+            qDebug() << "MainWindow::on_statePushButton_clicked(): Can't send wake up command";
+            //setUIConnected();
     }
 }
 
@@ -1216,7 +1271,7 @@ void MainWindow::on_zZeroToolButton_clicked()
 void MainWindow::on_actionConfig_triggered()
 {
     if (!machineOk()) return; // security
-    machine->openConfiguration(this);
+    machine->openConfiguration();
 }
 
 void MainWindow::on_resetToolButton_clicked()
@@ -1228,7 +1283,7 @@ void MainWindow::on_cancelJogToolButton_clicked()
 {
     if (!machineOk()) return; // security
     if (machine->getState() == Machine::StateType::stateJog)
-        machine->ask(Grbl::CommandType::commandJogCancel);
+        machine->ask(MachineGrbl::CommandType::commandJogCancel);
     else ui->cancelJogToolButton->setChecked(false);
 }
 
@@ -1236,64 +1291,49 @@ void MainWindow::on_cancelJogToolButton_clicked()
 void MainWindow::on_xMinusToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    QString cmd = QString("$J=G91X%1F1000").arg(-jogInterval);
-    qDebug() << "Jog : " << cmd;
-    if (machine->sendCommand( cmd ))
-        ui->xMinusToolButton->setChecked(true);
+    if (!machine->moveToX(-jogInterval, 1000 /* feed */, true /* jog */, false /* machine */, true /* incremental */))
+        qDebug() << "MainWindow::on_xMinusToolButton_clicked(): Can't send command.";
 }
 
 void MainWindow::on_xPlusToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    QString cmd = QString("$J=G91X%1F1000").arg(jogInterval);
-    qDebug() << "Jog : " << cmd;
-    if (machine->sendCommand( cmd ))
-        ui->xPlusToolButton->setChecked(true);
+    if (!machine->moveToX(jogInterval, 1000 /* feed */, true /* jog */, false /* machine */, true /* incremental */))
+        qDebug() << "MainWindow::on_xPlusToolButton_clicked(): Can't send command.";
 }
 
 void MainWindow::on_yMinusToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    QString cmd = QString("$J=G91Y%1F1000").arg(-jogInterval);
-    qDebug() << "Jog : " << cmd;
-    if (machine->sendCommand( cmd ))
-        ui->yMinusToolButton->setChecked(true);
+    if (!machine->moveToY(-jogInterval, 1000 /* feed */, true /* jog */, false /* machine */, true /* incremental */))
+        qDebug() << "MainWindow::on_yMinusToolButton_clicked(): Can't send command.";
 }
 
 void MainWindow::on_yPlusToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    QString cmd = QString("$J=G91Y+%1F1000").arg(jogInterval);
-    qDebug() << "Jog : " << cmd;
-    if (machine->sendCommand( cmd ))
-        ui->yPlusToolButton->setChecked(true);
+    if (!machine->moveToY(jogInterval, 1000 /* feed */, true /* jog */, false /* machine */, true /* incremental */))
+        qDebug() << "MainWindow::on_yPlusToolButton_clicked(): Can't send command.";
 }
 
 void MainWindow::on_zMinusToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    QString cmd = QString("$J=G91Z%1F1000").arg(-jogInterval);
-    qDebug() << "Jog : " << cmd;
-    if (machine->sendCommand( cmd ))
-        ui->zMinusToolButton->setChecked(true);
+    if (!machine->moveToZ(-jogInterval, 1000 /* feed */, true /* jog */, false /* machine */, true /* incremental */))
+        qDebug() << "MainWindow::on_zMinusToolButton_clicked(): Can't send command.";
 }
 
 void MainWindow::on_zPlusToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    QString cmd = QString("$J=G91Z%1F1000").arg(jogInterval);
-    qDebug() << "Jog : " << cmd;
-    if (machine->sendCommand( cmd ))
-        ui->zPlusToolButton->setChecked(true);
+    if (!machine->moveToZ(jogInterval, 1000 /* feed */, true /* jog */, false /* machine */, true /* incremental */))
+        qDebug() << "MainWindow::on_zPlusToolButton_clicked(): Can't send command.";
 }
 
 void MainWindow::on_zSafeToolButton_clicked()
 {
     if (!machineOk()) return; // security
-
-    QString cmd = QString("$J=G90Z0F1000");
-    qDebug() << "Jog : " << cmd;
-    machine->sendCommand( cmd );
+    machine->moveToZ(2, 1000 /* feed */, true /* jog */, false /* machine */, false /* incremental */);
 }
 
 //-----------------------------------------------------------------------------------------
@@ -1340,14 +1380,16 @@ void MainWindow::on_stopToolButton_clicked()
 }
 
 #define zSafe 5
-void MainWindow::zeroWorking()
+//void MainWindow::zeroWorking()
+void MainWindow::on_zeroWorkingToolButton_clicked()
 {
     if (!machineOk()) return; // security
 
-    Machine::CoordinatesType coords = machine->getWorkingCoordinates();
-    if (coords.z < zSafe)
+    QVector3D coords = machine->getWorkingCoordinates();
+    if (coords.z() < zSafe)
     {
-        if (!machine->sendCommand("$J=G90Z5F1000")) // how much zSafe whould be ?
+        if (!machine->moveToZ(zSafe, 1000 /* feed */, true /* jog */, false /* machine */, false /* incremental */))
+//        if (!machine->sendCommand("$J=G90Z5F1000")) // how much zSafe whould be ?
         {
             qDebug() << "MainWindow::zeroWorking: Can't execute zSafe command.";
             // there should be a QMessage box here ?
@@ -1355,60 +1397,57 @@ void MainWindow::zeroWorking()
         }
     }
 
-    if (!machine->sendCommand("$J=G90X0Y0F1000"))
+    if (!machine->moveToXY(0, 0, 1000 /* feed */, true /* jog */, false /* machine */, false /* incremental */))
+//    if (!machine->sendCommand("$J=G90X0Y0F1000"))
         qDebug() << "MainWindow::zeroWorking: Can't execute xyZero command.";
 }
 
-void MainWindow::on_homeWorkingToolButton_clicked()
-{
-    zeroWorking();
-}
+//void MainWindow::on_zeroWorkingToolButton_clicked()
+//{
+//    zeroWorking();
+//}
 
-void MainWindow::zeroMachine()
+//void MainWindow::zeroMachine()
+void MainWindow::on_zeroMachineToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    Machine::CoordinatesType coords = machine->getMachineCoordinates();
-    if (coords.z < 0)
+    QVector3D coords = machine->getMachineCoordinates();
+    if (coords.z() < zSafe)
     {
-        if (machine->sendCommand("$J=G90G53Z0F1000"))
+        if (!machine->moveToZ(zSafe, 1000 /* feed */, true /* jog */, false /* machine */, false /* incremental */))
+//        if (machine->sendCommand("$J=G90G53Z0F1000"))
         {
-            ui->statusbar->showMessage("ZSafe");
-            qDebug() << "MainWindow::zeroWorking: zSafe sent.";
-        }
-        else
-        {
-            qDebug() << "MainWindow::zeroWorking: Can't execute zeroWorking";
-            //ui->zeroMachinePushButton->setChecked(false);
-            ui->homeMachineToolButton->setChecked(false);
+            qDebug() << "MainWindow::zeroMachine: Can't execute zSafe command.";
+            // there should be a QMessage box here ?
+            ui->zeroMachineToolButton->setChecked(false);
             return;
         }
     }
 
-    if ((coords.x != 0) || (coords.y != 0))
+    if ((coords.x() != 0) || (coords.y() != 0))
     {
-        if (machine->sendCommand("$J=G90G53X0Y0F1000"))
+        if (!machine->moveToXY(0, 0, 1000 /* feed */, true /* jog */, true /* machine */, false /* incremental */))
+//        if (machine->sendCommand("$J=G90G53X0Y0F1000"))
         {
-            //ui->zeroMachinePushButton->setChecked(true);
-            qDebug() << "MainWindow::zeroWorking: xyHomeWorking sent.";
-            if (machine->sendCommand("$J=G90G53Z0F1000"))
-            {
-                qDebug() << "MainWindow::zeroWorking: zHomeWorking sent.";
-            }
-
+            qDebug() << "MainWindow::zeroMachine: Can't execute xyZero command.";
+            return;
         }
-        else qDebug() << "MainWindow::zeroWorking: Can't execute zSafe command";
+        if (!machine->moveToZ(0, 1000 /* feed */, true /* jog */, true /* machine */, false /* incremental */))
+        {
+            qDebug() << "MainWindow::zeroMachine: Can't execute zZero command.";
+            return;
+        }
     }
     else
     {
-        //ui->zeroMachinePushButton->setChecked(false);
-        ui->homeMachineToolButton->setChecked(false);
+        ui->zeroMachineToolButton->setChecked(false);
     }
 }
 
-void MainWindow::on_homeMachineToolButton_clicked()
-{
-    zeroMachine();
-}
+//void MainWindow::on_homeMachineToolButton_clicked()
+//{
+//    zeroMachine();
+//}
 
 
 void MainWindow::on_homingToolButton_clicked()
@@ -1419,7 +1458,11 @@ void MainWindow::on_homingToolButton_clicked()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    QMessageBox::about(this, PROGRAM_NAME, QString("%1 %2").arg(PROGRAM_NAME).arg(PROGRAM_VERSION));
+    QMessageBox::about(this, PROGRAM_NAME,
+                       QString("%1 %2").arg(PROGRAM_NAME).arg(PROGRAM_VERSION)
+                       + "\n" +
+                       QString("Yann LE GUENNEC <yann@leguennec.net>")
+                       );
 }
 
 
@@ -1436,4 +1479,14 @@ void MainWindow::on_topViewToolButton_clicked()
 void MainWindow::on_isometricViewToolButton_clicked()
 {
     ui->visualizer->setRotation(QVector3D( -600.0f, 0.0f, -2200.0f ));
+}
+void MainWindow::on_pushButton_clicked()
+{
+    ui->logTextEdit->clear();
+}
+
+void MainWindow::on_tabWidget_currentChanged(int index)
+{
+    if (index == 2)
+        ui->visualizer->update();
 }

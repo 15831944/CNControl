@@ -28,7 +28,7 @@ SOURCES += \
     QCsvFile.cpp \
     QFocusLineEdit.cpp \
     aaaa_idees.cpp \
-    configurationdialog.cpp \
+    configuration.cpp \
     gcode.cpp \
     gcodehighlighter.cpp \
     machine.cpp \
@@ -42,12 +42,12 @@ SOURCES += \
     visualizer.cpp
 
 HEADERS += \
-    Exceptions.h \
     QCsvFile \
     QFocusLineEdit \
-    configurationdialog.h \
+    configuration.h \
     gcode.h \
     gcodehighlighter.h \
+    grbl.h \
     grbl_config.h \
     machine.h \
     machineGrbl.h \
@@ -61,7 +61,7 @@ HEADERS += \
     visualizer.h
 
 FORMS += \
-    configurationdialog.ui \
+    configuration.ui \
     machine.ui \
     machineGrbl.ui \
     mainwindow.ui \

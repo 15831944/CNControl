@@ -4,15 +4,6 @@
 #include <QObject>
 #include <QStringList>
 
-#include <QException>
-
-class portOpenException : public QException
-{
-public:
-    void raise() const override { throw *this; }
-    portOpenException *clone() const override { return new portOpenException(*this); }
-};
-
 class Port : public QObject
 {
     Q_OBJECT
@@ -41,7 +32,7 @@ public:
     virtual bool open() = 0;
     virtual void close() = 0;
     virtual bool flush() = 0;
-    virtual QStringList getDevices() = 0;
+    static QStringList getDevices();
     virtual bool setDevice(QString &portName) = 0;
 
     virtual bool setProperty(const char *prop, QVariant &val);
@@ -52,6 +43,15 @@ public:
 signals:
     void lineAvailable(QString &line);
     void error(Port::PortError error);
+};
+
+#include <QException>
+
+class portOpenException : public QException
+{
+public:
+    void raise() const override { throw *this; }
+    portOpenException *clone() const override { return new portOpenException(*this); }
 };
 
 #endif // PORT_H
