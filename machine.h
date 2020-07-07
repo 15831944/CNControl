@@ -225,9 +225,6 @@ public:
     virtual void openMachine(QString portName)=0;
     virtual void closeMachine()=0;
 
-//    virtual QJsonObject toJsonObject();
-//    virtual QString toJson();
-
     virtual bool moveToX(double x, double feed, bool jog=false, bool machine=false, bool absolute=false)=0;
     virtual bool moveToY(double y, double feed, bool jog=false, bool machine=false, bool absolute=false)=0;
     virtual bool moveToXY(double x, double y, double feed, bool jog=false, bool machine=false, bool absolute=false)=0;
@@ -329,7 +326,10 @@ private:
 
 class machineConnectException : public QException
 {
+    QString _message;
 public:
+    machineConnectException(QString message) { _message = message; }
+    QString &message() { return _message; }
     void raise() const override { throw *this; }
     machineConnectException *clone() const override { return new machineConnectException(*this); }
 };

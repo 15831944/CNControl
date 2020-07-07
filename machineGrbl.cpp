@@ -38,11 +38,15 @@ MachineGrbl::MachineGrbl(QWidget *parent) :
     loadSettingsMessages();
     loadStatesMessages();
 
+    port = nullptr;
+
     qDebug() << "MachineGrbl::MachineGrbl: machine initialized.";
 }
 
 MachineGrbl::~MachineGrbl()
 {
+
+    closeMachine();
     delete ui;
 
     qDebug() << "MachineGrbl::~MachineGrbl: machine deleted.";
@@ -56,7 +60,7 @@ void MachineGrbl::openMachine(QString portName)
     serial->setDevice( portName );
 
     if (!serial->open())
-        throw machineConnectException();
+        throw machineConnectException(serial->errorString());
 
     port = serial;
 //    features = bit(FeatureFlags::flagAskStatus) |
@@ -76,11 +80,15 @@ void MachineGrbl::openMachine(QString portName)
 void MachineGrbl::closeMachine()
 {
     statusTimer.stop();
-
-    disconnect( port, SIGNAL(lineAvailable(QString&)), this, SLOT(parse(QString&)));
     disconnect( &statusTimer, SIGNAL(timeout()), this, SLOT(timeout()));
 
-    port->close();
+    if (port)
+    {
+        disconnect( port, SIGNAL(lineAvailable(QString&)), this, SLOT(parse(QString&)));
+        port->close();
+        delete port;
+        port = nullptr;
+    }
 }
 
 bool MachineGrbl::moveToX(double x, double feed, bool jog, bool machine, bool absolute)
@@ -170,30 +178,18 @@ bool MachineGrbl::stopMove()
 {
     switch (state)
     {
+    case MachineGrbl::StateType::stateRun:
+        // Que faire pour stopper le mouvement en plein travail ?
+        // On pourrait faire pause ?
+        break;
     case MachineGrbl::StateType::stateJog:
+        ask(MachineGrbl::CommandType::commandJogCancel);
         break;
     default:
         return false;
     }
     return true;
 }
-
-
-//QJsonObject MachineGrbl::toJsonObject()
-//{
-//    QJsonObject json = Machine::toJsonObject();
-
-//    json["type"] = "grbl";
-//    for (auto key : config.keys())
-//        json[QString("$%1").arg(key)] = config[key];
-
-//    return json;
-//}
-
-//QString MachineGrbl::toJson()
-//{
-//    return QJsonDocument( toJsonObject() ).toJson();
-//}
 
 void MachineGrbl::loadErrorsMessages()
 {

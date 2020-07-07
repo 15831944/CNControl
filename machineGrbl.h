@@ -185,9 +185,6 @@ public:
     virtual bool moveTo(QVector3D &poin, double feed, bool jog, bool machine=false, bool absolute=false);
     virtual bool stopMove();
 
-//    virtual QJsonObject toJsonObject();
-//    virtual QString toJson();
-
     void setConfiguration();
     bool getConfiguration();
 

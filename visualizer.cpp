@@ -56,9 +56,16 @@ void Visualizer::paintGL()
 
 void Visualizer::paintBoard()
 {
-    // Draw board
     glBegin(GL_TRIANGLE_STRIP);
-        glColor4f(0.3f, 0.3f, 0.3f, 0.3f);
+        glColor3f(0.6f, 0.6f, 0.6f);
+        glVertex3f( -plateSize.x() / 2.0f, -plateSize.y() / 2.0f, -0.0001f);
+        glVertex3f(  plateSize.x() / 2.0f, -plateSize.y() / 2.0f, -0.0001f);
+        glVertex3f( -plateSize.x() / 2.0f,  plateSize.y() / 2.0f, -0.0001f);
+        glVertex3f(  plateSize.x() / 2.0f,  plateSize.y() / 2.0f, -0.0001f);
+    glEnd();
+
+    glBegin(GL_TRIANGLE_STRIP);
+        glColor3f(0.3f, 0.3f, 0.3f);
         glVertex3f( -plateSize.x() / 2.0f, -plateSize.y() / 2.0f, 0.0f);
         glVertex3f( -plateSize.x() / 2.0f,  plateSize.y() / 2.0f, 0.0f);
         glVertex3f(  plateSize.x() / 2.0f, -plateSize.y() / 2.0f, 0.0f);

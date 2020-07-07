@@ -387,15 +387,9 @@ void MainWindow::onPortsUpdate(void)
 
 void MainWindow::openMachine()
 {
-    setUIDisconnected();
-
     if (machine)
-    {
-        closeMachine();
-        delete machine;
-        machine = nullptr;
         return;
-    }
+
     ui->connectPushButton->setEnabled(false);
 
     QString portName = ui->devicesComboBox->itemText( ui->devicesComboBox->currentIndex() );
@@ -429,10 +423,12 @@ void MainWindow::openMachine()
         setUIConnected();
         qDebug() << "Connected to" << portName.toUtf8().data();
         ui->statusbar->showMessage(tr("Connected to machine.", "StatusBar message"));
-    } catch (machineConnectException &) {
+    } catch (machineConnectException &exception) {
         qDebug() << "Error connecting to " << portName.toUtf8();
+        qDebug() << "    " << exception.message();
         QMessageBox::critical(this,tr("Connection Error", "Error dialog caption"),
-            tr("Unable to connect to %1").arg(portName));
+            tr("Unable to connect to %1").arg(portName) + '\n' +
+            exception.message());
         closeMachine();
     }
 }
@@ -904,11 +900,7 @@ void MainWindow::runGcode(bool step)
 
     stepCommand = step;
 
-    // This pauses immediately, but seems weird !!!
-    if (step)
-        machine->ask(Machine::CommandType::commandPause, true);
-    else
-        machine->ask(Machine::CommandType::commandPause, false);
+    machine->ask(Machine::CommandType::commandPause, step);
 
     ui->runToolButton->setEnabled(step);
     ui->stepToolButton->setEnabled(true);
@@ -1139,7 +1131,10 @@ void MainWindow::on_zMachineLineEdit_returnPressed()
 void MainWindow::on_connectPushButton_clicked()
 {
     qDebug() << "MainWindow::on_connectPushButton_clicked()";
-    openMachine();
+    if (machine)
+        closeMachine();
+    else
+        openMachine();
 }
 
 void MainWindow::on_spindlePushButton_clicked(bool checked)
@@ -1223,20 +1218,31 @@ void MainWindow::on_coolantMistPushButton_clicked(bool checked)
 void MainWindow::on_statePushButton_clicked(bool checked)
 {
     if (!machineOk()) return; // security
-    if (machine->getState() == Machine::StateType::stateIdle)
-        machine->ask(Machine::CommandType::commandPause, checked);
-    if (machine->getState() == Machine::StateType::stateRun)
-        machine->ask(Machine::CommandType::commandPause, checked);
-    else if (machine->getState() == Machine::StateType::stateHold)
-        machine->ask(Machine::CommandType::commandPause, checked);
-    else if (machine->getState() == Machine::StateType::stateAlarm)
-        machine->ask(Machine::CommandType::commandUnlock);
-    else if (machine->getState() == Machine::StateType::stateSleep)
+    switch(machine->getState())
     {
+    case Machine::StateType::stateIdle:
+        machine->ask(Machine::CommandType::commandPause, checked);
+        break;
+    case Machine::StateType::stateJog:
+        machine->ask(MachineGrbl::CommandType::commandJogCancel, checked);
+        break;
+    case Machine::StateType::stateRun:
+        machine->ask(Machine::CommandType::commandPause, checked);
+        break;
+    case Machine::StateType::stateHold:
+        machine->ask(Machine::CommandType::commandPause, checked);
+        break;
+    case Machine::StateType::stateAlarm:
+        machine->ask(Machine::CommandType::commandUnlock);
+        break;
+    case Machine::StateType::stateSleep:
         // Get out of sleep
         if (!machine->ask(Machine::CommandType::commandReset))
             qDebug() << "MainWindow::on_statePushButton_clicked(): Can't send wake up command";
             //setUIConnected();
+        break;
+    default:
+        qDebug() << "Change state not available while in " << machine->getStateMessages( machine->getState() );
     }
 }
 
@@ -1277,9 +1283,8 @@ void MainWindow::on_resetToolButton_clicked()
 void MainWindow::on_cancelJogToolButton_clicked()
 {
     if (!machineOk()) return; // security
-    if (machine->getState() == Machine::StateType::stateJog)
-        machine->ask(MachineGrbl::CommandType::commandJogCancel);
-    else ui->cancelJogToolButton->setChecked(false);
+    if (machine->stopMove())
+        ui->cancelJogToolButton->setChecked(false);
 }
 
 //-----------------------------------------------------------------------------------------
