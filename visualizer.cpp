@@ -17,7 +17,7 @@ void Visualizer::initializeGL()
     // init OpenGL
     initializeOpenGLFunctions();
 
-    // GL options
+    // Set GL options
     glClearColor(0.98f, 0.98f, 0.98f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 //    glEnable(GL_LINE_SMOOTH);
