@@ -3,6 +3,8 @@
 #include <QByteArray>
 #include <QDebug>
 
+#define debugSerial 0
+
 PortSerial::PortSerial() : Port ()
 {
     setSpeed();
@@ -11,7 +13,7 @@ PortSerial::PortSerial() : Port ()
     setParity();
     setStopBits();
 
-    qDebug() << "SerialPort : Port initialized.";
+    qDebug() << "SerialPort : Port created.";
 }
 
 PortSerial::~PortSerial()
@@ -153,6 +155,7 @@ bool PortSerial::open()
     if (serial.open(QIODevice::ReadWrite))
     {
         serial.flush();
+        qDebug() << "PortSerial::open() Connecting signal.";
         connect(&serial, &QIODevice::readyRead, this, &PortSerial::readyReadSlot);
         qDebug() << "SerialPort : Port opened.";
 
@@ -176,6 +179,7 @@ bool PortSerial::flush()
 
 qint64 PortSerial::write(const QByteArray &byteArray)
 {
+    if (debugSerial) qDebug() << "SerialPort::write: Send " << byteArray;
     qint64 res = serial.write(byteArray);
     serial.flush();
     return res;
@@ -191,10 +195,11 @@ void PortSerial::readyReadSlot()
     while (!serial.atEnd()) {
         QByteArray data = serial.readLine();
         buffer.append(data.trimmed());
+        if (debugSerial) qDebug() << "SerialPort::readyReadSlot() : "<<buffer;
 
         if (data.contains('\n'))
         {
-            //qDebug() << "SerialPort::readLine: End of line (" << buffer << ")";
+            if (debugSerial) qDebug() << "SerialPort::readyReadSlot: Receive "<< buffer;
             emit lineAvailable(  buffer );
             buffer.clear();
         }

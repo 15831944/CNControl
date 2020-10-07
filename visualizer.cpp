@@ -8,7 +8,7 @@ Visualizer::Visualizer(QWidget *parent) :
 {
     resize(1000, 800);
     gcode = nullptr;
-    perc = 1000;
+    nbPoints = 0;
     time.start();
 }
 
@@ -20,7 +20,13 @@ void Visualizer::initializeGL()
     // GL options
     glClearColor(0.98f, 0.98f, 0.98f, 1.0f);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LINE_SMOOTH);
+//    glEnable(GL_LINE_SMOOTH);
+
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable (GL_BLEND);
+
+    glEnable (GL_LINE_SMOOTH);
+    glHint (GL_LINE_SMOOTH_HINT, GL_NICEST);
 }
 
 #include <assert.h>
@@ -33,7 +39,7 @@ void Visualizer::paintGL()
     // Model view matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    eye.setY( -distance );
+    eye.setY( distance );
 
     QMatrix4x4  modelview;
     modelview.lookAt(eye, center, up);
@@ -135,27 +141,21 @@ void Visualizer::paintRepere()
 
 void Visualizer::paintGCode()
 {
-    QList<QVector3D> points;
     if (gcode)
     {
         QVector3D lastPoint = {0,0,0};
-        points = gcode->getPoints();
+        QList<GCode::Point> points = gcode->getPoints();
 
         int lastMotion = -1;
-        QList<int> motions = gcode->getMotions();
-
         float color = 0.9f;
 
         glBegin(GL_LINES);
-            glColor3f(0.8f, 0.8f, 0.0f);
-            int nbPoints = points.size() * perc / 1000L;
-
             for( int i=0 ; i < nbPoints; i++)
             {
-                QVector3D point = points.at(i);
-                QVector3D minPoint = gcode->getMin();
+                QVector3D point = points.at(i).coords;
+                QVector3D minPoint = gcode->getBoxMin();
 
-                int motion = motions.at(i);
+                int motion = points.at(i).motion;
 
                 // Convert X and Y from mm to cm, but keep Z bigger for visualization
                 point.setX( point.x() / 100.0f );
@@ -167,6 +167,9 @@ void Visualizer::paintGCode()
                     // Change color according to motion
                     switch(motion)
                     {
+                    case GCode::MotionType::noMove:
+                        glColor3f(0.8f, 0.8f, 0.8f);
+                        break;
                     case GCode::MotionType::jogMove:
                         glColor3f(0.0f, color, 0.0f);
                         glLineWidth( 1.0f );
@@ -189,9 +192,10 @@ void Visualizer::paintGCode()
                         break;
 
                     default:
-                        qDebug() << "Visualizer::paintGL: Motion unknown " << motion;
+                        qDebug() << "Visualizer::paintGL: Point " << i << " motion is unknown : " << motion;
                     }
                 }
+
                 glVertex3f(lastPoint.x(), lastPoint.y(), lastPoint.z());
                 glVertex3f(point.x(), point.y(), point.z());
 
@@ -218,7 +222,9 @@ void Visualizer::paintStats()
     // FPS display
     glPolygonMode(GL_FRONT, GL_FILL);
     QPainter painter(this);
-//    painter.setPen(Qt::white);
+//    painter.setPen(Qt::black);
+//    if (gcode)
+//        painter.drawText( QRectF(10.0, 10.0, 300.0, 100.0), QString("Drawn points: %1").arg(nbPoints));
 //    painter.drawText(QRectF(10.0, 10.0, 300.0, 100.0), QString("FPS:%1, x=%2, y=%3, z=%4")
 //                     .arg(last_count)
 //                     .arg(rotation.x())
@@ -226,10 +232,9 @@ void Visualizer::paintStats()
 //                     .arg(rotation.z()));
 
 //    if (gcode)
-//    painter.drawText(QRectF(10.0, 5.0, 300.0, 100.0), QString("d=%1, p=%2")
-//                     .arg(distance)
-//                     .arg(gcode->getPoints().size())
-//                     );
+    painter.drawText(QRectF(10.0, 5.0, 300.0, 100.0), QString("distance=%1")
+                     .arg(distance)
+                     );
 
 //    if (gcode)
 //    {
@@ -259,15 +264,26 @@ void Visualizer::mouseMoveEvent(QMouseEvent *event)
     const auto dy = event->y() - last_pos.y();
     last_pos = event->pos();
 
-    if (event->buttons() == Qt::RightButton)
+    // Rotate board
+    if (event->buttons() == Qt::LeftButton)
     {
-        rotation.setZ( rotation.z() - dx * distance / 2.0f);
-        rotation.setX( rotation.x() + dy * distance / 2.0f);
+        rotation.setZ( rotation.z() + dx * distance / 2.0f);
+        rotation.setX( rotation.x() - dy * distance / 2.0f);
+//        rotation.setZ( rotation.z() + dx * 10.0f);
+//        rotation.setX( rotation.x() - dy * 10.0f);
     }
-    else if (event->buttons() == Qt::MiddleButton)
+    // Change board position
+    else if (event->buttons() == Qt::RightButton)
     {
-        center += QVector3D( - dx * distance / 1150.0f, 0, - dy * distance / 1150.0f );
-        eye += QVector3D( - dx * distance / 1150.0f, 0, - dy * distance / 1150.0f );
+        center += QVector3D( dx * distance / 1150.0f, 0, dy * distance / 1150.0f );
+        eye += QVector3D( dx * distance / 1150.0f, 0, dy * distance / 1150.0f );
+    }
+    // Change zoom
+    else if (event->buttons() == Qt::MidButton)
+    {
+        distance *= 1.0f - (1.0f * dy / 120.0f);
+        if (distance < 0.2f) distance = 0.2f;
+        if (distance > 50.0f) distance = 50.0f;
     }
 
     update();
@@ -276,8 +292,8 @@ void Visualizer::mouseMoveEvent(QMouseEvent *event)
 void Visualizer::wheelEvent(QWheelEvent *event)
 {
     distance *= 1.0f - (1.0f * event->delta() / 1200.0f);
-    if (distance > -1.0f) distance = -1.0f;
-    if (distance < -50.0f) distance = -50.0f;
+    if (distance < 0.2f) distance = 0.2f;
+    if (distance > 50.0f) distance = 50.0f;
 
     update();
 }
@@ -285,14 +301,13 @@ void Visualizer::wheelEvent(QWheelEvent *event)
 void Visualizer::setGCode(GCode *gcode)
 {
     this->gcode = gcode;
+    // Here we must update the nbPoints var from the slider, but how ???
+    nbPoints = gcode->getPoints().size();
     update();
 }
 
-void Visualizer::setExecution(int perc)
+void Visualizer::setNbPoints(int nbPoints)
 {
-    if (perc < 0) perc = 0;
-    if (perc > 1000) perc = 1000;
-
-    this->perc = perc;
+    this->nbPoints = nbPoints;
     update();
 }

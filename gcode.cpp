@@ -4,37 +4,50 @@
 
 GCode::GCode()
 {
-    qDebug() << "GCodeParser::GCodeParser()";
 }
 
 #include <cmath>
-float hypot_f(float x, float y) { return(sqrt(x*x + y*y)); };
+double hypot_f(double x, double y) { return double(sqrt(x*x + y*y)); };
 #define MAX_INT_DIGITS 8
+
+bool GCode::parse(QString &gcode)
+{
+    QStringList lines = gcode.split("\n", QString::KeepEmptyParts, Qt::CaseInsensitive);
+    return parse(lines);
+}
+
 bool GCode::parse(QStringList &gcode)
 {
     int unit = UnitType::millimeters;
     int mode = ModeType::absolute;
 
+    this->gcode = gcode;
+
     // We start at zero for each coordinates
-    QVector3D point {0,0,0};
+    Point point;
+    point.coords = {0, 0, 0};
+    point.motion = MotionType::noMove;
+
+    //QVector3D point {0,0,0};
     QVector3D lastPoint = {0,0,0};
     quint64 words = 0;
     quint64 features = 0;
-    int motion = -1;
+    int motion;
     bool inComment = false;
 
     QString row;
     QChar letter;
 
     points.clear();
-    motions.clear();
+    //motions.clear();
 
+    // Prévoir une maniere de sortir de la boucle en cas de commande M2 ou M30
     for (int nRow = 0; nRow < gcode.size(); ++nRow)
     {
         row =  gcode.at(nRow).trimmed();
         inComment = false;
 
-        motion = -1;
+        motion = MotionType::noMove;
         words = 0;
 
         // qDebug() << "Line:" << nRow;
@@ -94,6 +107,9 @@ bool GCode::parse(QStringList &gcode)
                     case 3:
                         motion = MotionType::counterClockwiseArcMove;
                         break;
+                    case 17:
+                        // Plane XY : The only one we handle !!!
+                        break;
                     case 20:
                         unit = UnitType::inches;
                         break;
@@ -106,6 +122,9 @@ bool GCode::parse(QStringList &gcode)
                     case 91:
                         mode = ModeType::incremental;
                         break;
+                    case 94:
+                        // Mode unités par minute. The only one we handle
+                        break;
 
                     default:
                         qDebug() << "G" << intValue << " command not supported.";
@@ -117,6 +136,7 @@ bool GCode::parse(QStringList &gcode)
                     case 2:
                     case 30:
                         // End program
+                        // Prévoir une manière de sortir...
                         break;
                     default:
                         qDebug() << "M" << intValue << " command not supported.";
@@ -129,52 +149,52 @@ bool GCode::parse(QStringList &gcode)
                         {
 
                         case 'X':
-                            if (mode == ModeType::absolute) point.setX(0);
-                            point.setX ( point.x() + value );
+                            if (mode == ModeType::absolute) point.coords.setX(0);
+                            point.coords.setX ( point.coords.x() + value );
                             bitSet(words, WordFlags::flagHasX);
 
-                            if (!bitIsSet(features, FeatureFlags::flagHasMinX) || (minPoint.x() > point.x()))
+                            if (!bitIsSet(features, FeatureFlags::flagHasMinX) || (minPoint.x() > point.coords.x()))
                             {
-                                minPoint.setX( point.x() );
+                                minPoint.setX( point.coords.x() );
                                 bitSet(features, FeatureFlags::flagHasMinX);
                             }
-                            if (!bitIsSet(features, FeatureFlags::flagHasMaxX) || (maxPoint.x() < point.x()))
+                            if (!bitIsSet(features, FeatureFlags::flagHasMaxX) || (maxPoint.x() < point.coords.x()))
                             {
-                                maxPoint.setX( point.x() );
+                                maxPoint.setX( point.coords.x() );
                                 bitSet(features, FeatureFlags::flagHasMaxX);
                             }
                             break;
 
                         case 'Y':
-                            if (mode == ModeType::absolute) point.setY(0);
-                            point.setY( point.y() + value);
+                            if (mode == ModeType::absolute) point.coords.setY(0);
+                            point.coords.setY( point.coords.y() + value);
                             bitSet(words, WordFlags::flagHasY);
 
-                            if (!bitIsSet(features, FeatureFlags::flagHasMinY) || (minPoint.y() > point.y()))
+                            if (!bitIsSet(features, FeatureFlags::flagHasMinY) || (minPoint.y() > point.coords.y()))
                             {
-                                minPoint.setY( point.y() );
+                                minPoint.setY( point.coords.y() );
                                 bitSet(features, FeatureFlags::flagHasMinY);
                             }
-                            if (!bitIsSet(features, FeatureFlags::flagHasMaxY) || (maxPoint.y() < point.y()))
+                            if (!bitIsSet(features, FeatureFlags::flagHasMaxY) || (maxPoint.y() < point.coords.y()))
                             {
-                                maxPoint.setY( point.y() );
+                                maxPoint.setY( point.coords.y() );
                                 bitSet(features, FeatureFlags::flagHasMaxY);
                             }
                             break;
 
                         case 'Z':
-                            if (mode == ModeType::absolute) point.setZ(0);
-                            point.setZ( point.z() + value);
+                            if (mode == ModeType::absolute) point.coords.setZ(0);
+                            point.coords.setZ( point.coords.z() + value);
                             bitSet(words, WordFlags::flagHasZ);
 
-                            if (!bitIsSet(features, FeatureFlags::flagHasMinZ) || (minPoint.z() > point.z()))
+                            if (!bitIsSet(features, FeatureFlags::flagHasMinZ) || (minPoint.z() > point.coords.z()))
                             {
-                                minPoint.setZ( point.z() );
+                                minPoint.setZ( point.coords.z() );
                                 bitSet(features, FeatureFlags::flagHasMinZ);
                             }
-                            if (!bitIsSet(features, FeatureFlags::flagHasMaxZ) || (maxPoint.z() < point.z()))
+                            if (!bitIsSet(features, FeatureFlags::flagHasMaxZ) || (maxPoint.z() < point.coords.z()))
                             {
-                                maxPoint.setZ( point.z() );
+                                maxPoint.setZ( point.coords.z() );
                                 bitSet(features, FeatureFlags::flagHasMaxZ);
                             }
                             break;
@@ -219,51 +239,57 @@ bool GCode::parse(QStringList &gcode)
 
         if (motion>=0)
         {
-            float radius;
+            double radius;
 
             switch(motion)
             {
             case MotionType::feedMove:
+
                 if (bitIsClear(words, WordFlags::flagHasX) &&
                     bitIsClear(words, WordFlags::flagHasY))
+                    // This is a move in Z only, make it a rapid move
                     motion = MotionType::rapidMove;
-                if (point.z() > 0)
+                if (point.coords.z() > 0)
+                    // When z is above zero, make it a rapidMove
                     motion = MotionType::rapidMove;
+
+                point.motion = motion;
                 points.append( point );
-                motions.append( motion );
                 break;
 
             case MotionType::rapidMove:
+
+                point.motion = motion;
                 points.append( point );
-                motions.append( motion );
                 break;
 
             case MotionType::clockwiseArcMove:
             case MotionType::counterClockwiseArcMove:
-                qDebug() << "center: " << center;
 
-                radius = hypot_f(center.x(), center.y());
-                mc_arc( point, lastPoint, center, radius, motion);
+//                qDebug() << "center: " << center;
+
+                radius = hypot_f(double(center.x()), double(center.y()));
+                mc_arc( point.coords, lastPoint, center, radius, motion, nRow);
 
                 break;
             }
 
-            lastPoint = point;
+            lastPoint = point.coords;
         } // End of row
     } // End of gCode
 
-    qDebug() << "Min  : " << getMin();
-    qDebug() << "Max  : " << getMax();
-    qDebug() << "Size : " << getSize();
-    assert( motions.size() == points.size() );
+    qDebug() << "Min  : " << getBoxMin();
+    qDebug() << "Max  : " << getBoxMax();
+    qDebug() << "Size : " << getBoxSize();
+    //assert( motions.size() == points.size() );
     return true;
 };
 
 #include <cmath>
 
 #define N_ARC_CORRECTION 12
-#define ARC_ANGULAR_TRAVEL_EPSILON 5E-7f
-#define ARC_TOLERANCE 0.002f
+#define ARC_ANGULAR_TRAVEL_EPSILON 5E-7
+#define ARC_TOLERANCE 0.002
 
 // The next method is inspired from Grbl 1.1h mc_arc function from motion_control.c
 /*
@@ -287,31 +313,39 @@ bool GCode::parse(QStringList &gcode)
   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
 */
 void GCode::mc_arc(QVector3D &target, QVector3D &position, QVector3D &offset,
-                   float radius, int motion)
+                   double radius, int motion, int nRow)
 {
-  float center_axis0 = position.x() + offset.x();
-  float center_axis1 = position.y() + offset.y();
-  float r_axis0 = -offset.x();  // Radius vector from center to current location
-  float r_axis1 = -offset.y();
-  float rt_axis0 = target.x() - center_axis0;
-  float rt_axis1 = target.y() - center_axis1;
+  Point point;
+  point.motion = motion;
+  point.line = nRow;
+
+  double center_axis0 = double(position.x()) + double(offset.x());
+  double center_axis1 = double(position.y()) + double(offset.y());
+
+  double r_axis0 = -double(offset.x());  // Radius vector from center to current location
+  double r_axis1 = -double(offset.y());
+  double rt_axis0 = double(target.x()) - center_axis0;
+  double rt_axis1 = double(target.y()) - center_axis1;
 
   // CCW angle between position and target from circle center. Only one atan2() trig computation required.
-  float angular_travel = atan2(r_axis0*rt_axis1-r_axis1*rt_axis0, r_axis0*rt_axis0+r_axis1*rt_axis1);
+  double angular_travel = atan2( r_axis0 * rt_axis1 -
+                                 r_axis1 * rt_axis0,
+                                 r_axis0 * rt_axis0 +
+                                 r_axis1 * rt_axis1);
 
-//  if (is_clockwise_arc) { // Correct atan2 output per direction
+  // Correct atan2 output per direction
   if (motion == MotionType::clockwiseArcMove) {
-    if (angular_travel >= -ARC_ANGULAR_TRAVEL_EPSILON) { angular_travel -= 2.0f*M_PI; }
+    if (angular_travel >= -ARC_ANGULAR_TRAVEL_EPSILON) { angular_travel -= 2.0*M_PI; }
   } else {
-    if (angular_travel <= ARC_ANGULAR_TRAVEL_EPSILON) { angular_travel += 2.f*M_PI; }
+    if (angular_travel <= ARC_ANGULAR_TRAVEL_EPSILON) { angular_travel += 2.0*M_PI; }
   }
 
   // NOTE: Segment end points are on the arc, which can lead to the arc diameter being smaller by up to
   // (2x) settings.arc_tolerance. For 99% of users, this is just fine. If a different arc segment fit
   // is desired, i.e. least-squares, midpoint on arc, just change the mm_per_arc_segment calculation.
   // For the intended uses of Grbl, this value shouldn't exceed 2000 for the strictest of cases.
-  uint16_t segments = floor(fabs(0.5f*angular_travel*radius)/
-                          sqrt(ARC_TOLERANCE*(2*radius - ARC_TOLERANCE)) );
+  uint segments = uint(floor(fabs(0.5*angular_travel*radius)/
+                          sqrt(ARC_TOLERANCE*(2*radius - ARC_TOLERANCE)) ));
 
   if (segments) {
     // Multiply inverse feed_rate to compensate for the fact that this movement is approximated
@@ -322,8 +356,8 @@ void GCode::mc_arc(QVector3D &target, QVector3D &position, QVector3D &offset,
 //      bit_false(pl_data->condition,PL_COND_FLAG_INVERSE_TIME); // Force as feed absolute mode over arc segments.
 //    }
 
-    float theta_per_segment = angular_travel/segments;
-    float linear_per_segment = (target.z() - position.z())/segments;
+    double theta_per_segment = angular_travel / segments;
+    double linear_per_segment = ( double(target.z()) - double(position.z()) ) / segments;
 
     /* Vector rotation by transformation matrix: r is the original vector, r_T is the rotated vector,
        and phi is the angle of rotation. Solution approach by Jens Geisler.
@@ -351,50 +385,45 @@ void GCode::mc_arc(QVector3D &target, QVector3D &position, QVector3D &offset,
        This is important when there are successive arc motions.
     */
     // Computes: cos_T = 1 - theta_per_segment^2/2, sin_T = theta_per_segment - theta_per_segment^3/6) in ~52usec
-    float cos_T = 2.0f - theta_per_segment*theta_per_segment;
-    float sin_T = theta_per_segment*0.16666667f*(cos_T + 4.0f);
-    cos_T *= 0.5f;
+    double cos_T = 2.0 - theta_per_segment * theta_per_segment;
+    double sin_T = theta_per_segment * 0.16666667 * (cos_T + 4.0);
+    cos_T *= 0.5;
 
-    float sin_Ti;
-    float cos_Ti;
-    float r_axisi;
+    double sin_Ti;
+    double cos_Ti;
+    double r_axisi;
     uint16_t i;
     uint8_t count = 0;
 
-    for (i = 1; i<segments; i++) { // Increment (segments-1).
+    for (i = 1; i < segments; i++) { // Increment (segments-1).
 
       if (count < N_ARC_CORRECTION) {
         // Apply vector rotation matrix. ~40 usec
-        r_axisi = r_axis0*sin_T + r_axis1*cos_T;
-        r_axis0 = r_axis0*cos_T - r_axis1*sin_T;
+        r_axisi = r_axis0 * sin_T + r_axis1 * cos_T;
+        r_axis0 = r_axis0 * cos_T - r_axis1 * sin_T;
         r_axis1 = r_axisi;
         count++;
       } else {
         // Arc correction to radius vector. Computed only every N_ARC_CORRECTION increments. ~375 usec
         // Compute exact location by applying transformation matrix from initial radius vector(=-offset).
-        cos_Ti = cos(i*theta_per_segment);
-        sin_Ti = sin(i*theta_per_segment);
-        r_axis0 = -offset.x()*cos_Ti + offset.y()*sin_Ti;
-        r_axis1 = -offset.x()*sin_Ti - offset.y()*cos_Ti;
+        cos_Ti = cos(i * theta_per_segment);
+        sin_Ti = sin(i * theta_per_segment);
+        r_axis0 = -double(offset.x()) * cos_Ti + double(offset.y()) * sin_Ti;
+        r_axis1 = -double(offset.x()) * sin_Ti - double(offset.y()) * cos_Ti;
         count = 0;
       }
 
       // Update arc_target location
-      position.setX( center_axis0 + r_axis0 );
-      position.setY( center_axis1 + r_axis1 );
-      position.setZ( position.z() + linear_per_segment);
+      point.coords.setX( float(center_axis0 + r_axis0) );
+      point.coords.setY( float(center_axis1 + r_axis1) );
+      point.coords.setZ( position.z() + float(linear_per_segment));
 
-      points.append(position);
-      motions.append(motion);
-
-//      mc_line(position, pl_data);
-
-      // Bail mid-circle on system abort. Runtime command check already performed by mc_line.
-//      if (sys.abort) { return; }
+      // Add point to our list
+      points.append(point);
     }
   }
+
   // Ensure last segment arrives at target location.
-  points.append(target);
-  motions.append(motion);
-//  mc_line(target, pl_data);
+  point.coords = target;
+  points.append(point);
 }

@@ -14,9 +14,10 @@ public:
     Visualizer(QWidget *parent);
 
     void setGCode(GCode *gcode);
-    void setExecution(int perc);
+    void setNbPoints(int nbPoints);
 
     void setRotation(QVector3D rot) { rotation = rot; update(); }
+    void setPosition(QVector3D pos) { center = pos; update(); }
 
     void initializeGL() override;
     void paintGL() override;
@@ -40,7 +41,7 @@ private:
 
     QPoint last_pos;
 
-    float  distance = -15.0;
+    float  distance = 15.0;
 
     QVector3D eye       = {0.0f,  -distance, 0.0f};
     QVector3D up        = {0.0f, 0.0f, 1.0f};
@@ -50,7 +51,7 @@ private:
     float     plateInterval = 0.5f;
 
     GCode *gcode;
-    int perc;
+    int nbPoints;
 };
 
 #endif // VISUALIZER_H

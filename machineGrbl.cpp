@@ -56,7 +56,8 @@ MachineGrbl::~MachineGrbl()
 void MachineGrbl::openMachine(QString portName)
 {
     PortSerial *serial = new PortSerial();
-    serial->setSpeed( 38400 );
+//    serial->setSpeed( 38400 );
+    serial->setSpeed( 115200 );
     serial->setDevice( portName );
 
     if (!serial->open())
@@ -71,10 +72,11 @@ void MachineGrbl::openMachine(QString portName)
     connect( &statusTimer, SIGNAL(timeout()), this, SLOT(timeout()));
 
     // Start by asking informations about version
-    ask(CommandType::commandInfos);
+//    ask(CommandType::commandInfos);
+    ask(CommandType::commandReset);
 
     // And ask for status on a 5Hz basis (maximum recommended by Grbl)
-    statusTimer.start(200);
+    //statusTimer.start(200);
 }
 
 void MachineGrbl::closeMachine()
@@ -85,7 +87,6 @@ void MachineGrbl::closeMachine()
     if (port)
     {
         disconnect( port, SIGNAL(lineAvailable(QString&)), this, SLOT(parse(QString&)));
-        port->close();
         delete port;
         port = nullptr;
     }
@@ -785,6 +786,7 @@ void MachineGrbl::parse(QString &line)
         //           Informations are asked multiple times (4 times).
         //           It works, but that take plenty of time
         ask(CommandType::commandInfos);
+        statusTimer.start(200);
 
         emit resetDone();
     }

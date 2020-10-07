@@ -59,6 +59,7 @@ public:
     {
     public:
         enum {
+            noMove,
             jogMove,
             rapidMove,
             feedMove,
@@ -68,37 +69,37 @@ public:
         };
     };
 
+    struct Point
+    {
+        QVector3D coords;
+        int motion;
+        int line;
+    };
+
 public:
     GCode();
 
+    bool parse(QString &gcode);
     bool parse(QStringList &gcode);
 
-    QVector3D getMin() { return minPoint; }
-    QVector3D getMax() { return maxPoint; }
-    QVector3D getSize() { return maxPoint - minPoint; }
+    QVector3D getBoxMin() { return minPoint; }
+    QVector3D getBoxMax() { return maxPoint; }
+    QVector3D getBoxSize() { return maxPoint - minPoint; }
+
+    QStringList getLines() { return gcode; }
+    int getSize() {return gcode.size(); }
 
     // This method is inspired from Grbl 1.1h mc_arc function from motion_control.c
+    // Many thanks to the Grbl team.
     void mc_arc(QVector3D &target, QVector3D &position, QVector3D &offset,
-                       float radius, int motion);
+                       double radius, int motion, int nRow);
 
-//    float getMinX() { return minX; }
-//    float getMinY() { return minY; }
-//    float getMinZ() { return minZ; }
-
-//    float getMaxX() { return maxX; }
-//    float getMaxY() { return maxY; }
-//    float getMaxZ() { return maxZ; }
-
-//    float getSizeX() { return maxX - minX; }
-//    float getSizeY() { return maxY - minY; }
-//    float getSizeZ() { return maxZ - minZ; }
-
-    QList<QVector3D> &getPoints()  { return points; }
-    QList<int>       &getMotions() { return motions; }
+    QList<Point> &getPoints()  { return points; }
 protected:
     QVector3D center, minPoint, maxPoint;
-    QList<QVector3D> points;
-    QList<int>       motions;
+
+    QStringList gcode;
+    QList<Point> points;
 };
 
 #endif // GCODE_H

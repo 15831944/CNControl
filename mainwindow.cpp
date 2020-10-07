@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // editingFinished seems to be emitted when Alt is pressed.
     connect( ui->commandComboBox->lineEdit(), &QFocusLineEdit::editingFinished, this, &MainWindow::onGcodeChanged);
 
-    gcodeParser = new GCode();
+    //gcodeParser = new GCode();
     machine = nullptr;
 
     on_jogIntervalSlider_valueChanged( 3 );
@@ -207,7 +207,7 @@ bool MainWindow::loadConfiguration()
     QFile configFile(configName);
 
     if (!configFile.open(QIODevice::ReadOnly)) {
-        qWarning("MainWindow::saveConfiguration: Couldn't open save file.");
+        qWarning() << "MainWindow::loadConfiguration: Couldn't open configuration file:" << configName;
         return false;
     }
 
@@ -233,7 +233,7 @@ bool MainWindow::saveConfiguration()
     QFile configFile( configName );
 
     if (!configFile.open(QIODevice::WriteOnly)) {
-        qWarning("Couldn't open save file.");
+        qWarning() << "MainWindow::saveConfiguration: Could not save configutation file: " << configName;
         return false;
     }
 
@@ -279,28 +279,25 @@ void MainWindow::openFile(QString fileName)
     {
         ui->gcodeCodeEditor->setPlainText(file.readAll());
 
-        if (gcodeParser)
-        {
-            QStringList lines = ui->gcodeCodeEditor->toPlainText().split("\n");
-            gcodeParser->parse( lines );
+        QStringList lines = ui->gcodeCodeEditor->toPlainText().split("\n");
+        gcodeParser.parse( lines );
 
-            ui->linesNbLabel->setText( QString().setNum( lines.size()) );
-            ui->pointsNbLabel->setText( QString().setNum(gcodeParser->getPoints().size()) );
-            ui->visualizer->setGCode( gcodeParser );
+        ui->linesNbLabel->setText( QString().setNum( lines.size()) );
+        ui->pointsNbLabel->setText( QString().setNum(gcodeParser.getPoints().size()) );
+        ui->visualizer->setGCode( &gcodeParser );
 
-            QVector3D size = gcodeParser->getSize();
-            ui->gCodeSizeInfo->setText( QString("%1 / %2 mm")
-                        .arg( QString().sprintf("%4.2f", double(size.x())) )
-                        .arg( QString().sprintf("%4.2f", double(size.y())) )
-                        );
+        QVector3D size = gcodeParser.getBoxSize();
+        ui->gCodeSizeInfo->setText( QString("%1 / %2 mm")
+                    .arg( QString().sprintf("%4.2f", double(size.x())) )
+                    .arg( QString().sprintf("%4.2f", double(size.y())) )
+                    );
 
-            QVector3D minPoint = gcodeParser->getMin();
-            ui->gCodeZeroInfo->setText( QString("%1 / %2 mm")
-                        .arg( QString().sprintf("%4.2f",  - double(minPoint.x())) )
-                        .arg( QString().sprintf("%4.2f",  - double(minPoint.y())) )
-                        );
+        QVector3D minPoint = gcodeParser.getBoxMin();
+        ui->gCodeZeroInfo->setText( QString("%1 / %2 mm")
+                    .arg( QString().sprintf("%4.2f",  - double(minPoint.x())) )
+                    .arg( QString().sprintf("%4.2f",  - double(minPoint.y())) )
+                    );
 
-        }
         gcodeIndex = 0;
     }
     else QMessageBox::critical(this,"Error",QString("Can't read file %1").arg( fileName ));
@@ -427,8 +424,7 @@ void MainWindow::openMachine()
         qDebug() << "Error connecting to " << portName.toUtf8();
         qDebug() << "    " << exception.message();
         QMessageBox::critical(this,tr("Connection Error", "Error dialog caption"),
-            tr("Unable to connect to %1").arg(portName) + '\n' +
-            exception.message());
+            tr("Unable to connect to %1\n%2").arg(portName).arg(exception.message()));
         closeMachine();
     }
 }
@@ -663,7 +659,7 @@ void MainWindow::onLineNumberUpdated()
         ui->gcodeCodeEditor->setCurrentLine( machine->getLineNumber() );
         ui->lineNbLabel->setText( QString("%1 / %2")
                                   .arg(machine->getLineNumber())
-                                  .arg(gcode.size())
+                                  .arg(gcodeParser.getLines().size())
                                   );
         //ui->infoLabel->setText( QString("%1").arg(machine->getLineNumber()) );
         ui->gcodeExecutedProgressBar->setValue( machine->getLineNumber() );
@@ -861,10 +857,16 @@ void MainWindow::checkGcode()
         ui->stopToolButton->setEnabled(false);
 
         gcodeIndex = 0;
-        gcode = ui->gcodeCodeEditor->toPlainText().split("\n", QString::KeepEmptyParts, Qt::CaseInsensitive);
+
+        if (ui->gcodeCodeEditor->document()->isModified())
+        {
+            QString text = ui->gcodeCodeEditor->toPlainText();
+            gcodeParser.parse( text );
+            ui->gcodeCodeEditor->document()->setModified(false);
+        }
 
         ui->gcodeExecutedProgressBar->setValue(0);
-        ui->gcodeExecutedProgressBar->setMaximum( gcode.size() );
+        ui->gcodeExecutedProgressBar->setMaximum( gcodeParser.getLines().size() );
 
         if (machine->isState( MachineGrbl::StateType::stateIdle))
         {
@@ -881,10 +883,15 @@ void MainWindow::runGcode(bool step)
 
     if (gcodeIndex == 0)
     {
-        gcode = ui->gcodeCodeEditor->toPlainText().split("\n", QString::KeepEmptyParts, Qt::CaseInsensitive);
+        if (ui->gcodeCodeEditor->document()->isModified())
+        {
+            QString text = ui->gcodeCodeEditor->toPlainText();
+            gcodeParser.parse( text );
+            ui->gcodeCodeEditor->document()->setModified(false);
+        }
 
         ui->gcodeExecutedProgressBar->setValue(0);
-        ui->gcodeExecutedProgressBar->setMaximum( gcode.size() );
+        ui->gcodeExecutedProgressBar->setMaximum( gcodeParser.getLines().size() );
 
         if (!step)
         {
@@ -950,16 +957,18 @@ void MainWindow::onCommandExecuted()
 void MainWindow::sendNextGCode()
 {
     if (!machineOk()) return; // security
-    if (gcodeIndex < gcode.size())
+
+    QStringList lines = gcodeParser.getLines();
+    if (gcodeIndex < lines.size())
     {
-        machine->sendCommand( QString("N%1%2").arg(gcodeIndex+1).arg(gcode.at(gcodeIndex)).toUtf8() );
+        machine->sendCommand( QString("N%1%2").arg(gcodeIndex+1).arg(lines.at(gcodeIndex)).toUtf8() );
         gcodeIndex++;
     }
 
-    if (gcodeIndex >= gcode.size())
+    if (gcodeIndex >= lines.size())
     {
         disconnect(machine, SIGNAL(commandExecuted()), this, SLOT(onCommandExecuted()));
-        ui->gcodeExecutedProgressBar->setValue(gcode.size());
+        ui->gcodeExecutedProgressBar->setValue(lines.size());
         ui->lineNbLabel->setText( QString() );
         stopGcode();
     }
@@ -1424,7 +1433,7 @@ void MainWindow::on_zeroMachineToolButton_clicked()
         }
     }
 
-    if ((coords.x() != 0) || (coords.y() != 0))
+    if (!qFuzzyCompare(coords.x(), 0) || !qFuzzyCompare(coords.y(), 0))
     {
         if (!machine->moveToXY(0, 0, 1000 /* feed */, true /* jog */, true /* machine */, false /* incremental */))
 //        if (machine->sendCommand("$J=G90G53X0Y0F1000"))
@@ -1468,12 +1477,16 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_gCodeExecutionSlider_valueChanged(int value)
 {
-    ui->visualizer->setExecution(value);
+    int nbPoints = gcodeParser.getPoints().size();
+    int max = ui->gCodeExecutionSlider->maximum();
+    ui->visualizer->setNbPoints(nbPoints * value / max);
 }
 
 void MainWindow::on_topViewToolButton_clicked()
 {
     ui->visualizer->setRotation(QVector3D( -1440.0f , 0.0f, -2880.0f));
+    ui->visualizer->setPosition(QVector3D( 0.0f , 0.0f, 0.0f) );
+
 }
 
 void MainWindow::on_isometricViewToolButton_clicked()
@@ -1485,8 +1498,55 @@ void MainWindow::on_pushButton_clicked()
     ui->logTextEdit->clear();
 }
 
+#define TabImage    0
+#define TabToolPath 1
+#define TabGCode    2
+#define TabInfo     3
+#define TabLog      4
+
 void MainWindow::on_tabWidget_currentChanged(int index)
 {
-    if (index == 2)
+    if (ui->tabWidget->currentIndex() == TabGCode)
+    {
+        // Il faut mettre une methode parse dans l'objet MainWindow, pour
+        // gérer ce qui suit et mettre à jour les informations.
+        //YLG
+        qDebug() << "MainWindow::on_tabWidget_currentChanged(" << index << ")";
+        if (ui->gcodeCodeEditor->document()->isModified())
+        {
+            QString text = ui->gcodeCodeEditor->toPlainText();
+            gcodeParser.parse( text );
+            ui->gcodeCodeEditor->document()->setModified(false);
+        }
+    }
+
+    if (index == TabToolPath)
         ui->visualizer->update();
 }
+
+//#include <QPainter>
+//#include <QtSvg/QSvgRenderer>
+//void MainWindow::on_imageOpenToolButton_clicked()
+//{
+//    QString fileName = QFileDialog::getOpenFileName(this,
+//        tr("Open Image"), "/home/yann", tr("Image Files (*.svg)"));
+//    qDebug() << "Open image file " << fileName;
+
+//    if (!fileName.isEmpty())
+//    {
+//        QSvgRenderer renderer( fileName );
+
+//        // Prepare a QImage with desired characteritisc
+//        QImage image(500, 200, QImage::Format_ARGB32);
+//        image.fill(0xaaA08080);  // partly transparent red-ish background
+
+////        // Get QPainter that paints to the image
+////        QPainter painter(&image);
+////        renderer.render(&painter);
+
+//        QPixmap pixmap;
+//        pixmap.fromImage(image);
+
+//        ui->imageLabel->setPixmap(pixmap);
+//    }
+//}

@@ -161,6 +161,8 @@ private slots:
 
     void on_tabWidget_currentChanged(int index);
 
+    //void on_imageOpenToolButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     QTimer  portsTimer;
@@ -172,9 +174,9 @@ private:
     QStringList devicesList;
     Machine *machine;
 
-    GCode *gcodeParser;
+    GCode gcodeParser;
 
-    QStringList gcode;
+    //QStringList gcode;
     int gcodeIndex;
 
     double jogInterval;

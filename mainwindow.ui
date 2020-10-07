@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>722</width>
+    <width>892</width>
     <height>686</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
@@ -50,47 +56,8 @@
     <item row="1" column="0" rowspan="5" colspan="2">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
-      <widget class="QWidget" name="imageTab">
-       <attribute name="title">
-        <string>Image</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout_12">
-        <property name="leftMargin">
-         <number>2</number>
-        </property>
-        <property name="topMargin">
-         <number>2</number>
-        </property>
-        <property name="rightMargin">
-         <number>2</number>
-        </property>
-        <property name="bottomMargin">
-         <number>2</number>
-        </property>
-        <property name="spacing">
-         <number>2</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="QWidget" name="widget" native="true">
-          <widget class="QPushButton" name="pushButton_2">
-           <property name="geometry">
-            <rect>
-             <x>240</x>
-             <y>10</y>
-             <width>80</width>
-             <height>24</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>PushButton</string>
-           </property>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="toolPathTab">
        <attribute name="title">
         <string>toolPath</string>
@@ -624,7 +591,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>722</width>
+     <width>892</width>
      <height>21</height>
     </rect>
    </property>
@@ -697,10 +664,10 @@
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="controlDock">
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+    <set>QDockWidget::NoDockWidgetFeatures</set>
    </property>
    <property name="allowedAreas">
-    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+    <set>Qt::RightDockWidgetArea</set>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -1675,7 +1642,7 @@ margin: 2px;
            <string>Cancel jog</string>
           </property>
           <property name="text">
-           <string>✖</string>
+           <string>■</string>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -2072,8 +2039,17 @@ margin: 2px;
    </widget>
   </widget>
   <widget class="QDockWidget" name="commandDock">
+   <property name="inputMethodHints">
+    <set>Qt::ImhNone</set>
+   </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+    <set>QDockWidget::NoDockWidgetFeatures</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea</set>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>

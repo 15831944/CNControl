@@ -146,7 +146,7 @@ bool Machine::sendCommand(QString gcode, bool withNewline, bool noLog)
 
     if (withNewline) gcode += "\n";
 
-    if (!noLog)
+   // if (!noLog)
     {
         if (gcode[0] <= 127)
             qDebug() << "Machine::sendCommand(" << gcode << ")";
